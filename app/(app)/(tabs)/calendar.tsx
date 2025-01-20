@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useRouter } from 'expo-router';
 
 // トレーニング予定日のマーク用オブジェクト
 const scheduledDates = {
@@ -98,6 +99,7 @@ export default function CalendarScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const router = useRouter();
 
   const onDayPress = (day: DateData) => {
     setSelectedDate(new Date(day.timestamp));
@@ -171,7 +173,7 @@ export default function CalendarScreen() {
         </ThemedText>
         <Button 
           label="Create today's workout plan"
-          onPress={() => {}}
+          onPress={() => router.push('/workout/plan')}
         />
       </View>
     </View>

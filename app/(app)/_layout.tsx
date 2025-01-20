@@ -1,57 +1,30 @@
-import { Tabs } from 'expo-router';
+import { Stack } from 'expo-router';
 import { Platform } from 'react-native';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-
 export default function AppLayout() {
-  const colorScheme = useColorScheme() ?? 'light';
-
   return (
-    <Tabs
+    <Stack
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-          },
-          default: {},
-        }),
       }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'HOME',
-          tabBarIcon: ({ color }) => <IconSymbol name="house.fill" size={24} color={color} />,
-        }}
+      <Stack.Screen 
+        name="(tabs)" 
+        options={{ 
+          headerShown: false,
+          animation: 'none',
+        }} 
       />
-      <Tabs.Screen
-        name="calendar"
-        options={{
-          title: 'CALENDAR',
-          tabBarIcon: ({ color }) => <IconSymbol name="calendar" size={24} color={color} />,
-        }}
+      <Stack.Screen 
+        name="workout/plan" 
+        options={{ 
+          headerShown: false,
+          presentation: 'modal',
+          animation: Platform.select({
+            ios: 'default',
+            android: 'slide_from_bottom',
+          }),
+        }} 
       />
-      <Tabs.Screen
-        name="library"
-        options={{
-          title: 'LIBRARY',
-          tabBarIcon: ({ color }) => <IconSymbol name="dumbbell.fill" size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="my-page"
-        options={{
-          title: 'MY PAGE',
-          tabBarIcon: ({ color }) => <IconSymbol name="person.fill" size={24} color={color} />,
-        }}
-      />
-    </Tabs>
+    </Stack>
   );
 }
