@@ -135,6 +135,16 @@ export default function WorkoutLogScreen() {
       };
       return updated;
     });
+
+    // Start rest timer when a set is marked as done
+    if (field === 'done' && value === true) {
+      // Stop any existing rest timer
+      if (isResting) {
+        handleStopRest();
+      }
+      // Start new rest timer
+      handleStartRest();
+    }
   };
 
   const addSet = (exerciseIndex: number) => {
