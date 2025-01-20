@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { Button } from '@/components/ui/Button';
 import { useState } from 'react';
@@ -30,7 +30,7 @@ export function OnboardingScreen({ step }: { step: number }) {
       title: '目標を選択',
       goals: ['筋肥大', '減量', '維持'],
       button: '次へ',
-      onNext: () => router.replace('(tabs)'),
+      onNext: () => router.replace('(tabs)/'),
     },
   ];
 
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 12,
-    color: '#666666',
+    color: '#424242',
   },
   inputContainer: {
     marginTop: 32,
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#DDDDDD',
+    borderColor: '#BDBDBD',
     borderRadius: 8,
     padding: 16,
     fontSize: 16,
@@ -120,13 +120,13 @@ const styles = StyleSheet.create({
   },
   goalButton: {
     borderWidth: 1,
-    borderColor: '#DDDDDD',
+    borderColor: '#BDBDBD',
     borderRadius: 8,
     padding: 16,
   },
   selectedGoal: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: '#1976D2',
+    borderColor: '#1976D2',
   },
   goalText: {
     fontSize: 16,

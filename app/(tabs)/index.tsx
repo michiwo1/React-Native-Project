@@ -1,5 +1,125 @@
-import { Redirect } from 'expo-router';
+import { View, StyleSheet } from 'react-native';
+import { ThemedText } from '@/components/ThemedText';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { MetricCard } from '@/components/ui/MetricCard';
+import { Colors, BaseColors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
 
-export default function Index() {
-  return <Redirect href="/onboarding/0" />;
+export default function HomeScreen() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors = Colors[colorScheme];
+  const weeklyGoalProgress = 0.75;
+  const dummyData = {
+    weight: {
+      current: 75.5,
+      change: -2.0,
+    },
+    benchPress: {
+      current: 80,
+      change: 5,
+    },
+    nutrition: {
+      protein: 0.7,
+      calories: 0.8,
+    },
+  };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 16,
+      backgroundColor: colors.background,
+    },
+    greeting: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginTop: 48,
+      marginBottom: 24,
+    },
+    todayWorkout: {
+      backgroundColor: colorScheme === 'light' ? '#F5F7FA' : '#1A1D1E',
+      padding: 16,
+      borderRadius: 12,
+      marginBottom: 24,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      marginBottom: 12,
+    },
+    workoutCard: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: colors.background,
+      padding: 16,
+      borderRadius: 8,
+      marginBottom: 16,
+    },
+    startButton: {
+      color: colors.tint,
+      fontWeight: '600',
+    },
+    progressSection: {
+      marginBottom: 24,
+    },
+    metricsContainer: {
+      flexDirection: 'row',
+      gap: 12,
+      marginBottom: 16,
+    },
+    nutritionBars: {
+      gap: 12,
+    },
+    barContainer: {
+      gap: 8,
+    },
+  });
+
+  return (
+    <View style={styles.container}>
+      <ThemedText style={styles.greeting}>こんにちは、ユーザーさん</ThemedText>
+      
+      <View style={styles.todayWorkout}>
+        <ThemedText style={styles.sectionTitle}>今日のトレーニング</ThemedText>
+        <View style={styles.workoutCard}>
+          <ThemedText>胸部 + 三頭筋</ThemedText>
+          <ThemedText style={styles.startButton}>開始</ThemedText>
+        </View>
+        <View style={styles.progressSection}>
+          <ThemedText>週間目標達成率</ThemedText>
+          <ProgressBar progress={weeklyGoalProgress} />
+        </View>
+      </View>
+
+      <View style={styles.progressSection}>
+        <ThemedText style={styles.sectionTitle}>進捗状況</ThemedText>
+        <View style={styles.metricsContainer}>
+          <MetricCard
+            title="体重"
+            value={`${dummyData.weight.current}kg`}
+            change={dummyData.weight.change}
+            changeUnit="kg"
+          />
+          <MetricCard
+            title="ベンチプレス"
+            value={`${dummyData.benchPress.current}kg`}
+            change={dummyData.benchPress.change}
+            changeUnit="kg"
+          />
+        </View>
+        
+        <View style={styles.nutritionBars}>
+          <View style={styles.barContainer}>
+            <ThemedText>タンパク質</ThemedText>
+            <ProgressBar progress={dummyData.nutrition.protein} />
+          </View>
+          <View style={styles.barContainer}>
+            <ThemedText>カロリー</ThemedText>
+            <ProgressBar progress={dummyData.nutrition.calories} />
+          </View>
+        </View>
+      </View>
+    </View>
+  );
 }
