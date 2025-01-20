@@ -21,6 +21,9 @@ const baseColors = {
   background: '#ffffff',
   text: '#11181C',
   icon: '#687076',
+  textSecondary: '#687076',
+  border: '#E5E7EB',
+  secondary: '#E3F2FD',
 } as const;
 
 // Platform-specific color processing
@@ -32,6 +35,10 @@ export const Colors = {
     icon: normalizeColor(baseColors.icon),
     tabIconDefault: normalizeColor(baseColors.icon),
     tabIconSelected: normalizeColor(baseColors.primary),
+    textSecondary: normalizeColor(baseColors.textSecondary),
+    border: normalizeColor(baseColors.border),
+    primary: normalizeColor(baseColors.primary),
+    secondary: normalizeColor(baseColors.secondary),
   },
   dark: {
     text: normalizeColor('#ECEDEE'),
@@ -40,6 +47,10 @@ export const Colors = {
     icon: normalizeColor('#9BA1A6'),
     tabIconDefault: normalizeColor('#9BA1A6'),
     tabIconSelected: normalizeColor('#ffffff'),
+    textSecondary: normalizeColor('#9BA1A6'),
+    border: normalizeColor('#2D3235'),
+    primary: normalizeColor('#1976D2'),
+    secondary: normalizeColor('#0D47A1'),
   },
 };
 
