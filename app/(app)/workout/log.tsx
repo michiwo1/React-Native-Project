@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Modal, Pressable } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
@@ -34,6 +34,13 @@ export default function WorkoutLogScreen() {
   const [isWorkoutStarted, setIsWorkoutStarted] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [restTime, setRestTime] = useState(0);
+  const [isResting, setIsResting] = useState(false);
+  const [restStartTime, setRestStartTime] = useState<number | null>(null);
+  const [targetRestTime, setTargetRestTime] = useState<number>(60);
+  const [isRestSettingModalVisible, setIsRestSettingModalVisible] = useState(false);
+  const [tempMinutes, setTempMinutes] = useState(Math.floor(targetRestTime / 60));
+  const [tempSeconds, setTempSeconds] = useState(targetRestTime % 60);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -45,12 +52,24 @@ export default function WorkoutLogScreen() {
       }, 1000);
     }
 
+    if (isResting && restStartTime) {
+      intervalId = setInterval(() => {
+        const now = Date.now();
+        const currentRestTime = Math.floor((now - restStartTime) / 1000);
+        setRestTime(currentRestTime);
+        
+        if (currentRestTime >= targetRestTime) {
+          handleStopRest();
+        }
+      }, 1000);
+    }
+
     return () => {
       if (intervalId) {
         clearInterval(intervalId);
       }
     };
-  }, [isWorkoutStarted, startTime]);
+  }, [isWorkoutStarted, startTime, isResting, restStartTime, targetRestTime]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -73,6 +92,18 @@ export default function WorkoutLogScreen() {
   const handleFinishWorkout = () => {
     setIsWorkoutStarted(false);
     setStartTime(null);
+  };
+
+  const handleStartRest = () => {
+    setIsResting(true);
+    setRestStartTime(Date.now());
+    setRestTime(0);
+  };
+
+  const handleStopRest = () => {
+    setIsResting(false);
+    setRestStartTime(null);
+    setRestTime(0);
   };
 
   const updateSet = (exerciseIndex: number, setIndex: number, field: keyof ExerciseSet, value: string | boolean) => {
@@ -102,6 +133,17 @@ export default function WorkoutLogScreen() {
     });
   };
 
+  const handleOpenRestSetting = () => {
+    setTempMinutes(Math.floor(targetRestTime / 60));
+    setTempSeconds(targetRestTime % 60);
+    setIsRestSettingModalVisible(true);
+  };
+
+  const handleSaveRestSetting = () => {
+    setTargetRestTime(tempMinutes * 60 + tempSeconds);
+    setIsRestSettingModalVisible(false);
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -110,6 +152,31 @@ export default function WorkoutLogScreen() {
         </TouchableOpacity>
         <ThemedText style={styles.headerTitle}>Workout Log</ThemedText>
         <View style={styles.headerRight} />
+      </View>
+
+      <View style={styles.restTimerSection}>
+        <View style={styles.restTimerContainer}>
+          <View style={styles.restTimerHeader}>
+            <ThemedText style={styles.restTimerLabel}>Rest Timer</ThemedText>
+            <ThemedText style={styles.targetTimeLabel}>Target: {formatTime(targetRestTime)}</ThemedText>
+          </View>
+          <ThemedText style={styles.restTimerText}>
+            {formatTime(restTime)}
+          </ThemedText>
+        </View>
+        <View style={styles.restButtonGroup}>
+          <TouchableOpacity style={styles.restSettingButtonContainer} onPress={handleOpenRestSetting}>
+            <ThemedText style={styles.restSettingButton}>Edit</ThemedText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.restButton, isResting && styles.stopRestButton]}
+            onPress={isResting ? handleStopRest : handleStartRest}
+          >
+            <ThemedText style={styles.restButtonText}>
+              {isResting ? 'STOP' : 'REST'}
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.timerSection}>
@@ -197,6 +264,74 @@ export default function WorkoutLogScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isRestSettingModalVisible}
+        onRequestClose={() => setIsRestSettingModalVisible(false)}
+      >
+        <Pressable 
+          style={styles.modalOverlay}
+          onPress={() => setIsRestSettingModalVisible(false)}
+        >
+          <Pressable style={styles.modalContent} onPress={e => e.stopPropagation()}>
+            <View style={styles.modalHeader}>
+              <ThemedText style={styles.modalTitle}>Set Rest Time</ThemedText>
+              <TouchableOpacity onPress={() => setIsRestSettingModalVisible(false)}>
+                <ThemedText style={styles.modalCloseButton}>✕</ThemedText>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.timePickerContainer}>
+              <View style={styles.timePickerSection}>
+                <ThemedText style={styles.timePickerLabel}>Minutes</ThemedText>
+                <View style={styles.timePickerButtons}>
+                  <TouchableOpacity 
+                    style={styles.timeAdjustButton}
+                    onPress={() => setTempMinutes(prev => Math.max(0, prev - 1))}
+                  >
+                    <ThemedText style={styles.timeAdjustButtonText}>-</ThemedText>
+                  </TouchableOpacity>
+                  <ThemedText style={styles.timeValue}>{tempMinutes}</ThemedText>
+                  <TouchableOpacity 
+                    style={styles.timeAdjustButton}
+                    onPress={() => setTempMinutes(prev => Math.min(10, prev + 1))}
+                  >
+                    <ThemedText style={styles.timeAdjustButtonText}>+</ThemedText>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.timePickerSection}>
+                <ThemedText style={styles.timePickerLabel}>Seconds</ThemedText>
+                <View style={styles.timePickerButtons}>
+                  <TouchableOpacity 
+                    style={styles.timeAdjustButton}
+                    onPress={() => setTempSeconds(prev => Math.max(0, prev - 10))}
+                  >
+                    <ThemedText style={styles.timeAdjustButtonText}>-</ThemedText>
+                  </TouchableOpacity>
+                  <ThemedText style={styles.timeValue}>{tempSeconds}</ThemedText>
+                  <TouchableOpacity 
+                    style={styles.timeAdjustButton}
+                    onPress={() => setTempSeconds(prev => Math.min(50, prev + 10))}
+                  >
+                    <ThemedText style={styles.timeAdjustButtonText}>+</ThemedText>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+            <TouchableOpacity 
+              style={styles.saveButton}
+              onPress={handleSaveRestSetting}
+            >
+              <ThemedText style={styles.saveButtonText}>Save</ThemedText>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -408,5 +543,160 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#2563EB',
+  },
+  restTimerSection: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    marginTop: 8,
+    marginBottom: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 88,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  restTimerContainer: {
+    flex: 1,
+    paddingLeft: 12,
+    justifyContent: 'center',
+  },
+  restTimerHeader: {
+    marginBottom: 8,
+  },
+  restTimerLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748B',
+    marginBottom: 2,
+  },
+  targetTimeLabel: {
+    fontSize: 12,
+    color: '#94A3B8',
+  },
+  restTimerText: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#0F172A',
+    includeFontPadding: false,
+    lineHeight: 38,
+  },
+  restButtonGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  restButton: {
+    backgroundColor: '#2563EB',
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    minWidth: 110,
+    alignItems: 'center',
+    height: 48,
+    justifyContent: 'center',
+  },
+  stopRestButton: {
+    backgroundColor: '#EF4444',
+  },
+  restButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  restSettingButtonContainer: {
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    height: 48,
+    justifyContent: 'center',
+  },
+  restSettingButton: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2563EB',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    width: '80%',
+    maxWidth: 320,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  modalCloseButton: {
+    fontSize: 20,
+    color: '#64748B',
+    padding: 4,
+  },
+  timePickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    gap: 16,
+  },
+  timePickerSection: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  timePickerLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748B',
+    marginBottom: 8,
+  },
+  timePickerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  timeAdjustButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timeAdjustButtonText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#2563EB',
+  },
+  timeValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#0F172A',
+    minWidth: 40,
+    textAlign: 'center',
+  },
+  saveButton: {
+    backgroundColor: '#2563EB',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
   },
 }); 
