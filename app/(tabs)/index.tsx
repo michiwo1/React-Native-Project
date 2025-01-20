@@ -41,6 +41,10 @@ export default function HomeScreen() {
     nutrition: {
       protein: 0.7,
       calories: 0.8,
+      proteinTarget: 180, // 体重 x 2.4g
+      caloriesTarget: 3000, // 増量期の目標カロリー
+      proteinCurrent: 126, // 現在の摂取量
+      caloriesCurrent: 2400, // 現在の摂取量
     },
   };
 
@@ -118,6 +122,26 @@ export default function HomeScreen() {
     chevron: {
       transform: [{ rotate: isExpanded ? '180deg' : '0deg' }],
     },
+    progressTitleContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginBottom: 8,
+    },
+    trainingCount: {
+      fontSize: 12,
+      color: '#687076',
+    },
+    nutritionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    nutritionTarget: {
+      fontSize: 12,
+      color: '#687076',
+    },
   });
 
   return (
@@ -158,7 +182,10 @@ export default function HomeScreen() {
         </Animated.View>
 
         <View style={styles.progressSection}>
-          <ThemedText>週間目標達成率</ThemedText>
+          <View style={styles.progressTitleContainer}>
+            <ThemedText>週間目標達成率</ThemedText>
+            <ThemedText style={styles.trainingCount}>4/7回</ThemedText>
+          </View>
           <ProgressBar progress={weeklyGoalProgress} />
         </View>
       </View>
@@ -171,22 +198,31 @@ export default function HomeScreen() {
             value={`${dummyData.weight.current}kg`}
             change={dummyData.weight.change}
             changeUnit="kg"
+            date={new Date().toLocaleDateString('ja-JP')}
           />
           <MetricCard
             title="ベンチプレス"
             value={`${dummyData.benchPress.current}kg`}
             change={dummyData.benchPress.change}
             changeUnit="kg"
+            date={new Date().toLocaleDateString('ja-JP')}
           />
         </View>
         
         <View style={styles.nutritionBars}>
+          <ThemedText style={styles.sectionTitle}>栄養管理</ThemedText>
           <View style={styles.barContainer}>
-            <ThemedText>タンパク質</ThemedText>
+            <View style={styles.nutritionHeader}>
+              <ThemedText>タンパク質</ThemedText>
+              <ThemedText style={styles.nutritionTarget}>{dummyData.nutrition.proteinCurrent}g / {dummyData.nutrition.proteinTarget}g</ThemedText>
+            </View>
             <ProgressBar progress={dummyData.nutrition.protein} />
           </View>
           <View style={styles.barContainer}>
-            <ThemedText>カロリー</ThemedText>
+            <View style={styles.nutritionHeader}>
+              <ThemedText>カロリー</ThemedText>
+              <ThemedText style={styles.nutritionTarget}>{dummyData.nutrition.caloriesCurrent}kcal / {dummyData.nutrition.caloriesTarget}kcal</ThemedText>
+            </View>
             <ProgressBar progress={dummyData.nutrition.calories} />
           </View>
         </View>

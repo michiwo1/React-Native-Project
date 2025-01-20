@@ -6,9 +6,10 @@ type MetricCardProps = {
   value: string;
   change: number;
   changeUnit: string;
+  date: string;
 };
 
-export function MetricCard({ title, value, change, changeUnit }: MetricCardProps) {
+export function MetricCard({ title, value, change, changeUnit, date }: MetricCardProps) {
   const isPositiveChange = change > 0;
 
   return (
@@ -22,6 +23,7 @@ export function MetricCard({ title, value, change, changeUnit }: MetricCardProps
         ]}>
         {isPositiveChange ? '+' : ''}{change}{changeUnit}
       </ThemedText>
+      <ThemedText style={styles.date}>{date}</ThemedText>
     </View>
   );
 }
@@ -46,5 +48,10 @@ const styles = StyleSheet.create({
   change: {
     fontSize: 14,
     fontWeight: '500',
+    marginBottom: 4,
+  },
+  date: {
+    fontSize: 12,
+    color: '#9CA3AF',
   },
 }); 
