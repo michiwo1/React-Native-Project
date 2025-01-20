@@ -85,7 +85,10 @@ export default function ExercisesScreen() {
         {exercises.map((exercise) => (
           <TouchableOpacity
             key={exercise.id}
-            style={styles.exerciseItem}
+            style={[
+              styles.exerciseItem,
+              selectedExercises.includes(exercise.id) && styles.selectedExerciseItem
+            ]}
             onPress={() => handleExerciseSelect(exercise.id)}
           >
             <View style={styles.exerciseLeft}>
@@ -308,5 +311,8 @@ const styles = StyleSheet.create({
   },
   selectButtonTextActive: {
     color: '#FFFFFF',
+  },
+  selectedExerciseItem: {
+    backgroundColor: '#F2F2F7',
   },
 }); 
