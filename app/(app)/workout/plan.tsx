@@ -33,7 +33,7 @@ export default function WorkoutPlanScreen() {
               
           <TouchableOpacity 
             style={[styles.button, { backgroundColor: '#007AFF' }]}
-            onPress={() => {/* Handle add exercises */}}
+            onPress={() => router.push('/workout/exercises')}
           >
             <ThemedText style={styles.buttonText}>Add exercises</ThemedText>
           </TouchableOpacity>
