@@ -1,5 +1,4 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
@@ -8,7 +7,7 @@ import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
-export default function TabLayout() {
+export default function AppLayout() {
   const colorScheme = useColorScheme() ?? 'light';
 
   return (
@@ -20,7 +19,6 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
           default: {},
@@ -29,29 +27,29 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'ホーム',
+          title: 'HOME',
           tabBarIcon: ({ color }) => <IconSymbol name="house.fill" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="training"
+        name="calendar"
         options={{
-          title: 'トレーニング',
+          title: 'CALENDAR',
+          tabBarIcon: ({ color }) => <IconSymbol name="calendar" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="library"
+        options={{
+          title: 'LIBRARY',
           tabBarIcon: ({ color }) => <IconSymbol name="dumbbell.fill" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="nutrition"
+        name="my-page"
         options={{
-          title: '栄養',
-          tabBarIcon: ({ color }) => <IconSymbol name="fork.knife" size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="community"
-        options={{
-          title: 'コミュニティ',
-          tabBarIcon: ({ color }) => <IconSymbol name="person.3.fill" size={24} color={color} />,
+          title: 'MY PAGE',
+          tabBarIcon: ({ color }) => <IconSymbol name="person.fill" size={24} color={color} />,
         }}
       />
     </Tabs>

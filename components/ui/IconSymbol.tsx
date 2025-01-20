@@ -16,12 +16,9 @@ const MAPPING = {
   'dumbbell.fill': 'fitness-center',
   'fork.knife': 'restaurant',
   'person.3.fill': 'people',
-} as Partial<
-  Record<
-    import('expo-symbols').SymbolViewProps['name'],
-    React.ComponentProps<typeof MaterialIcons>['name']
-  >
->;
+  'calendar': 'calendar-today',
+  'person.fill': 'person',
+} as const;
 
 export type IconSymbolName = keyof typeof MAPPING;
 
