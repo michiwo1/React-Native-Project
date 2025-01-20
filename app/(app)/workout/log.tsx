@@ -3,6 +3,17 @@ import { ThemedText } from '@/components/ThemedText';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Notifications from 'expo-notifications';
+
+// Configure notifications
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    priority: Notifications.AndroidNotificationPriority.HIGH,
+  }),
+});
 
 type Exercise = {
   id: number;
@@ -44,6 +55,51 @@ export default function WorkoutLogScreen() {
   const [tempSeconds, setTempSeconds] = useState(targetRestTime % 60);
 
   useEffect(() => {
+    setupNotifications();
+  }, []);
+
+  const setupNotifications = async () => {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    
+    if (finalStatus !== 'granted') {
+      console.log('Failed to get push token for push notification!');
+      return;
+    }
+
+    // Enable notifications when app is in foreground
+    await Notifications.setNotificationChannelAsync('rest-timer', {
+      name: 'Rest Timer',
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#2563EB',
+    });
+  };
+
+  const scheduleRestFinishedNotification = async () => {
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Rest Time Finished! 🔔",
+          body: "Time to start your next set 💪",
+          sound: true,
+          priority: 'high',
+          vibrate: [0, 250, 250, 250],
+          channelId: 'rest-timer',
+        },
+        trigger: null, // Immediate notification
+      });
+    } catch (error) {
+      console.log('Error scheduling notification:', error);
+    }
+  };
+
+  useEffect(() => {
     let intervalId: NodeJS.Timeout;
     
     if (isWorkoutStarted && startTime) {
@@ -71,6 +127,7 @@ export default function WorkoutLogScreen() {
         
         if (remaining <= 0) {
           handleStopRest();
+          scheduleRestFinishedNotification();
         } else {
           setRemainingRestTime(remaining);
         }
