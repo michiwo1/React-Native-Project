@@ -1,14 +1,34 @@
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { MetricCard } from '@/components/ui/MetricCard';
 import { Colors, BaseColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useState, useRef } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const weeklyGoalProgress = 0.75;
+  const [isExpanded, setIsExpanded] = useState(false);
+  const animatedHeight = useRef(new Animated.Value(0)).current;
+  
+  const toggleAccordion = () => {
+    setIsExpanded(!isExpanded);
+    Animated.timing(animatedHeight, {
+      toValue: isExpanded ? 0 : 1,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const trainingPlans = [
+    { id: 1, name: '胸部 + 三頭筋', duration: '60分' },
+    { id: 2, name: '背中 + 二頭筋', duration: '45分' },
+    { id: 3, name: '脚 + 肩', duration: '50分' },
+  ];
+
   const dummyData = {
     weight: {
       current: 75.5,
@@ -51,14 +71,26 @@ export default function HomeScreen() {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      backgroundColor: colors.background,
+      backgroundColor: colors.tint,
       padding: 16,
       borderRadius: 8,
-      marginBottom: 16,
+      marginBottom: 8,
     },
     startButton: {
-      color: colors.tint,
+      color: colors.background,
       fontWeight: '600',
+    },
+    workoutText: {
+      color: colors.background,
+    },
+    workoutInfo: {
+      flexDirection: 'column',
+      gap: 4,
+    },
+    duration: {
+      color: colors.background,
+      fontSize: 12,
+      opacity: 0.8,
     },
     progressSection: {
       marginBottom: 24,
@@ -74,6 +106,18 @@ export default function HomeScreen() {
     barContainer: {
       gap: 8,
     },
+    accordionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    plansContainer: {
+      overflow: 'hidden',
+    },
+    chevron: {
+      transform: [{ rotate: isExpanded ? '180deg' : '0deg' }],
+    },
   });
 
   return (
@@ -81,11 +125,38 @@ export default function HomeScreen() {
       <ThemedText style={styles.greeting}>こんにちは、ユーザーさん</ThemedText>
       
       <View style={styles.todayWorkout}>
-        <ThemedText style={styles.sectionTitle}>今日のトレーニング</ThemedText>
-        <View style={styles.workoutCard}>
-          <ThemedText>胸部 + 三頭筋</ThemedText>
-          <ThemedText style={styles.startButton}>開始</ThemedText>
-        </View>
+        <TouchableOpacity style={styles.accordionHeader} onPress={toggleAccordion}>
+          <ThemedText style={styles.sectionTitle}>今日のトレーニング</ThemedText>
+          <Ionicons 
+            name="chevron-down" 
+            size={24} 
+            color={colors.text}
+            style={styles.chevron}
+          />
+        </TouchableOpacity>
+
+        <Animated.View 
+          style={[
+            styles.plansContainer,
+            {
+              maxHeight: animatedHeight.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 300],
+              }),
+            },
+          ]}
+        >
+          {trainingPlans.map((plan) => (
+            <TouchableOpacity key={plan.id} style={styles.workoutCard}>
+              <View style={styles.workoutInfo}>
+                <ThemedText style={styles.workoutText}>{plan.name}</ThemedText>
+                <ThemedText style={styles.duration}>{plan.duration}</ThemedText>
+              </View>
+              <ThemedText style={styles.startButton}>開始</ThemedText>
+            </TouchableOpacity>
+          ))}
+        </Animated.View>
+
         <View style={styles.progressSection}>
           <ThemedText>週間目標達成率</ThemedText>
           <ProgressBar progress={weeklyGoalProgress} />
