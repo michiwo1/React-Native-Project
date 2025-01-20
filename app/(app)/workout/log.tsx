@@ -38,6 +38,7 @@ export default function WorkoutLogScreen() {
   const [isResting, setIsResting] = useState(false);
   const [restStartTime, setRestStartTime] = useState<number | null>(null);
   const [targetRestTime, setTargetRestTime] = useState<number>(60);
+  const [remainingRestTime, setRemainingRestTime] = useState<number>(0);
   const [isRestSettingModalVisible, setIsRestSettingModalVisible] = useState(false);
   const [tempMinutes, setTempMinutes] = useState(Math.floor(targetRestTime / 60));
   const [tempSeconds, setTempSeconds] = useState(targetRestTime % 60);
@@ -52,14 +53,26 @@ export default function WorkoutLogScreen() {
       }, 1000);
     }
 
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isWorkoutStarted, startTime]);
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
     if (isResting && restStartTime) {
       intervalId = setInterval(() => {
         const now = Date.now();
-        const currentRestTime = Math.floor((now - restStartTime) / 1000);
-        setRestTime(currentRestTime);
+        const elapsedRestTime = Math.floor((now - restStartTime) / 1000);
+        const remaining = targetRestTime - elapsedRestTime;
         
-        if (currentRestTime >= targetRestTime) {
+        if (remaining <= 0) {
           handleStopRest();
+        } else {
+          setRemainingRestTime(remaining);
         }
       }, 1000);
     }
@@ -69,7 +82,7 @@ export default function WorkoutLogScreen() {
         clearInterval(intervalId);
       }
     };
-  }, [isWorkoutStarted, startTime, isResting, restStartTime, targetRestTime]);
+  }, [isResting, restStartTime, targetRestTime]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -87,23 +100,30 @@ export default function WorkoutLogScreen() {
   const handleStartWorkout = () => {
     setIsWorkoutStarted(true);
     setStartTime(Date.now());
+    if (isResting) {
+      handleStopRest();
+    }
   };
 
   const handleFinishWorkout = () => {
     setIsWorkoutStarted(false);
     setStartTime(null);
+    setElapsedTime(0);
+    if (isResting) {
+      handleStopRest();
+    }
   };
 
   const handleStartRest = () => {
     setIsResting(true);
     setRestStartTime(Date.now());
-    setRestTime(0);
+    setRemainingRestTime(targetRestTime);
   };
 
   const handleStopRest = () => {
     setIsResting(false);
     setRestStartTime(null);
-    setRestTime(0);
+    setRemainingRestTime(0);
   };
 
   const updateSet = (exerciseIndex: number, setIndex: number, field: keyof ExerciseSet, value: string | boolean) => {
@@ -154,6 +174,22 @@ export default function WorkoutLogScreen() {
         <View style={styles.headerRight} />
       </View>
 
+      <View style={styles.timerSection}>
+        <View style={styles.timerContainer}>
+          <ThemedText style={styles.timerText}>
+            {isWorkoutStarted || elapsedTime > 0 ? formatTime(elapsedTime) : '--:--'}
+          </ThemedText>
+        </View>
+        <TouchableOpacity
+          style={[styles.startButton, isWorkoutStarted && styles.finishButton]}
+          onPress={isWorkoutStarted ? handleFinishWorkout : handleStartWorkout}
+        >
+          <ThemedText style={styles.startButtonText}>
+            {isWorkoutStarted ? 'FINISH' : 'START'}
+          </ThemedText>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.restTimerSection}>
         <View style={styles.restTimerContainer}>
           <View style={styles.restTimerHeader}>
@@ -161,7 +197,7 @@ export default function WorkoutLogScreen() {
             <ThemedText style={styles.targetTimeLabel}>Target: {formatTime(targetRestTime)}</ThemedText>
           </View>
           <ThemedText style={styles.restTimerText}>
-            {formatTime(restTime)}
+            {formatTime(remainingRestTime)}
           </ThemedText>
         </View>
         <View style={styles.restButtonGroup}>
@@ -177,22 +213,6 @@ export default function WorkoutLogScreen() {
             </ThemedText>
           </TouchableOpacity>
         </View>
-      </View>
-
-      <View style={styles.timerSection}>
-        <View style={styles.timerContainer}>
-          <ThemedText style={styles.timerText}>
-            {isWorkoutStarted || elapsedTime > 0 ? formatTime(elapsedTime) : '--:--'}
-          </ThemedText>
-        </View>
-        <TouchableOpacity
-          style={[styles.startButton, isWorkoutStarted && styles.finishButton]}
-          onPress={isWorkoutStarted ? handleFinishWorkout : handleStartWorkout}
-        >
-          <ThemedText style={styles.startButtonText}>
-            {isWorkoutStarted ? 'FINISH' : 'START'}
-          </ThemedText>
-        </TouchableOpacity>
       </View>
 
       <View style={styles.mainContent}>
