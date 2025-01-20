@@ -161,6 +161,15 @@ export default function ExercisesScreen() {
             styles.selectButton,
             selectedExercises.length > 0 && styles.selectButtonActive
           ]}
+          onPress={() => {
+            if (selectedExercises.length > 0) {
+              const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
+              router.push({
+                pathname: '/workout/log',
+                params: { exercises: JSON.stringify(selectedExerciseData) }
+              });
+            }
+          }}
           disabled={selectedExercises.length === 0}
         >
           <ThemedText style={[

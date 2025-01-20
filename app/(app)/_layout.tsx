@@ -25,6 +25,14 @@ export default function AppLayout() {
           }),
         }} 
       />
+      <Stack.Screen
+        name="workout/exercises"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="workout/log"
+        options={{ headerShown: false }}
+      />
     </Stack>
   );
 }
