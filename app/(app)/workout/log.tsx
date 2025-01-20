@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   },
   timerSection: {
     backgroundColor: '#F5F7FA',
-    paddingVertical: 24,
+    paddingVertical: 12,
     paddingHorizontal: 16,
     marginTop: 8,
     borderBottomWidth: 1,
@@ -353,10 +353,10 @@ const styles = StyleSheet.create({
   },
   startButton: {
     backgroundColor: '#007AFF',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
     borderRadius: 8,
-    minWidth: 120,
+    minWidth: 90,
     alignItems: 'center',
   },
   finishButton: {
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '600',
   },
   timerContainer: {
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
   },
   timerText: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '600',
     color: '#007AFF',
     includeFontPadding: false,
