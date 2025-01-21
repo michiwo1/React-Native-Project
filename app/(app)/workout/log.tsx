@@ -261,10 +261,9 @@ export default function WorkoutLogScreen() {
         <View style={styles.restTimerContainer}>
           <View style={styles.restTimerHeader}>
             <ThemedText style={styles.restTimerLabel}>Rest Timer</ThemedText>
-            <ThemedText style={styles.targetTimeLabel}>Target: {formatTime(targetRestTime)}</ThemedText>
           </View>
           <ThemedText style={styles.restTimerText}>
-            {formatTime(remainingRestTime)}
+            {isResting ? formatTime(remainingRestTime) : formatTime(targetRestTime)}
           </ThemedText>
         </View>
         <View style={styles.restButtonGroup}>
@@ -321,23 +320,25 @@ export default function WorkoutLogScreen() {
                   >
                     {set.done && <ThemedText style={styles.checkmark}>✓</ThemedText>}
                   </TouchableOpacity>
-                  {exercise.sets.length > 1 && (
-                    <TouchableOpacity
-                      style={styles.deleteButton}
-                      onPress={() => deleteSet(exerciseIndex, setIndex)}
-                    >
-                      <ThemedText style={styles.deleteButtonText}>×</ThemedText>
-                    </TouchableOpacity>
-                  )}
                 </View>
               ))}
 
-              <TouchableOpacity
-                style={styles.addSetButton}
-                onPress={() => addSet(exerciseIndex)}
-              >
-                <ThemedText style={styles.addSetButtonText}>+ Add set</ThemedText>
-              </TouchableOpacity>
+              <View style={styles.setButtonsContainer}>
+                {exercise.sets.length > 1 && (
+                  <TouchableOpacity
+                    style={styles.deleteSetButton}
+                    onPress={() => deleteSet(exerciseIndex, exercise.sets.length - 1)}
+                  >
+                    <ThemedText style={styles.deleteSetButtonText}>Delete set</ThemedText>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={[styles.addSetButton, exercise.sets.length > 1 && { marginLeft: 8, marginRight: 0 }]}
+                  onPress={() => addSet(exerciseIndex)}
+                >
+                  <ThemedText style={styles.addSetButtonText}>+ Add set</ThemedText>
+                </TouchableOpacity>
+              </View>
             </View>
           ))}
         </ScrollView>
@@ -558,11 +559,12 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     fontSize: 20,
-    color: '#EF4444',
+    color: '#64748B',
     fontWeight: '600',
   },
   addSetButton: {
-    marginTop: 16,
+    flex: 1,
+    marginRight: 0,
     padding: 14,
     borderRadius: 12,
     backgroundColor: '#F8FAFC',
@@ -571,6 +573,22 @@ const styles = StyleSheet.create({
   addSetButtonText: {
     fontSize: 16,
     color: '#2563EB',
+    fontWeight: '600',
+  },
+  setButtonsContainer: {
+    marginTop: 16,
+    flexDirection: 'row',
+  },
+  deleteSetButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+  },
+  deleteSetButtonText: {
+    fontSize: 16,
+    color: '#64748B',
     fontWeight: '600',
   },
   timerSection: {
@@ -607,7 +625,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   finishButton: {
-    backgroundColor: '#EF4444',
+    backgroundColor: '#64748B',
   },
   startButtonText: {
     color: '#FFFFFF',
@@ -650,17 +668,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   restTimerHeader: {
-    marginBottom: 8,
+    marginBottom: 4,
   },
   restTimerLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#64748B',
-    marginBottom: 2,
-  },
-  targetTimeLabel: {
-    fontSize: 12,
-    color: '#94A3B8',
   },
   restTimerText: {
     fontSize: 32,
@@ -685,7 +698,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stopRestButton: {
-    backgroundColor: '#EF4444',
+    backgroundColor: '#64748B',
   },
   restButtonText: {
     color: '#FFFFFF',
