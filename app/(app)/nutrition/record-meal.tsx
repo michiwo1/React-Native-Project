@@ -32,21 +32,21 @@ export default function RecordMealScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity 
-          style={styles.backButton}
+          style={styles.headerButton}
           onPress={() => router.back()}
         >
-          <Text style={styles.backButtonText}>キャンセル</Text>
+          <Text style={styles.cancelButtonText}>キャンセル</Text>
         </TouchableOpacity>
         <Text style={styles.title}>食事を記録</Text>
         <TouchableOpacity 
-          style={styles.saveButton}
+          style={[styles.headerButton, styles.saveButton]}
           onPress={handleSubmit}
         >
           <Text style={styles.saveButtonText}>保存</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.formSection}>
           <Text style={styles.label}>食事の種類</Text>
           <View style={styles.pickerContainer}>
@@ -66,65 +66,76 @@ export default function RecordMealScreen() {
 
         <View style={styles.formSection}>
           <Text style={styles.label}>カロリー (kcal)</Text>
-          <TextInput
-            style={styles.input}
-            value={calories}
-            onChangeText={setCalories}
-            keyboardType="numeric"
-            placeholder="例：500"
-            placeholderTextColor="#666"
-          />
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.input}
+              value={calories}
+              onChangeText={setCalories}
+              keyboardType="numeric"
+              placeholder="例：500"
+              placeholderTextColor="#A1A1A6"
+            />
+          </View>
         </View>
 
         <View style={styles.nutrientsSection}>
           <View style={styles.nutrientInput}>
             <Text style={styles.label}>タンパク質 (g)</Text>
-            <TextInput
-              style={styles.input}
-              value={protein}
-              onChangeText={setProtein}
-              keyboardType="numeric"
-              placeholder="例：20"
-              placeholderTextColor="#666"
-            />
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                value={protein}
+                onChangeText={setProtein}
+                keyboardType="numeric"
+                placeholder="例：20"
+                placeholderTextColor="#A1A1A6"
+              />
+            </View>
           </View>
 
           <View style={styles.nutrientInput}>
             <Text style={styles.label}>炭水化物 (g)</Text>
-            <TextInput
-              style={styles.input}
-              value={carbs}
-              onChangeText={setCarbs}
-              keyboardType="numeric"
-              placeholder="例：60"
-              placeholderTextColor="#666"
-            />
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                value={carbs}
+                onChangeText={setCarbs}
+                keyboardType="numeric"
+                placeholder="例：60"
+                placeholderTextColor="#A1A1A6"
+              />
+            </View>
           </View>
 
           <View style={styles.nutrientInput}>
             <Text style={styles.label}>脂質 (g)</Text>
-            <TextInput
-              style={styles.input}
-              value={fat}
-              onChangeText={setFat}
-              keyboardType="numeric"
-              placeholder="例：15"
-              placeholderTextColor="#666"
-            />
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                value={fat}
+                onChangeText={setFat}
+                keyboardType="numeric"
+                placeholder="例：15"
+                placeholderTextColor="#A1A1A6"
+              />
+            </View>
           </View>
         </View>
 
         <View style={styles.formSection}>
           <Text style={styles.label}>食事の内容</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={mealDetails}
-            onChangeText={setMealDetails}
-            multiline
-            numberOfLines={4}
-            placeholder="例：玄米ご飯、サラダチキン、ブロッコリーのサラダ"
-            placeholderTextColor="#666"
-          />
+          <View style={[styles.inputWrapper, styles.textAreaWrapper]}>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={mealDetails}
+              onChangeText={setMealDetails}
+              multiline
+              numberOfLines={4}
+              placeholder="例：玄米ご飯、サラダチキン、ブロッコリーのサラダ"
+              placeholderTextColor="#A1A1A6"
+              textAlignVertical="top"
+            />
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -143,20 +154,34 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
+    backgroundColor: '#fff',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
-  backButton: {
+  headerButton: {
     padding: 8,
+    minWidth: 70,
   },
-  backButtonText: {
+  cancelButtonText: {
     fontSize: 16,
-    color: Colors.light.tint,
+    color: '#666',
   },
   title: {
     fontSize: 17,
     fontWeight: '600',
+    color: '#000',
   },
   saveButton: {
-    padding: 8,
+    alignItems: 'flex-end',
   },
   saveButtonText: {
     fontSize: 16,
@@ -165,43 +190,49 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   formSection: {
-    marginBottom: 24,
+    marginBottom: 28,
   },
   label: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
-    marginBottom: 8,
-    color: '#333',
+    marginBottom: 10,
+    color: '#000',
   },
   pickerContainer: {
     borderWidth: 1,
     borderColor: '#E5E5EA',
     borderRadius: 12,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#F9F9FB',
+    overflow: 'hidden',
   },
-  input: {
-    backgroundColor: '#F2F2F7',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
+  inputWrapper: {
     borderWidth: 1,
     borderColor: '#E5E5EA',
+    borderRadius: 12,
+    backgroundColor: '#F9F9FB',
+    overflow: 'hidden',
+  },
+  input: {
+    padding: 16,
+    fontSize: 16,
+    color: '#000',
+  },
+  textAreaWrapper: {
+    minHeight: 120,
   },
   textArea: {
     minHeight: 120,
-    textAlignVertical: 'top',
   },
   nutrientsSection: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 28,
+    gap: 12,
   },
   nutrientInput: {
     flex: 1,
-    marginHorizontal: 4,
   },
 });
 
@@ -217,5 +248,9 @@ const pickerSelectStyles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     color: '#000',
+  },
+  iconContainer: {
+    top: 16,
+    right: 12,
   },
 }); 
