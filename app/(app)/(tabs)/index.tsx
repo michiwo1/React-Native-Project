@@ -150,6 +150,10 @@ export default function HomeScreen() {
     router.push('/weight-input');
   };
 
+  const handleBenchPressCardPress = () => {
+    router.push('/exercises');
+  };
+
   return (
     <View style={styles.container}>
       <ThemedText style={styles.greeting}>こんにちは、ユーザーさん</ThemedText>
@@ -208,13 +212,15 @@ export default function HomeScreen() {
               date={new Date().toLocaleDateString('ja-JP')}
             />
           </TouchableOpacity>
-          <MetricCard
-            title="ベンチプレス"
-            value={`${dummyData.benchPress.current}kg`}
-            change={dummyData.benchPress.change}
-            changeUnit="kg"
-            date={new Date().toLocaleDateString('ja-JP')}
-          />
+          <TouchableOpacity onPress={handleBenchPressCardPress}>
+            <MetricCard
+              title="ベンチプレス"
+              value={`${dummyData.benchPress.current}kg`}
+              change={dummyData.benchPress.change}
+              changeUnit="kg"
+              date={new Date().toLocaleDateString('ja-JP')}
+            />
+          </TouchableOpacity>
         </View>
         
         <View style={styles.nutritionBars}>
