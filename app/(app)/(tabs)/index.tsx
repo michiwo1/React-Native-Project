@@ -105,6 +105,7 @@ export default function HomeScreen() {
       flexDirection: 'row',
       gap: 12,
       marginBottom: 16,
+      minHeight: 100,
     },
     nutritionBars: {
       gap: 12,
@@ -143,6 +144,10 @@ export default function HomeScreen() {
     nutritionTarget: {
       fontSize: 12,
       color: '#687076',
+    },
+    metricCardWrapper: {
+      flex: 1,
+      height: '100%',
     },
   });
 
@@ -203,7 +208,7 @@ export default function HomeScreen() {
       <View style={styles.progressSection}>
         <ThemedText style={styles.sectionTitle}>進捗状況</ThemedText>
         <View style={styles.metricsContainer}>
-          <TouchableOpacity onPress={handleWeightCardPress}>
+          <TouchableOpacity style={styles.metricCardWrapper} onPress={handleWeightCardPress}>
             <MetricCard
               title="体重"
               value={`${dummyData.weight.current}kg`}
@@ -212,7 +217,7 @@ export default function HomeScreen() {
               date={new Date().toLocaleDateString('ja-JP')}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleBenchPressCardPress}>
+          <TouchableOpacity style={styles.metricCardWrapper} onPress={handleBenchPressCardPress}>
             <MetricCard
               title="ベンチプレス"
               value={`${dummyData.benchPress.current}kg`}
