@@ -29,6 +29,7 @@ type ExerciseSet = {
 
 type WorkoutExercise = Exercise & {
   sets: ExerciseSet[];
+  note: string;
 };
 
 export default function WorkoutLogScreen() {
@@ -39,7 +40,8 @@ export default function WorkoutLogScreen() {
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>(
     selectedExercises.map(exercise => ({
       ...exercise,
-      sets: [{ weight: '', reps: '', done: false }]
+      sets: [{ weight: '', reps: '', done: false }],
+      note: ''
     }))
   );
   const [isWorkoutStarted, setIsWorkoutStarted] = useState(false);
@@ -231,6 +233,14 @@ export default function WorkoutLogScreen() {
     setIsRestSettingModalVisible(false);
   };
 
+  const updateNote = (exerciseIndex: number, note: string) => {
+    setWorkoutExercises(prev => {
+      const updated = [...prev];
+      updated[exerciseIndex].note = note;
+      return updated;
+    });
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -301,6 +311,15 @@ export default function WorkoutLogScreen() {
                   </ThemedText>
                 </View>
               </View>
+
+              <TextInput
+                style={styles.noteInput}
+                placeholder="Note"
+                value={exercise.note}
+                onChangeText={(text) => updateNote(exerciseIndex, text)}
+                multiline
+                placeholderTextColor="#94A3B8"
+              />
 
               <View style={styles.setsHeader}>
                 <ThemedText style={styles.setLabel}>Set</ThemedText>
@@ -829,5 +848,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+  noteInput: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    minHeight: 44,
+    fontSize: 14,
+    color: '#0F172A',
+    textAlignVertical: 'top',
   },
 }); 
