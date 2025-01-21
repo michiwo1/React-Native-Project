@@ -40,6 +40,13 @@
           "color": "#2563EB",
           "sounds": ["./assets/notification-sound.wav"]
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "アプリがカメラにアクセスして料理の写真を撮影します。",
+          "cameraPermission": "アプリがカメラにアクセスして料理の写真を撮影します。"
+        }
       ]
     ],
     "notification": {

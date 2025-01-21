@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Platform, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { router } from 'expo-router';
 import RNPickerSelect from 'react-native-picker-select';
+import { launchCameraAsync } from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
 
 type MealType = '朝食' | '昼食' | '夕食' | '間食';
 
@@ -14,6 +16,67 @@ export default function RecordMealScreen() {
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
   const [mealDetails, setMealDetails] = useState('');
+  const [image, setImage] = useState<string | null>(null);
+
+  const handleTakePhoto = async () => {
+    try {
+      const result = await launchCameraAsync({
+        allowsEditing: true,
+        quality: 0.5,
+      });
+
+      if (!result.canceled) {
+        setImage(result.assets[0].uri);
+        // ここでAI APIを呼び出して料理を分析する
+        analyzeFoodImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      Alert.alert('エラー', 'カメラの起動に失敗しました');
+    }
+  };
+
+  const analyzeFoodImage = async (imageUri: string) => {
+    try {
+      // ローディング状態を表示
+      Alert.alert('分析中', 'AIが料理を分析しています...');
+
+      // 画像をBase64に変換
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
+      // AI APIにリクエストを送信
+      const apiResponse = await fetch('YOUR_AI_API_ENDPOINT', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer YOUR_API_KEY'
+        },
+        body: JSON.stringify({
+          image: base64,
+          // 他の必要なパラメータ
+        })
+      });
+
+      const data = await apiResponse.json();
+
+      // APIレスポンスを使用してフォームを更新
+      setMealDetails(data.foodName);
+      setCalories(data.calories.toString());
+      setProtein(data.protein.toString());
+      setCarbs(data.carbs.toString());
+      setFat(data.fat.toString());
+
+    } catch (error) {
+      Alert.alert('エラー', '料理の分析に失敗しました');
+      console.error(error);
+    }
+  };
 
   const handleSubmit = () => {
     // ここで食事記録をデータベースに保存する処理を実装
@@ -24,6 +87,7 @@ export default function RecordMealScreen() {
       carbs,
       fat,
       mealDetails,
+      image,
     });
     router.back();
   };
@@ -47,6 +111,21 @@ export default function RecordMealScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <TouchableOpacity 
+          style={styles.cameraButton} 
+          onPress={handleTakePhoto}
+        >
+          {image ? (
+            <Image source={{ uri: image }} style={styles.previewImage} />
+          ) : (
+            <>
+              <Ionicons name="camera" size={32} color="#007AFF" />
+              <Text style={styles.cameraButtonText}>写真を撮影</Text>
+              <Text style={styles.cameraSubText}>AIが料理を分析します</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
         <View style={styles.formSection}>
           <Text style={styles.label}>食事の種類</Text>
           <View style={styles.pickerContainer}>
@@ -233,6 +312,32 @@ const styles = StyleSheet.create({
   },
   nutrientInput: {
     flex: 1,
+  },
+  cameraButton: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 2,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+  },
+  cameraButtonText: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 8,
+  },
+  cameraSubText: {
+    color: '#64748B',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  previewImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
   },
 });
 
