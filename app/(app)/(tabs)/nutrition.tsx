@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
+import { router } from 'expo-router';
 
 type NutrientProgress = {
   current: number;
@@ -21,6 +22,13 @@ export default function NutritionScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <Text style={styles.title}>栄養管理</Text>
+        
+        <TouchableOpacity 
+          style={styles.aiAdviceButton}
+          onPress={() => router.push('/nutrition/ai-advice')}
+        >
+          <Text style={styles.aiAdviceButtonText}>AIに食事アドバイスを相談する</Text>
+        </TouchableOpacity>
         
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>今日の摂取状況</Text>
@@ -80,6 +88,20 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 24,
+  },
+  aiAdviceButton: {
+    backgroundColor: '#F2F2F7',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aiAdviceButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.light.tint,
   },
   section: {
     marginBottom: 24,
