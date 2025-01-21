@@ -48,7 +48,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="library"
         options={{
-          title: 'LIBRARY',
+          title: 'GRAPH',
           tabBarIcon: ({ color }) => <IconSymbol name="dumbbell.fill" size={24} color={color} />,
         }}
       />
