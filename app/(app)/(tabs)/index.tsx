@@ -196,6 +196,22 @@ export default function HomeScreen() {
           ))}
         </Animated.View>
 
+        <TouchableOpacity 
+          style={{
+            backgroundColor: '#007AFF',
+            padding: 12,
+            borderRadius: 8,
+            alignItems: 'center',
+            marginTop: 12,
+            marginBottom: 12
+          }}
+          onPress={() => router.push('/workout/exercises')}
+        >
+          <ThemedText style={{ color: '#FFFFFF', fontWeight: '600' }}>
+            プランを作成
+          </ThemedText>
+        </TouchableOpacity>
+
         <View style={styles.progressSection}>
           <View style={styles.progressTitleContainer}>
             <ThemedText>週間目標達成率</ThemedText>
