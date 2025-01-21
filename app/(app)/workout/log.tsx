@@ -286,8 +286,20 @@ export default function WorkoutLogScreen() {
           {workoutExercises.map((exercise, exerciseIndex) => (
             <View key={exercise.id} style={styles.exerciseCard}>
               <View style={styles.exerciseHeader}>
-                <ThemedText style={styles.exerciseName}>{exercise.name}</ThemedText>
-                <ThemedText style={styles.exerciseCategory}>{exercise.category}</ThemedText>
+                <View style={styles.exerciseHeaderMain}>
+                  <ThemedText style={styles.exerciseName}>{exercise.name}</ThemedText>
+                  <ThemedText style={styles.exerciseCategory}>{exercise.category}</ThemedText>
+                </View>
+                <View style={styles.volumeContainer}>
+                  <ThemedText style={styles.volumeLabel}>Volume</ThemedText>
+                  <ThemedText style={styles.volumeValue}>
+                    {exercise.sets.reduce((total, set) => {
+                      const weight = parseFloat(set.weight) || 0;
+                      const reps = parseInt(set.reps) || 0;
+                      return total + (weight * reps);
+                    }, 0)}kg
+                  </ThemedText>
+                </View>
               </View>
 
               <View style={styles.setsHeader}>
@@ -466,6 +478,12 @@ const styles = StyleSheet.create({
   },
   exerciseHeader: {
     marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  exerciseHeaderMain: {
+    flex: 1,
   },
   exerciseName: {
     fontSize: 20,
@@ -477,6 +495,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#3B82F6',
     fontWeight: '500',
+  },
+  volumeContainer: {
+    alignItems: 'flex-end',
+  },
+  volumeLabel: {
+    fontSize: 12,
+    color: '#64748B',
+    marginBottom: 2,
+  },
+  volumeValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0F172A',
   },
   setsHeader: {
     flexDirection: 'row',
