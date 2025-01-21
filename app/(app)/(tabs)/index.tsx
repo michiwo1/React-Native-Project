@@ -6,6 +6,7 @@ import { Colors, BaseColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useState, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -13,6 +14,7 @@ export default function HomeScreen() {
   const weeklyGoalProgress = 0.75;
   const [isExpanded, setIsExpanded] = useState(false);
   const animatedHeight = useRef(new Animated.Value(0)).current;
+  const router = useRouter();
   
   const toggleAccordion = () => {
     setIsExpanded(!isExpanded);
@@ -144,6 +146,10 @@ export default function HomeScreen() {
     },
   });
 
+  const handleWeightCardPress = () => {
+    router.push('/weight-input');
+  };
+
   return (
     <View style={styles.container}>
       <ThemedText style={styles.greeting}>こんにちは、ユーザーさん</ThemedText>
@@ -193,13 +199,15 @@ export default function HomeScreen() {
       <View style={styles.progressSection}>
         <ThemedText style={styles.sectionTitle}>進捗状況</ThemedText>
         <View style={styles.metricsContainer}>
-          <MetricCard
-            title="体重"
-            value={`${dummyData.weight.current}kg`}
-            change={dummyData.weight.change}
-            changeUnit="kg"
-            date={new Date().toLocaleDateString('ja-JP')}
-          />
+          <TouchableOpacity onPress={handleWeightCardPress}>
+            <MetricCard
+              title="体重"
+              value={`${dummyData.weight.current}kg`}
+              change={dummyData.weight.change}
+              changeUnit="kg"
+              date={new Date().toLocaleDateString('ja-JP')}
+            />
+          </TouchableOpacity>
           <MetricCard
             title="ベンチプレス"
             value={`${dummyData.benchPress.current}kg`}
