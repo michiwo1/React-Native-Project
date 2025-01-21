@@ -1,53 +1,58 @@
-import { View, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MyPageScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+  const insets = useSafeAreaInsets();
 
   const badges = [
-    { color: '#FFD700' }, // Gold
-    { color: '#C0C0C0' }, // Silver
-    { color: '#CD7F32' }, // Bronze
+    { color: '#FFD700', icon: '🏆' }, // Gold
+    { color: '#C0C0C0', icon: '🎯' }, // Silver
+    { color: '#CD7F32', icon: '💪' }, // Bronze
   ];
 
   const settingItems = [
     {
       title: 'アカウント設定',
       items: [
-        { label: 'プロフィール編集', icon: 'person-outline' },
+        { label: 'プロフィール編集', icon: 'person-outline', action: () => {} },
       ]
     },
     {
       title: 'アプリ設定',
       items: [
-        { label: '通知設定', icon: 'notifications-outline' },
-        { label: '単位設定', icon: 'scale-outline' },
-        { label: 'プライバシー', icon: 'lock-closed-outline' },
+        { label: '通知設定', icon: 'notifications-outline', action: () => {} },
+        { label: '単位設定', icon: 'scale-outline', action: () => {} },
+        { label: 'プライバシー', icon: 'shield-outline', action: () => {} },
       ]
     },
     {
       title: 'サポート',
       items: [
-        { label: 'ヘルプ', icon: 'help-circle-outline' },
-        { label: 'アプリについて', icon: 'information-circle-outline' },
+        { label: 'ヘルプ', icon: 'help-circle-outline', action: () => {} },
+        { label: 'アプリについて', icon: 'information-circle-outline', action: () => {} },
       ]
     }
   ];
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={[styles.container, { paddingTop: insets.top }]}
+      showsVerticalScrollIndicator={false}
+    >
       {/* プロフィールセクション */}
       <View style={styles.profileSection}>
-        <ThemedText style={styles.sectionTitle}>プロフィール</ThemedText>
-        
         <View style={styles.profileCard}>
           <View style={styles.profileHeader}>
             <View style={styles.avatarContainer}>
-              <View style={styles.avatar} />
+              <View style={styles.avatar}>
+                <ThemedText style={styles.avatarText}>山</ThemedText>
+              </View>
               <TouchableOpacity style={styles.editButton}>
                 <ThemedText style={styles.editButtonText}>編集</ThemedText>
               </TouchableOpacity>
@@ -55,37 +60,42 @@ export default function MyPageScreen() {
             
             <View style={styles.profileInfo}>
               <ThemedText style={styles.userName}>山田太郎</ThemedText>
-              <ThemedText style={styles.trainingPeriod}>トレーニング歴: 6ヶ月</ThemedText>
+              <View style={styles.trainingBadge}>
+                <Ionicons name="time-outline" size={14} color="#666666" />
+                <ThemedText style={styles.trainingPeriod}>トレーニング歴: 6ヶ月</ThemedText>
+              </View>
             </View>
           </View>
 
           <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <ThemedText style={styles.statLabel}>身長</ThemedText>
-              <ThemedText style={styles.statValue}>175cm</ThemedText>
-            </View>
-            <View style={styles.statItem}>
-              <ThemedText style={styles.statLabel}>体重</ThemedText>
-              <ThemedText style={styles.statValue}>75.5kg</ThemedText>
-            </View>
-            <View style={styles.statItem}>
-              <ThemedText style={styles.statLabel}>目標</ThemedText>
-              <ThemedText style={styles.statValue}>筋肥大</ThemedText>
-            </View>
+            {[
+              { label: '身長', value: '175cm' },
+              { label: '体重', value: '75.5kg' },
+              { label: '目標', value: '筋肥大' }
+            ].map((stat, index) => (
+              <View key={index} style={styles.statItem}>
+                <ThemedText style={styles.statLabel}>{stat.label}</ThemedText>
+                <ThemedText style={styles.statValue}>{stat.value}</ThemedText>
+              </View>
+            ))}
           </View>
 
           <View style={styles.badgesSection}>
-            <ThemedText style={styles.badgesTitle}>獲得バッジ</ThemedText>
+            <View style={styles.sectionHeader}>
+              <ThemedText style={styles.badgesTitle}>獲得バッジ</ThemedText>
+              <TouchableOpacity style={styles.showAllButton}>
+                <ThemedText style={styles.showAllText}>すべて表示</ThemedText>
+                <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
             <View style={styles.badgesContainer}>
               {badges.map((badge, index) => (
-                <View 
-                  key={index} 
-                  style={[styles.badge, { backgroundColor: badge.color }]} 
-                />
+                <View key={index} style={styles.badgeWrapper}>
+                  <View style={[styles.badge, { backgroundColor: badge.color }]}>
+                    <ThemedText style={styles.badgeIcon}>{badge.icon}</ThemedText>
+                  </View>
+                </View>
               ))}
-              <TouchableOpacity>
-                <ThemedText style={styles.showAllBadges}>すべて表示 ></ThemedText>
-              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -93,31 +103,29 @@ export default function MyPageScreen() {
 
       {/* 設定セクション */}
       <View style={styles.settingsSection}>
-        <ThemedText style={styles.sectionTitle}>設定</ThemedText>
-        
         {settingItems.map((section, sectionIndex) => (
           <View key={sectionIndex} style={styles.settingsGroup}>
             <ThemedText style={styles.settingsGroupTitle}>{section.title}</ThemedText>
-            {section.items.map((item, itemIndex) => (
-              <TouchableOpacity 
-                key={itemIndex} 
-                style={styles.settingItem}
-              >
-                <View style={styles.settingItemLeft}>
-                  <Ionicons 
-                    name={item.icon as any} 
-                    size={24} 
-                    color={colors.text} 
-                  />
-                  <ThemedText style={styles.settingItemText}>{item.label}</ThemedText>
-                </View>
-                <Ionicons 
-                  name="chevron-forward" 
-                  size={24} 
-                  color={colors.text} 
-                />
-              </TouchableOpacity>
-            ))}
+            <View style={styles.settingsCard}>
+              {section.items.map((item, itemIndex) => (
+                <TouchableOpacity 
+                  key={itemIndex} 
+                  style={[
+                    styles.settingItem,
+                    itemIndex === section.items.length - 1 && styles.settingItemLast
+                  ]}
+                  onPress={item.action}
+                >
+                  <View style={styles.settingItemLeft}>
+                    <View style={styles.iconContainer}>
+                      <Ionicons name={item.icon as any} size={22} color={colors.text} />
+                    </View>
+                    <ThemedText style={styles.settingItemText}>{item.label}</ThemedText>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={colors.text} />
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         ))}
       </View>
@@ -128,24 +136,16 @@ export default function MyPageScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    backgroundColor: '#F5F7FA',
   },
   profileSection: {
-    paddingTop: 44,
+    paddingHorizontal: 16,
+    paddingBottom: 24,
   },
   profileCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    margin: 16,
-    marginTop: 0,
+    borderRadius: 20,
+    padding: 20,
   },
   profileHeader: {
     flexDirection: 'row',
@@ -158,11 +158,18 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: Colors.light.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 8,
   },
+  avatarText: {
+    fontSize: 32,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
   editButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: Colors.light.primary,
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 16,
@@ -180,67 +187,103 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 6,
+    color: Colors.light.text,
+  },
+  trainingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F7FA',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
   },
   trainingPeriod: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#666666',
+    marginLeft: 4,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: '#F8F9FA',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   statItem: {
     alignItems: 'center',
+    flex: 1,
   },
   statLabel: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#666666',
     marginBottom: 4,
   },
   statValue: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    color: Colors.light.text,
   },
   badgesSection: {
     marginTop: 8,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   badgesTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontWeight: '700',
+    color: Colors.light.text,
+  },
+  showAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  showAllText: {
+    fontSize: 14,
+    color: Colors.light.primary,
+    marginRight: 2,
   },
   badgesContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  badge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginRight: 8,
+  badgeWrapper: {
+    marginRight: 12,
   },
-  showAllBadges: {
-    color: '#007AFF',
-    fontSize: 14,
+  badge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeIcon: {
+    fontSize: 20,
   },
   settingsSection: {
-    marginBottom: 32,
+    paddingHorizontal: 16,
+    paddingBottom: 32,
   },
   settingsGroup: {
-    backgroundColor: '#FFFFFF',
-    marginBottom: 16,
+    marginBottom: 24,
   },
   settingsGroupTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#666666',
-    marginBottom: 8,
-    paddingHorizontal: 16,
+    marginBottom: 12,
+    marginLeft: 4,
+  },
+  settingsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   settingItem: {
     flexDirection: 'row',
@@ -251,12 +294,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
+  settingItemLast: {
+    borderBottomWidth: 0,
+  },
   settingItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  iconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#F5F7FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   settingItemText: {
-    fontSize: 16,
-    marginLeft: 12,
+    fontSize: 15,
+    color: Colors.light.text,
+    fontWeight: '500',
   },
 }); 
