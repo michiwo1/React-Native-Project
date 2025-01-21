@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TextInput, ScrollView, StyleSheet, SafeAreaView, Platform, StatusBar } from 'react-native';
 import { TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -34,67 +34,94 @@ export default function CreatePlanScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TextInput
-          style={styles.nameInput}
-          placeholder="プラン名を入力"
-          value={planName}
-          onChangeText={setPlanName}
-        />
-      </View>
-
-      <ScrollView style={styles.exerciseList}>
-        {selectedExercises.map((exercise, index) => (
-          <View key={exercise.id} style={styles.exerciseItem}>
-            <Text style={styles.exerciseName}>{exercise.name}</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
             <TouchableOpacity
-              onPress={() => {
-                const newExercises = [...selectedExercises];
-                newExercises.splice(index, 1);
-                setSelectedExercises(newExercises);
-              }}
+              style={styles.backButton}
+              onPress={() => router.back()}
             >
-              <MaterialIcons name="remove-circle" size={24} color="red" />
+              <MaterialIcons name="arrow-back" size={24} color="#000" />
             </TouchableOpacity>
+            <TextInput
+              style={styles.nameInput}
+              placeholder="プラン名を入力"
+              value={planName}
+              onChangeText={setPlanName}
+            />
           </View>
-        ))}
-      </ScrollView>
+        </View>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={handleAddExercise}
-        >
-          <Text style={styles.buttonText}>エクササイズを追加</Text>
-        </TouchableOpacity>
+        <ScrollView style={styles.exerciseList}>
+          {selectedExercises.map((exercise, index) => (
+            <View key={exercise.id} style={styles.exerciseItem}>
+              <Text style={styles.exerciseName}>{exercise.name}</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  const newExercises = [...selectedExercises];
+                  newExercises.splice(index, 1);
+                  setSelectedExercises(newExercises);
+                }}
+              >
+                <MaterialIcons name="remove-circle" size={24} color="red" />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
 
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={handleSavePlan}
-        >
-          <Text style={styles.buttonText}>プランを保存</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={handleAddExercise}
+          >
+            <Text style={styles.buttonText}>エクササイズを追加</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSavePlan}
+          >
+            <Text style={styles.buttonText}>プランを保存</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 16,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
   },
   header: {
-    marginBottom: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  backButton: {
+    padding: 8,
+    marginLeft: -8,
   },
   nameInput: {
+    flex: 1,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
+    backgroundColor: '#fff',
   },
   exerciseList: {
     flex: 1,
@@ -111,7 +138,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   buttonContainer: {
-    marginTop: 20,
+    paddingVertical: 16,
     gap: 12,
   },
   addButton: {
