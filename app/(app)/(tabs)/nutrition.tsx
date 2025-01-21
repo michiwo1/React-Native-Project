@@ -67,7 +67,10 @@ export default function NutritionScreen() {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.addButton}>
+        <TouchableOpacity 
+          style={styles.addButton}
+          onPress={() => router.push('/nutrition/record-meal')}
+        >
           <Text style={styles.addButtonText}>食事を記録</Text>
         </TouchableOpacity>
       </ScrollView>
