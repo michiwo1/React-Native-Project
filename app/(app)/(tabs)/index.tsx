@@ -205,7 +205,7 @@ export default function HomeScreen() {
             marginTop: 12,
             marginBottom: 12
           }}
-          onPress={() => router.push('/workout/exercises')}
+          onPress={() => router.push('/plan/create')}
         >
           <ThemedText style={{ color: '#FFFFFF', fontWeight: '600' }}>
             プランを作成
