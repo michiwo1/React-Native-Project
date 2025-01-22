@@ -149,7 +149,7 @@ export default function WorkoutPlanScreen() {
           <ThemedText style={styles.arrow}>→</ThemedText>
         </TouchableOpacity>
 
-        {!hasActiveSession && (
+        {!hasActiveSession && !workoutData && (
           <View style={styles.restMessage}>
             <ThemedText style={styles.restText}>Today is a rest day 😢</ThemedText>
           </View>
