@@ -3,6 +3,8 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { router } from 'expo-router';
 import { Exercise } from './ExerciseList';
+import { API_URL } from '@/constants/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type ExerciseFooterProps = {
   selectedExercises: number[];
@@ -27,18 +29,52 @@ export function ExerciseFooter({
   navigationType = 'log',
   onPress
 }: ExerciseFooterProps) {
-  const handlePress = () => {
+  const handlePress = async () => {
     if (selectedExercises.length > 0) {
       if (onPress) {
         onPress();
-      } else if (navigationType === 'home') {
-        router.push('/(tabs)');
       } else {
-        const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
-        router.push({
-          pathname: '/workout/log',
-          params: { exercises: JSON.stringify(selectedExerciseData) }
-        });
+        try {
+          const token = await AsyncStorage.getItem('token');
+          if (!token) {
+            throw new Error('No authentication token found');
+          }
+
+          // Convert exercise IDs to strings
+          const exerciseIds = selectedExercises.map(id => id.toString());
+
+          // Create workout session
+          const response = await fetch(`${API_URL}/api/workouts/sessions`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              exerciseIds,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to create workout session');
+          }
+
+          const workoutSession = await response.json();
+          console.log('Created workout session:', workoutSession);
+
+          // Navigate to log screen with selected exercises
+          const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
+          router.push({
+            pathname: '/workout/log',
+            params: { 
+              exercises: JSON.stringify(selectedExerciseData),
+              workoutSessionId: workoutSession.id
+            }
+          });
+        } catch (error) {
+          console.error('Error creating workout session:', error);
+          // TODO: Show error toast or alert to user
+        }
       }
     }
   };

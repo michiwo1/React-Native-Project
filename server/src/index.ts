@@ -7,6 +7,7 @@ import { authenticate } from './middleware/auth'
 import bcrypt from 'bcrypt'
 import userRoutes from './routes/user.routes'
 import exerciseRoutes from './routes/exercise.routes'
+import workoutRoutes from './routes/workout.routes'
 
 dotenv.config()
 
@@ -33,6 +34,9 @@ app.get('/health', (req, res) => {
 
 // Exercise routes (public)
 app.use('/api/exercises', exerciseRoutes);
+
+// Workout routes (protected)
+app.use('/api/workouts', authenticate, workoutRoutes);
 
 // Auth routes
 app.post('/auth/signup', async (req, res) => {
