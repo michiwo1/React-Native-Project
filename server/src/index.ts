@@ -3,7 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import { generateToken } from './utils/jwt'
-import { authMiddleware } from './middleware/auth'
+import { authenticate } from './middleware/auth'
 import bcrypt from 'bcrypt'
 
 dotenv.config()
@@ -65,7 +65,7 @@ app.post('/auth/signup', async (req, res) => {
 });
 
 // Protected route example
-app.get('/protected', authMiddleware, (req, res) => {
+app.get('/protected', authenticate, (req, res) => {
   res.json({ message: 'Protected data', userId: req.user?.userId });
 });
 

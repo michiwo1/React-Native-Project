@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Link, router } from 'expo-router';
+
+// APIのベースURL設定
+const API_URL = Platform.select({
+  android: 'http://10.0.2.2:3000',
+  ios: 'http://localhost:3000',
+  default: 'http://localhost:3000',
+});
 
 export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
 
   const handleSignUp = async () => {
     if (password !== confirmPassword) {
@@ -14,7 +22,7 @@ export default function SignUpScreen() {
     }
 
     try {
-      const response = await fetch('http://192.168.1.0:3000/auth/signup', {
+      const response = await fetch(`${API_URL}/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -22,6 +30,7 @@ export default function SignUpScreen() {
         body: JSON.stringify({
           email,
           password,
+          displayName,
         }),
       });
 
@@ -49,6 +58,13 @@ export default function SignUpScreen() {
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="表示名"
+        value={displayName}
+        onChangeText={setDisplayName}
       />
       
       <TextInput
