@@ -3,10 +3,44 @@ import { ThemedText } from '@/components/ThemedText';
 import { router } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useEffect, useState } from 'react';
+import { API_URL } from '@/constants/api';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function WorkoutPlanScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+  const [hasActiveSession, setHasActiveSession] = useState(false);
+  const { token } = useAuth();
+
+  useEffect(() => {
+    if (token) {
+      checkTodayWorkoutSession();
+    }
+  }, [token]);
+
+  const checkTodayWorkoutSession = async () => {
+
+    try {
+      const response = await fetch(`${API_URL}/api/workout/latest`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data && !data.ended_at) {
+          setHasActiveSession(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking workout session:', error);
+    }
+  };
 
   // Get today's date in Japanese format
   const today = new Date();
@@ -20,7 +54,7 @@ export default function WorkoutPlanScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.replace("/calendar")}>
           <ThemedText style={styles.backButton}>← 戻る</ThemedText>
         </TouchableOpacity>
         <ThemedText style={styles.dateText}>{dateString}</ThemedText>
@@ -29,7 +63,13 @@ export default function WorkoutPlanScreen() {
       <View style={styles.content}>
         <View style={styles.workoutSection}>
           <ThemedText style={styles.title}>Today's workout</ThemedText>
-          <ThemedText style={styles.subtitle}>Plan your own workout!</ThemedText>
+          {hasActiveSession ? (
+            <ThemedText style={[styles.subtitle, { color: '#007AFF' }]}>
+              まだ今日のトレーニングは終了していません
+            </ThemedText>
+          ) : (
+            <ThemedText style={styles.subtitle}>Plan your own workout!</ThemedText>
+          )}
               
           <TouchableOpacity 
             style={[styles.button, { backgroundColor: '#007AFF' }]}
@@ -50,9 +90,11 @@ export default function WorkoutPlanScreen() {
           <ThemedText style={styles.arrow}>→</ThemedText>
         </TouchableOpacity>
 
-        <View style={styles.restMessage}>
-          <ThemedText style={styles.restText}>Today is a rest day 😢</ThemedText>
-        </View>
+        {!hasActiveSession && (
+          <View style={styles.restMessage}>
+            <ThemedText style={styles.restText}>Today is a rest day 😢</ThemedText>
+          </View>
+        )}
       </View>
     </View>
   );
