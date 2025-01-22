@@ -6,6 +6,7 @@ import { generateToken } from './utils/jwt'
 import { authenticate } from './middleware/auth'
 import bcrypt from 'bcrypt'
 import userRoutes from './routes/user.routes'
+import exerciseRoutes from './routes/exercise.routes'
 
 dotenv.config()
 
@@ -25,15 +26,15 @@ app.use((req, res, next) => {
   next();
 });
 
-// Mount user routes
-app.use('/api', userRoutes);
-
-// Basic health check endpoint
+// Public routes
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' })
 })
 
-// Signup endpoint
+// Exercise routes (public)
+app.use('/api/exercises', exerciseRoutes);
+
+// Auth routes
 app.post('/auth/signup', async (req, res) => {
   try {
     const { email, password, displayName } = req.body;
@@ -74,7 +75,8 @@ app.post('/auth/signup', async (req, res) => {
   }
 });
 
-// Protected route example
+// Protected routes
+app.use('/api', authenticate, userRoutes);
 app.get('/protected', authenticate, (req, res) => {
   res.json({ message: 'Protected data', userId: req.user?.userId });
 });

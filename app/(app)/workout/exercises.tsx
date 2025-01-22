@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExerciseHeader } from '@/components/workout/ExerciseHeader';
@@ -6,27 +6,71 @@ import { SearchBar } from '@/components/workout/SearchBar';
 import { CategoryFilter } from '@/components/workout/CategoryFilter';
 import { ExerciseList, Exercise } from '@/components/workout/ExerciseList';
 import { ExerciseFooter } from '@/components/workout/ExerciseFooter';
-
-const categories = ['Leg', 'Chest', 'Back', 'Shoulder', 'Arms', 'Core'];
-
-const exercises: Exercise[] = [
-  { id: 1, name: 'Back Squat', category: 'Leg', bookmarks: 0 },
-  { id: 2, name: 'Conventional Deadlift', category: 'Leg', bookmarks: 2 },
-  { id: 3, name: 'Front Squat', category: 'Leg', bookmarks: 0 },
-  { id: 4, name: 'Leg Press', category: 'Leg', bookmarks: 24 },
-  { id: 5, name: 'Leg Curl', category: 'Leg', bookmarks: 1 },
-  { id: 6, name: 'Leg Extension', category: 'Leg', bookmarks: 9 },
-  { id: 7, name: 'Dumbbell Lunge', category: 'Leg', bookmarks: 0 },
-  { id: 8, name: 'Sumo Deadlift', category: 'Leg', bookmarks: 0 },
-  { id: 9, name: 'Standing Calf Raise', category: 'Leg', bookmarks: 0 },
-];
+import { API_URL } from '@/constants/api';
 
 export default function ExercisesScreen() {
   const insets = useSafeAreaInsets();
   const scrollY = useRef(new Animated.Value(0)).current;
-  const [selectedCategory, setSelectedCategory] = useState('Leg');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
   const [selectedExercises, setSelectedExercises] = useState<number[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchExercisesByCategory(selectedCategory);
+    } else {
+      fetchAllExercises();
+    }
+  }, [selectedCategory]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/exercises/categories`);
+      const data = await response.json();
+      setCategories(data.map((cat: any) => cat.name));
+      if (data.length > 0) {
+        setSelectedCategory(data[0].id);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const fetchAllExercises = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/exercises`);
+      const data = await response.json();
+      setExercises(data.map((exercise: any) => ({
+        id: exercise.id,
+        name: exercise.name,
+        category: exercise.category.name,
+        bookmarks: 0 // TODO: Implement bookmarks feature
+      })));
+    } catch (error) {
+      console.error('Error fetching exercises:', error);
+    }
+  };
+
+  const fetchExercisesByCategory = async (categoryId: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/exercises/category/${categoryId}`);
+      const data = await response.json();
+      setExercises(data.map((exercise: any) => ({
+        id: exercise.id,
+        name: exercise.name,
+        category: exercise.category.name,
+        bookmarks: 0 // TODO: Implement bookmarks feature
+      })));
+    } catch (error) {
+      console.error('Error fetching exercises by category:', error);
+    }
+  };
 
   const handleExerciseSelect = (exerciseId: number) => {
     setSelectedExercises(prev => {
@@ -39,7 +83,7 @@ export default function ExercisesScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ExerciseHeader scrollY={scrollY} insets={insets} />
+      <ExerciseHeader scrollY={scrollY} insets={insets} title="Exercises" />
       <SearchBar />
       <CategoryFilter
         categories={categories}
