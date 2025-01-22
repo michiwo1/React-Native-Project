@@ -18,6 +18,12 @@ app.use(cors({
 }))
 app.use(express.json())
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+  next();
+});
+
 // Basic health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' })
@@ -67,6 +73,13 @@ app.post('/auth/signup', async (req, res) => {
 // Protected route example
 app.get('/protected', authenticate, (req, res) => {
   res.json({ message: 'Protected data', userId: req.user?.userId });
+});
+
+// Error handling middleware
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(`Error: ${err.message}`);
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
 });
 
 // Initialize Prisma client and start server
