@@ -44,8 +44,9 @@ export default function WorkoutLogScreen() {
   const { token } = useAuth();
   
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>(
-    selectedExercises.map(exercise => ({
+    selectedExercises.map((exercise, index) => ({
       ...exercise,
+      id: `${exercise.id}_${index}`,
       sets: [{ weight: '', reps: '', done: false }],
       note: '',
       workoutSessionExerciseId: ''
@@ -93,8 +94,8 @@ export default function WorkoutLogScreen() {
       const data = await response.json();
       if (data.exercises && data.exercises.length > 0) {
         setLatestWorkoutSessionId(data.id);
-        const formattedExercises: WorkoutExercise[] = data.exercises.map((exercise: any) => ({
-          id: exercise.exercise.id,
+        const formattedExercises: WorkoutExercise[] = data.exercises.map((exercise: any, index: number) => ({
+          id: `${exercise.exercise.id}_${index}_${Date.now()}`,
           name: exercise.exercise.name,
           category: exercise.exercise.category.name,
           workoutSessionExerciseId: exercise.id,
