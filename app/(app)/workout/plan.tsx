@@ -86,7 +86,10 @@ export default function WorkoutPlanScreen() {
       <View style={styles.content}>
         {hasActiveSession && workoutData ? (
           <View style={styles.workoutCard}>
-            <TouchableOpacity style={styles.summaryHeader}>
+            <TouchableOpacity 
+              style={styles.summaryHeader}
+              onPress={() => router.push('/workout/log')}
+            >
               <ThemedText style={styles.summaryTitle}>
                 {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} Summary
               </ThemedText>
