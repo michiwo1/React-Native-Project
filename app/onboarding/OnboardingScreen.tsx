@@ -14,7 +14,7 @@ export function OnboardingScreen({ step }: { step: number }) {
       title: 'ようこそ',
       subtitle: 'あなたに最適なトレーニングプランを作成します',
       button: '始める',
-      onNext: () => router.push('onboarding/1'),
+      onNext: () => router.push('/onboarding/1'),
     },
     {
       title: '基本情報',
@@ -24,13 +24,13 @@ export function OnboardingScreen({ step }: { step: number }) {
         { placeholder: '年齢', value: age, onChangeText: setAge },
       ],
       button: '次へ',
-      onNext: () => router.push('onboarding/2'),
+      onNext: () => router.push('/onboarding/2'),
     },
     {
       title: '目標を選択',
       goals: ['筋肥大', '減量', '維持'],
       button: '次へ',
-      onNext: () => router.replace('(tabs)/'),
+      onNext: () => router.replace('/(app)/(tabs)'),
     },
   ];
 
