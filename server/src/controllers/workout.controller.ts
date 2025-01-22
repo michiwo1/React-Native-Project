@@ -71,4 +71,52 @@ export class WorkoutController {
       return res.status(500).json({ message: 'Internal server error' });
     }
   };
+
+  saveExerciseSet = async (req: Request, res: Response) => {
+    try {
+      const { workoutSessionExerciseId } = req.params;
+      const { setNumber, weight, reps, isCompleted } = req.body;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const exerciseSet = await this.workoutService.saveExerciseSet(
+        workoutSessionExerciseId,
+        {
+          setNumber,
+          weight,
+          reps,
+          isCompleted
+        }
+      );
+
+      return res.status(200).json(exerciseSet);
+    } catch (error) {
+      console.error('Error saving exercise set:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+
+  completeWorkoutSession = async (req: Request, res: Response) => {
+    try {
+      const { sessionId } = req.params;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const workoutSession = await this.workoutService.completeWorkoutSession(
+        sessionId,
+        userId
+      );
+
+      return res.status(200).json(workoutSession);
+    } catch (error) {
+      console.error('Error completing workout session:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  };
 } 

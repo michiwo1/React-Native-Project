@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Modal, Pressable } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Modal, Pressable, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
@@ -34,6 +34,7 @@ type ExerciseSet = {
 type WorkoutExercise = Exercise & {
   sets: ExerciseSet[];
   note: string;
+  workoutSessionExerciseId: string;
 };
 
 export default function WorkoutLogScreen() {
@@ -46,7 +47,8 @@ export default function WorkoutLogScreen() {
     selectedExercises.map(exercise => ({
       ...exercise,
       sets: [{ weight: '', reps: '', done: false }],
-      note: ''
+      note: '',
+      workoutSessionExerciseId: ''
     }))
   );
   const [latestWorkoutSessionId, setLatestWorkoutSessionId] = useState<string | null>(null);
@@ -95,6 +97,7 @@ export default function WorkoutLogScreen() {
           id: exercise.exercise.id,
           name: exercise.exercise.name,
           category: exercise.exercise.category.name,
+          workoutSessionExerciseId: exercise.id,
           sets: exercise.sets.map((set: any) => ({
             id: set.id,
             weight: set.weight.toString(),
@@ -213,12 +216,33 @@ export default function WorkoutLogScreen() {
     }
   };
 
-  const handleFinishWorkout = () => {
-    setIsWorkoutStarted(false);
-    setStartTime(null);
-    setElapsedTime(0);
-    if (isResting) {
-      handleStopRest();
+  const handleFinishWorkout = async () => {
+    try {
+      if (!latestWorkoutSessionId) return;
+
+      const response = await fetch(`${API_URL}/api/workout/sessions/${latestWorkoutSessionId}/complete`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to complete workout session');
+      }
+
+      setIsWorkoutStarted(false);
+      setStartTime(null);
+      setElapsedTime(0);
+      if (isResting) {
+        handleStopRest();
+      }
+
+      // Navigate back to the workout plan screen
+      router.push('/workout/plan');
+    } catch (error) {
+      console.error('Error completing workout:', error);
+      Alert.alert('Error', 'Failed to complete workout');
     }
   };
 
@@ -234,24 +258,57 @@ export default function WorkoutLogScreen() {
     setRemainingRestTime(0);
   };
 
-  const updateSet = (exerciseIndex: number, setIndex: number, field: keyof ExerciseSet, value: string | boolean) => {
-    setWorkoutExercises(prev => {
-      const updated = [...prev];
-      updated[exerciseIndex].sets[setIndex] = {
-        ...updated[exerciseIndex].sets[setIndex],
-        [field]: value
-      };
-      return updated;
-    });
+  const updateSet = async (exerciseIndex: number, setIndex: number, field: keyof ExerciseSet, value: string | boolean) => {
+    try {
+      const exercise = workoutExercises[exerciseIndex];
+      const set = exercise.sets[setIndex];
+      
+      // Update local state first
+      setWorkoutExercises(prev => {
+        const updated = [...prev];
+        updated[exerciseIndex].sets[setIndex] = {
+          ...updated[exerciseIndex].sets[setIndex],
+          [field]: value
+        };
+        return updated;
+      });
 
-    // Start rest timer when a set is marked as done
-    if (field === 'done' && value === true) {
-      // Stop any existing rest timer
-      if (isResting) {
-        handleStopRest();
+      // Save to API when a set is marked as done
+      if (field === 'done' && value === true) {
+        // Get the workout session exercise ID from the exercise object
+        const workoutSessionExerciseId = exercise.workoutSessionExerciseId;
+        
+        if (!workoutSessionExerciseId) {
+          throw new Error('Workout session exercise ID not found');
+        }
+
+        const response = await fetch(`${API_URL}/api/workout/${workoutSessionExerciseId}/sets`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            setNumber: setIndex + 1,
+            weight: parseFloat(set.weight) || 0,
+            reps: parseInt(set.reps) || 0,
+            isCompleted: true
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save exercise set');
+        }
+
+        // Start rest timer
+        if (isResting) {
+          handleStopRest();
+        }
+        handleStartRest();
       }
-      // Start new rest timer
-      handleStartRest();
+    } catch (error) {
+      console.error('Error updating set:', error);
+      Alert.alert('Error', 'Failed to save exercise set');
     }
   };
 

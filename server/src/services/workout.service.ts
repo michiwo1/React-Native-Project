@@ -1,5 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 
+interface ExerciseSetData {
+  setNumber: number;
+  weight: number;
+  reps: number;
+  isCompleted: boolean;
+}
+
 export class WorkoutService {
   private prisma: PrismaClient;
 
@@ -107,6 +114,51 @@ export class WorkoutService {
       });
 
       return updatedWorkoutSession;
+    });
+  }
+
+  async saveExerciseSet(workoutSessionExerciseId: string, setData: ExerciseSetData) {
+    // まず、このエクササイズセットが既に存在するか確認
+    const existingSet = await this.prisma.exerciseSet.findFirst({
+      where: {
+        workout_session_exercise_id: workoutSessionExerciseId,
+        set_number: setData.setNumber,
+      },
+    });
+
+    if (existingSet) {
+      // 既存のセットを更新
+      return await this.prisma.exerciseSet.update({
+        where: { id: existingSet.id },
+        data: {
+          weight: setData.weight,
+          reps: setData.reps,
+          is_completed: setData.isCompleted,
+        },
+      });
+    } else {
+      // 新しいセットを作成
+      return await this.prisma.exerciseSet.create({
+        data: {
+          workout_session_exercise_id: workoutSessionExerciseId,
+          set_number: setData.setNumber,
+          weight: setData.weight,
+          reps: setData.reps,
+          is_completed: setData.isCompleted,
+        },
+      });
+    }
+  }
+
+  async completeWorkoutSession(sessionId: string, userId: string) {
+    return await this.prisma.workoutSession.update({
+      where: {
+        id: sessionId,
+        user_id: userId,
+      },
+      data: {
+        ended_at: new Date(),
+      },
     });
   }
 } 
