@@ -107,28 +107,29 @@ export default function ExercisesScreen() {
   };
 
   const addExercisesToWorkoutSession = async (exercises: Exercise[]) => {
-    if (!workoutSessionId || !token) return;
-
-    try {
-      const response = await fetch(`${API_URL}/api/workout/${workoutSessionId}/exercises`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          exerciseIds: exercises.map(e => e.id.toString()),
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add exercises to workout session');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error adding exercises to workout session:', error);
+    if (!workoutSessionId || !token) {
+      throw new Error('No workout session ID or authentication token found');
     }
+
+    console.log('4----------');
+
+    const response = await fetch(`${API_URL}/api/workout/${workoutSessionId}/exercises`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        exerciseIds: exercises.map(e => e.id),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to add exercises to workout session');
+    }
+
+    return await response.json();
   };
 
   return (
@@ -152,6 +153,13 @@ export default function ExercisesScreen() {
         insets={insets}
         workoutSessionId={workoutSessionId}
         onAddToWorkoutSession={addExercisesToWorkoutSession}
+        buttonText={workoutSessionId ? {
+          default: 'Select exercises',
+          selected: `Add ${selectedExercises.length} exercise${selectedExercises.length === 1 ? '' : 's'}`
+        } : {
+          default: 'Select exercises',
+          selected: 'Create plan'
+        }}
       />
     </View>
   );

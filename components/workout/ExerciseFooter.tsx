@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { router } from 'expo-router';
 import { Exercise } from './ExerciseList';
@@ -34,60 +34,58 @@ export function ExerciseFooter({
   onAddToWorkoutSession
 }: ExerciseFooterProps) {
   const handlePress = async () => {
-    if (selectedExercises.length > 0) {
+    if (selectedExercises.length === 0) return;
+
+    try {
       if (onPress) {
         onPress();
-      } else if (workoutSessionId && onAddToWorkoutSession) {
-        try {
-          const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
-          await onAddToWorkoutSession(selectedExerciseData);
-          router.back();
-        } catch (error) {
-          console.error('Error adding exercises to workout session:', error);
-        }
-      } else {
-        try {
-          const token = await AsyncStorage.getItem('userToken');
-          if (!token) {
-            throw new Error('No authentication token found');
-          }
-
-          // Convert exercise IDs to strings
-          const exerciseIds = selectedExercises.map(id => id.toString());
-
-          // Create workout session
-          const response = await fetch(`${API_URL}/api/workout/sessions`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              exerciseIds,
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error('Failed to create workout session');
-          }
-
-          const workoutSession = await response.json();
-          console.log('Created workout session:', workoutSession);
-
-          // Navigate to log screen with selected exercises
-          const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
-          router.push({
-            pathname: '/workout/log',
-            params: { 
-              exercises: JSON.stringify(selectedExerciseData),
-              workoutSessionId: workoutSession.id
-            }
-          });
-        } catch (error) {
-          console.error('Error creating workout session:', error);
-          // TODO: Show error toast or alert to user
-        }
+        return;
       }
+
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
+
+      if (workoutSessionId && onAddToWorkoutSession) {
+        // Add exercises to existing workout session
+        await onAddToWorkoutSession(selectedExerciseData);
+        router.back();
+      } else {
+        // Create new workout session
+        const response = await fetch(`${API_URL}/api/workout/sessions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            exerciseIds: selectedExercises.map(id => id.toString()),
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create workout session');
+        }
+
+        const workoutSession = await response.json();
+        router.push({
+          pathname: '/workout/log',
+          params: { 
+            exercises: JSON.stringify(selectedExerciseData),
+            workoutSessionId: workoutSession.id
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error in handlePress:', error);
+      // TODO: Implement proper error handling UI
+      Alert.alert(
+        'Error',
+        error instanceof Error ? error.message : 'An unexpected error occurred'
+      );
     }
   };
 

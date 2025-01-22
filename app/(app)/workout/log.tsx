@@ -95,17 +95,18 @@ export default function WorkoutLogScreen() {
             })),
             note: exercise.note || '',
           }));
-          setWorkoutExercises(formattedExercises);
+          // Only update workoutExercises if no exercises were passed as params
+          if (!params.exercises) {
+            setWorkoutExercises(formattedExercises);
+          }
         }
       } catch (error) {
         console.error('Error fetching latest workout session:', error);
       }
     };
 
-    if (!params.exercises) {
-      fetchLatestWorkoutSession();
-    }
-  }, [token, params.exercises]);
+    fetchLatestWorkoutSession();
+  }, [token]);
 
   const setupNotifications = async () => {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
