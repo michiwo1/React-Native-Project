@@ -1,10 +1,14 @@
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
 export class WorkoutService {
+  private prisma: PrismaClient;
+
+  constructor() {
+    this.prisma = new PrismaClient();
+  }
+
   async createWorkoutSession(userId: string, exerciseIds: string[]) {
-    return await prisma.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
       // Create workout session
       const workoutSession = await tx.workoutSession.create({
         data: {
@@ -30,5 +34,30 @@ export class WorkoutService {
         exercises: workoutSessionExercises,
       };
     });
+  }
+
+  async getLatestWorkoutSession(userId: string) {
+    const latestSession = await this.prisma.workoutSession.findFirst({
+      where: {
+        user_id: userId,
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+      include: {
+        exercises: {
+          include: {
+            exercise: {
+              include: {
+                category: true,
+              },
+            },
+            sets: true,
+          },
+        },
+      },
+    });
+
+    return latestSession;
   }
 } 

@@ -4,6 +4,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
+import { API_URL } from '@/constants/api';
+import { useAuth } from '@/hooks/useAuth';
 
 // Configure notifications
 Notifications.setNotificationHandler({
@@ -16,12 +18,13 @@ Notifications.setNotificationHandler({
 });
 
 type Exercise = {
-  id: number;
+  id: string;
   name: string;
   category: string;
 };
 
 type ExerciseSet = {
+  id?: string;
   weight: string;
   reps: string;
   done: boolean;
@@ -36,6 +39,7 @@ export default function WorkoutLogScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ exercises: string }>();
   const selectedExercises: Exercise[] = params.exercises ? JSON.parse(params.exercises) : [];
+  const { token } = useAuth();
   
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>(
     selectedExercises.map(exercise => ({
@@ -59,6 +63,47 @@ export default function WorkoutLogScreen() {
   useEffect(() => {
     setupNotifications();
   }, []);
+
+  useEffect(() => {
+    const fetchLatestWorkoutSession = async () => {
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${API_URL}/api/workout/latest`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch latest workout session');
+        }
+
+        const data = await response.json();
+        if (data.exercises && data.exercises.length > 0) {
+          const formattedExercises: WorkoutExercise[] = data.exercises.map((exercise: any) => ({
+            id: exercise.exercise.id,
+            name: exercise.exercise.name,
+            category: exercise.exercise.category.name,
+            sets: exercise.sets.map((set: any) => ({
+              id: set.id,
+              weight: set.weight.toString(),
+              reps: set.reps.toString(),
+              done: set.is_completed,
+            })),
+            note: exercise.note || '',
+          }));
+          setWorkoutExercises(formattedExercises);
+        }
+      } catch (error) {
+        console.error('Error fetching latest workout session:', error);
+      }
+    };
+
+    if (!params.exercises) {
+      fetchLatestWorkoutSession();
+    }
+  }, [token, params.exercises]);
 
   const setupNotifications = async () => {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
