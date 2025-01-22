@@ -240,8 +240,18 @@ export default function WorkoutLogScreen() {
         handleStopRest();
       }
 
-      // Navigate to the completion screen
-      router.replace(`/workout/complete?workoutSessionId=${latestWorkoutSessionId}`);
+      // デバッグログを追加
+      console.log('Workout finished with session ID:', latestWorkoutSessionId);
+      console.log('Attempting navigation to complete screen...');
+      
+      try {
+        router.push({
+          pathname: '/workout/complete',
+          params: { workoutSessionId: latestWorkoutSessionId }
+        });
+      } catch (error) {
+        console.error('Navigation error:', error);
+      }
     } catch (error) {
       console.error('Error completing workout:', error);
       Alert.alert('Error', 'Failed to complete workout');

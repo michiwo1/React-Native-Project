@@ -28,7 +28,7 @@ export default function WorkoutCompleteScreen() {
   useEffect(() => {
     const fetchSummary = async () => {
       try {
-        const response = await fetch(`${API_URL}/workout/sessions/${params.workoutSessionId}/summary`, {
+        const response = await fetch(`${API_URL}/api/workout/sessions/${params.workoutSessionId}/summary`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -59,6 +59,10 @@ export default function WorkoutCompleteScreen() {
     router.replace('/(app)/(tabs)');
   };
 
+  const handleBack = () => {
+    router.back();
+  };
+
   if (!summary) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -69,6 +73,9 @@ export default function WorkoutCompleteScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.header}>
+        <Button onPress={handleBack} title="Back" />
+      </View>
       <View style={styles.content}>
         <MaterialCommunityIcons name="trophy" size={64} color={colors.primary} style={styles.icon} />
         <ThemedText style={styles.congratsText}>Workout Complete!</ThemedText>
@@ -101,6 +108,11 @@ export default function WorkoutCompleteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
   },
   content: {
     flex: 1,
