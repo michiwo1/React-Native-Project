@@ -54,9 +54,15 @@ export function ExerciseFooter({
       if (workoutSessionId && onAddToWorkoutSession) {
         await onAddToWorkoutSession(selectedExerciseData);
         if (onExercisesAdded === 'true') {
-          // The parent component will handle the reload when we navigate back
           router.back();
         }
+
+        router.replace({
+          pathname: '/workout/log',
+          params: { 
+            exercises: JSON.stringify(selectedExerciseData)
+          }
+        });
       } else {
         // Create new workout session
         const response = await fetch(`${API_URL}/api/workout/sessions`, {
@@ -75,7 +81,7 @@ export function ExerciseFooter({
         }
 
         const workoutSession = await response.json();
-        router.push({
+        router.replace({
           pathname: '/workout/log',
           params: { 
             exercises: JSON.stringify(selectedExerciseData),
@@ -85,7 +91,6 @@ export function ExerciseFooter({
       }
     } catch (error) {
       console.error('Error in handlePress:', error);
-      // TODO: Implement proper error handling UI
       Alert.alert(
         'Error',
         error instanceof Error ? error.message : 'An unexpected error occurred'
