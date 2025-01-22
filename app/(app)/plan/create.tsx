@@ -1,148 +1,64 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet, SafeAreaView, Platform, StatusBar } from 'react-native';
-import { TouchableOpacity } from 'react-native';
-import { router } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, Animated } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ExerciseHeader } from '@/components/workout/ExerciseHeader';
+import { SearchBar } from '@/components/workout/SearchBar';
+import { CategoryFilter } from '@/components/workout/CategoryFilter';
+import { ExerciseList, Exercise } from '@/components/workout/ExerciseList';
+import { ExerciseFooter } from '@/components/workout/ExerciseFooter';
 
-type Exercise = {
-  id: string;
-  name: string;
-};
+const categories = ['Leg', 'Chest', 'Back', 'Shoulder', 'Arms', 'Core'];
+
+const exercises: Exercise[] = [
+  { id: 1, name: 'Back Squat', category: 'Leg', bookmarks: 0 },
+  { id: 2, name: 'Conventional Deadlift', category: 'Leg', bookmarks: 2 },
+  { id: 3, name: 'Front Squat', category: 'Leg', bookmarks: 0 },
+  { id: 4, name: 'Leg Press', category: 'Leg', bookmarks: 24 },
+  { id: 5, name: 'Leg Curl', category: 'Leg', bookmarks: 1 },
+];
 
 export default function CreatePlanScreen() {
-  const [planName, setPlanName] = useState('');
-  const [selectedExercises, setSelectedExercises] = useState<Exercise[]>([]);
+  const insets = useSafeAreaInsets();
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [selectedCategory, setSelectedCategory] = useState('Leg');
+  const [selectedExercises, setSelectedExercises] = useState<number[]>([]);
 
-  const handleSavePlan = () => {
-    // TODO: プランの保存処理を実装
-    if (!planName.trim()) {
-      alert('プラン名を入力してください');
-      return;
-    }
-    if (selectedExercises.length === 0) {
-      alert('エクササイズを選択してください');
-      return;
-    }
-    
-    // 保存処理後、前の画面に戻る
-    router.back();
-  };
-
-  const handleAddExercise = () => {
-    // エクササイズ選択画面に遷移
-    router.push('/exercises?mode=select');
+  const handleExerciseSelect = (exerciseId: number) => {
+    setSelectedExercises(prev => {
+      if (prev.includes(exerciseId)) {
+        return prev.filter(id => id !== exerciseId);
+      }
+      return [...prev, exerciseId];
+    });
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => router.back()}
-            >
-              <MaterialIcons name="arrow-back" size={24} color="#000" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <ScrollView style={styles.exerciseList}>
-          {selectedExercises.map((exercise, index) => (
-            <View key={exercise.id} style={styles.exerciseItem}>
-              <Text style={styles.exerciseName}>{exercise.name}</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  const newExercises = [...selectedExercises];
-                  newExercises.splice(index, 1);
-                  setSelectedExercises(newExercises);
-                }}
-              >
-                <MaterialIcons name="remove-circle" size={24} color="red" />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.saveButton}
-            onPress={handleSavePlan}
-          >
-            <Text style={styles.buttonText}>プランを保存</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </SafeAreaView>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <ExerciseHeader scrollY={scrollY} insets={insets} />
+      <SearchBar />
+      <CategoryFilter
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
+      <ExerciseList
+        exercises={exercises}
+        selectedExercises={selectedExercises}
+        onExerciseSelect={handleExerciseSelect}
+        scrollY={scrollY}
+      />
+      <ExerciseFooter
+        selectedExercises={selectedExercises}
+        exercises={exercises}
+        insets={insets}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-  },
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-  },
-  header: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
-  },
-  nameInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#fff',
-  },
-  exerciseList: {
-    flex: 1,
-  },
-  exerciseItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  exerciseName: {
-    fontSize: 16,
-  },
-  buttonContainer: {
-    paddingVertical: 16,
-    gap: 12,
-  },
-  addButton: {
-    backgroundColor: '#4CAF50',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  saveButton: {
-    backgroundColor: '#2196F3',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    backgroundColor: '#FFFFFF',
   },
 }); 

@@ -13,9 +13,6 @@ type ExerciseFooterProps = {
 export function ExerciseFooter({ selectedExercises, exercises, insets }: ExerciseFooterProps) {
   return (
     <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
-      <TouchableOpacity style={styles.newButton}>
-        <ThemedText style={styles.newButtonText}>＋ New</ThemedText>
-      </TouchableOpacity>
       <TouchableOpacity 
         style={[
           styles.selectButton,
