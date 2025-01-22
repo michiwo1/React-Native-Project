@@ -86,8 +86,19 @@ export class UserService {
     }
   }
 
-  public async updateProfile(userId: string, profileData: { height?: number; weight?: number; age?: number }) {
+  public async updateProfile(userId: string, profileData: { height?: number; weight?: number; age?: number; goal?: string }) {
     try {
+      let goalTypeId: string | undefined;
+      
+      if (profileData.goal) {
+        const goalMap: { [key: string]: string } = {
+          '筋肥大': 'goal_muscle_gain',
+          '減量': 'goal_weight_loss',
+          '維持': 'goal_maintenance'
+        };
+        goalTypeId = goalMap[profileData.goal];
+      }
+
       const profile = await this.prisma.userProfile.upsert({
         where: {
           user_id: userId
@@ -96,12 +107,14 @@ export class UserService {
           user_id: userId,
           height: profileData.height,
           weight: profileData.weight,
-          age: profileData.age
+          age: profileData.age,
+          goal_type_id: goalTypeId
         },
         update: {
           height: profileData.height,
           weight: profileData.weight,
-          age: profileData.age
+          age: profileData.age,
+          goal_type_id: goalTypeId
         }
       });
       return profile;

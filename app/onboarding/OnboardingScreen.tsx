@@ -76,7 +76,31 @@ export function OnboardingScreen({ step }: { step: number }) {
       title: '目標を選択',
       goals: ['筋肥大', '減量', '維持'],
       button: '次へ',
-      onNext: () => router.replace('/(app)/(tabs)'),
+      onNext: async () => {
+        try {
+          const response = await fetch(`${API_URL}/api/profile`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              goal: goal,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.text();
+            console.error('Error response:', errorData);
+            throw new Error('目標の保存に失敗しました');
+          }
+
+          router.replace('/(app)/(tabs)');
+        } catch (error: any) {
+          console.error('Error saving goal:', error);
+          // TODO: エラー処理を追加
+        }
+      },
     },
   ];
 
