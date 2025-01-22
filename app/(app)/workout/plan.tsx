@@ -7,16 +7,26 @@ import { useEffect, useState } from 'react';
 import { API_URL } from '@/constants/api';
 import { useAuth } from '@/hooks/useAuth';
 
-interface Exercise {
-  name: string;
-  sets: number;
-  weight: number;
+interface Set {
   reps: number;
+  weight: number;
+}
+
+interface Exercise {
+  id: string;
+  exercise: {
+    name: string;
+  };
+  exercise_id: string;
+  sets: Set[];
 }
 
 interface WorkoutData {
+  id: string;
   exercises: Exercise[];
+  started_at: string;
   ended_at: string | null;
+  note: string | null;
 }
 
 export default function WorkoutPlanScreen() {
@@ -95,17 +105,21 @@ export default function WorkoutPlanScreen() {
             <View style={styles.workoutInfo}>
               <ThemedText style={styles.workoutInfoTitle}>Workout Info</ThemedText>
               {workoutData.exercises?.map((exercise, index) => (
-                <View key={index} style={styles.exerciseItem}>
+                <View key={exercise.id} style={styles.exerciseItem}>
                   <View style={styles.exerciseHeader}>
                     <ThemedText style={styles.exerciseNumber}>{index + 1}</ThemedText>
                     <ThemedText style={styles.exerciseName}>
-                      {exercise.name} | {exercise.sets}set
+                      {exercise.exercise?.name} | {exercise.sets?.length || 0} sets
                     </ThemedText>
-                    <View style={styles.checkmark} />
+                    <View style={[styles.checkmark, exercise.sets?.length > 0 && styles.completedCheckmark]} />
                   </View>
-                  <ThemedText style={styles.exerciseDetails}>
-                    {exercise.weight || 0}lbs x {exercise.reps || 0}reps
-                  </ThemedText>
+                  <View style={styles.setsContainer}>
+                    {exercise.sets?.map((set, setIndex) => (
+                      <ThemedText key={setIndex} style={styles.exerciseDetails}>
+                        Set {setIndex + 1}: {set.weight || 0}lbs × {set.reps || 0}reps
+                      </ThemedText>
+                    ))}
+                  </View>
                 </View>
               ))}
             </View>
@@ -311,5 +325,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     marginLeft: 24,
+  },
+  setsContainer: {
+    marginLeft: 24,
+    marginTop: 4,
+  },
+  completedCheckmark: {
+    backgroundColor: '#34D399',
   },
 }); 
