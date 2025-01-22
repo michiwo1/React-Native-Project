@@ -1,0 +1,272 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String                 @id @default(cuid())
+  email                String                 @unique
+  password_hash        String
+  display_name         String?
+  created_at           DateTime               @default(now())
+  updated_at           DateTime               @updatedAt
+  profile              UserProfile?
+  workout_sessions     WorkoutSession[]
+  meals                Meal[]
+  user_goals          UserGoal[]
+  measurements        Measurement[]
+  progress_tracking   ProgressTracking[]
+  ai_interactions    AIInteraction[]
+  personal_records   ExercisePersonalRecord[]
+}
+
+model UserProfile {
+  id             String     @id @default(cuid())
+  user_id        String     @unique
+  height         Float?
+  goal_type_id   String?
+  goal_type      GoalType?  @relation(fields: [goal_type_id], references: [id])
+  training_level String?
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+  user           User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model ExerciseCategory {
+  id            String     @id @default(cuid())
+  name          String     @unique
+  display_order Int
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+  exercises     Exercise[]
+}
+
+model Exercise {
+  id                    String                    @id @default(cuid())
+  category_id           String
+  name                  String
+  description          String?
+  instruction          String?
+  thumbnail_url        String?
+  created_at           DateTime                   @default(now())
+  updated_at           DateTime                   @updatedAt
+  category             ExerciseCategory           @relation(fields: [category_id], references: [id])
+  workout_exercises    WorkoutSessionExercise[]
+  personal_records    ExercisePersonalRecord[]
+}
+
+model WorkoutSession {
+  id         String                    @id @default(cuid())
+  user_id    String
+  started_at DateTime
+  ended_at   DateTime?
+  note       String?
+  created_at DateTime                  @default(now())
+  updated_at DateTime                  @updatedAt
+  user       User                      @relation(fields: [user_id], references: [id])
+  exercises  WorkoutSessionExercise[]
+}
+
+model WorkoutSessionExercise {
+  id                String          @id @default(cuid())
+  workout_session_id String
+  exercise_id       String
+  note              String?
+  created_at        DateTime        @default(now())
+  updated_at        DateTime        @updatedAt
+  workout_session   WorkoutSession  @relation(fields: [workout_session_id], references: [id])
+  exercise          Exercise        @relation(fields: [exercise_id], references: [id])
+  sets              ExerciseSet[]
+}
+
+model ExerciseSet {
+  id                           String                  @id @default(cuid())
+  workout_session_exercise_id String
+  set_number                  Int
+  weight                      Float
+  reps                        Int
+  is_completed                Boolean                 @default(false)
+  created_at                  DateTime                @default(now())
+  updated_at                  DateTime                @updatedAt
+  workout_session_exercise    WorkoutSessionExercise @relation(fields: [workout_session_exercise_id], references: [id])
+}
+
+model ExercisePersonalRecord {
+  id           String    @id @default(cuid())
+  user_id      String
+  exercise_id  String
+  weight       Float
+  reps         Int
+  recorded_at  DateTime
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  user         User      @relation(fields: [user_id], references: [id])
+  exercise     Exercise  @relation(fields: [exercise_id], references: [id])
+}
+
+model FoodCategory {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+  food_items FoodItem[]
+}
+
+model FoodItem {
+  id            String             @id @default(cuid())
+  category_id   String
+  name          String
+  base_quantity Float
+  base_unit     String
+  created_at    DateTime           @default(now())
+  updated_at    DateTime           @updatedAt
+  category      FoodCategory       @relation(fields: [category_id], references: [id])
+  nutrients     FoodItemNutrient[]
+  meal_items    MealItem[]
+}
+
+model FoodItemNutrient {
+  id              String       @id @default(cuid())
+  food_item_id    String
+  nutrient_type_id String
+  amount_per_unit Float
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+  food_item       FoodItem     @relation(fields: [food_item_id], references: [id])
+  nutrient_type   NutrientType @relation(fields: [nutrient_type_id], references: [id])
+}
+
+model NutrientType {
+  id                String             @id @default(cuid())
+  name              String             @unique
+  unit              String
+  created_at        DateTime           @default(now())
+  updated_at        DateTime           @updatedAt
+  food_nutrients    FoodItemNutrient[]
+}
+
+model Meal {
+  id           String     @id @default(cuid())
+  user_id      String
+  meal_type_id String
+  eaten_at     DateTime
+  note         String?
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+  user         User       @relation(fields: [user_id], references: [id])
+  meal_type    MealType   @relation(fields: [meal_type_id], references: [id])
+  items        MealItem[]
+}
+
+model MealType {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  meals      Meal[]
+}
+
+model MealItem {
+  id           String    @id @default(cuid())
+  meal_id      String
+  food_item_id String
+  quantity     Float
+  unit         String
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  meal         Meal      @relation(fields: [meal_id], references: [id])
+  food_item    FoodItem  @relation(fields: [food_item_id], references: [id])
+}
+
+model GoalType {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+  user_goals  UserGoal[]
+  profiles    UserProfile[]
+}
+
+model UserGoal {
+  id            String       @id @default(cuid())
+  user_id       String
+  goal_type_id  String
+  start_date    DateTime
+  end_date      DateTime?
+  is_active     Boolean      @default(true)
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+  user          User         @relation(fields: [user_id], references: [id])
+  goal_type     GoalType     @relation(fields: [goal_type_id], references: [id])
+  targets       GoalTarget[]
+}
+
+model GoalTarget {
+  id            String      @id @default(cuid())
+  user_goal_id  String
+  metric_type_id String
+  target_value  Float
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+  user_goal     UserGoal    @relation(fields: [user_goal_id], references: [id])
+  metric_type   MetricType  @relation(fields: [metric_type_id], references: [id])
+}
+
+model MetricType {
+  id              String            @id @default(cuid())
+  name            String            @unique
+  unit            String
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  measurements    Measurement[]
+  goal_targets    GoalTarget[]
+  progress_tracks ProgressTracking[]
+}
+
+model Measurement {
+  id              String      @id @default(cuid())
+  user_id         String
+  metric_type_id  String
+  value           Float
+  measured_at     DateTime
+  source          String?
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+  user            User        @relation(fields: [user_id], references: [id])
+  metric_type     MetricType  @relation(fields: [metric_type_id], references: [id])
+}
+
+model ProgressTracking {
+  id              String      @id @default(cuid())
+  user_id         String
+  metric_type_id  String
+  current_value   Float
+  change_amount   Float
+  recorded_at     DateTime
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+  user            User        @relation(fields: [user_id], references: [id])
+  metric_type     MetricType  @relation(fields: [metric_type_id], references: [id])
+}
+
+model AIInteraction {
+  id               String   @id @default(cuid())
+  user_id          String
+  interaction_type String
+  query_text       String
+  response_text    String
+  context_data_json Json?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  user             User     @relation(fields: [user_id], references: [id])
+}

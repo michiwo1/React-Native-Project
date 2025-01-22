@@ -1,33 +1,42 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import { Pool } from '@neondatabase/serverless';
+import { PrismaClient } from '@prisma/client'
+import express from 'express'
+import cors from 'cors'
+import dotenv from 'dotenv'
 
-dotenv.config();
+dotenv.config()
 
-const app = express();
-const port = process.env.PORT || 3000;
+const prisma = new PrismaClient()
+const app = express()
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors())
+app.use(express.json())
 
-// Database setup
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-});
+// Basic health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' })
+})
 
-// Health check endpoint
-app.get('/health', async (req, res) => {
+// Initialize Prisma client and start server
+async function main() {
   try {
-    const result = await pool.query('SELECT NOW()');
-    res.json({ status: 'healthy', timestamp: result.rows[0].now });
-  } catch (error: any) {
-    res.status(500).json({ status: 'error', message: error.message });
-  }
-});
+    await prisma.$connect()
+    console.log('Successfully connected to database')
 
-// Start server
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-}); 
+    const port = process.env.PORT || 3000
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`)
+    })
+  } catch (error) {
+    console.error('Failed to start server:', error)
+    process.exit(1)
+  }
+}
+
+main()
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  }) 
