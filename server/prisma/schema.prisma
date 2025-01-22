@@ -14,12 +14,12 @@ datasource db {
 }
 
 model User {
-  id                   String                 @id @default(cuid())
-  email                String                 @unique
-  password_hash        String
-  display_name         String?
-  created_at           DateTime               @default(now())
-  updated_at           DateTime               @updatedAt
+  id                        String    @id @default(uuid())
+  email                     String    @unique
+  password_hash            String
+  display_name             String?
+  created_at              DateTime   @default(now())
+  updated_at              DateTime   @updatedAt
   profile              UserProfile?
   workout_sessions     WorkoutSession[]
   meals                Meal[]
@@ -28,6 +28,8 @@ model User {
   progress_tracking   ProgressTracking[]
   ai_interactions    AIInteraction[]
   personal_records   ExercisePersonalRecord[]
+
+  @@map("users")
 }
 
 model UserProfile {
