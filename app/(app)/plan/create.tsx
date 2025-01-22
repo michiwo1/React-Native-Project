@@ -44,12 +44,6 @@ export default function CreatePlanScreen() {
             >
               <MaterialIcons name="arrow-back" size={24} color="#000" />
             </TouchableOpacity>
-            <TextInput
-              style={styles.nameInput}
-              placeholder="プラン名を入力"
-              value={planName}
-              onChangeText={setPlanName}
-            />
           </View>
         </View>
 
@@ -71,13 +65,6 @@ export default function CreatePlanScreen() {
         </ScrollView>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={handleAddExercise}
-          >
-            <Text style={styles.buttonText}>エクササイズを追加</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.saveButton}
             onPress={handleSavePlan}
