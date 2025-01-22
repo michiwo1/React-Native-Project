@@ -1,12 +1,11 @@
 import { View, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ThemedText } from '@/components/ThemedText';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import TextRecognition from 'react-native-text-recognition';
 
 export default function WeightInputScreen() {
   const router = useRouter();
@@ -36,15 +35,8 @@ export default function WeightInputScreen() {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const photo = result.assets[0];
-        // OCRで画像から文字を認識
-        console.log('photo.uri', photo.uri);
-        const ocrResult = await TextRecognition.recognize(photo.uri);
-        // 数値のみを抽出（文字列として処理）
-        const weightMatch = ocrResult.join(' ').match(/\d+(\.\d+)?/);
-        if (weightMatch) {
-          setWeight(weightMatch[0]);
-        }
+        // OCR機能は一時的に無効化
+        alert('OCR機能は現在利用できません');
       }
     } catch (error) {
       console.error('Error:', error);

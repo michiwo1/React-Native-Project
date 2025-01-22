@@ -9,13 +9,18 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fitnessapp"
     },
     "android": {
+      "package": "com.fitnessapp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -34,14 +39,6 @@
         }
       ],
       [
-        "expo-notifications",
-        {
-          "icon": "./assets/notification-icon.png",
-          "color": "#2563EB",
-          "sounds": ["./assets/notification-sound.wav"]
-        }
-      ],
-      [
         "expo-image-picker",
         {
           "photosPermission": "アプリがカメラにアクセスして料理の写真を撮影します。",
@@ -49,11 +46,6 @@
         }
       ]
     ],
-    "notification": {
-      "icon": "./assets/notification-icon.png",
-      "color": "#2563EB",
-      "iosDisplayInForeground": true
-    },
     "experiments": {
       "typedRoutes": true
     }
