@@ -1,11 +1,12 @@
 import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Modal, Pressable } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { API_URL } from '@/constants/api';
 import { useAuth } from '@/hooks/useAuth';
+import { useFocusEffect } from '@react-navigation/native';
 
 // Configure notifications
 Notifications.setNotificationHandler({
@@ -65,48 +66,49 @@ export default function WorkoutLogScreen() {
     setupNotifications();
   }, []);
 
-  useEffect(() => {
-    const fetchLatestWorkoutSession = async () => {
-      if (!token) return;
-
-      try {
-        const response = await fetch(`${API_URL}/api/workout/latest`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch latest workout session');
-        }
-
-        const data = await response.json();
-        if (data.exercises && data.exercises.length > 0) {
-          setLatestWorkoutSessionId(data.id);
-          const formattedExercises: WorkoutExercise[] = data.exercises.map((exercise: any) => ({
-            id: exercise.exercise.id,
-            name: exercise.exercise.name,
-            category: exercise.exercise.category.name,
-            sets: exercise.sets.map((set: any) => ({
-              id: set.id,
-              weight: set.weight.toString(),
-              reps: set.reps.toString(),
-              done: set.is_completed,
-            })),
-            note: exercise.note || '',
-          }));
-          // Only update workoutExercises if no exercises were passed as params
-          if (!params.exercises) {
-            setWorkoutExercises(formattedExercises);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching latest workout session:', error);
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        loadLatestWorkoutSession();
       }
-    };
+    }, [token])
+  );
 
-    fetchLatestWorkoutSession();
-  }, [token]);
+  const loadLatestWorkoutSession = async () => {
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_URL}/api/workout/latest`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch latest workout session');
+      }
+
+      const data = await response.json();
+      if (data.exercises && data.exercises.length > 0) {
+        setLatestWorkoutSessionId(data.id);
+        const formattedExercises: WorkoutExercise[] = data.exercises.map((exercise: any) => ({
+          id: exercise.exercise.id,
+          name: exercise.exercise.name,
+          category: exercise.exercise.category.name,
+          sets: exercise.sets.map((set: any) => ({
+            id: set.id,
+            weight: set.weight.toString(),
+            reps: set.reps.toString(),
+            done: set.is_completed,
+          })),
+          note: exercise.note || '',
+        }));
+        setWorkoutExercises(formattedExercises);
+      }
+    } catch (error) {
+      console.error('Error fetching latest workout session:', error);
+    }
+  };
 
   const setupNotifications = async () => {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -140,7 +142,6 @@ export default function WorkoutLogScreen() {
           sound: true,
           priority: 'high',
           vibrate: [0, 250, 250, 250],
-          channelId: 'rest-timer',
         },
         trigger: null, // Immediate notification
       });
@@ -289,6 +290,10 @@ export default function WorkoutLogScreen() {
     });
   };
 
+  const handleExercisesAdded = async () => {
+    await loadLatestWorkoutSession();
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -377,7 +382,7 @@ export default function WorkoutLogScreen() {
               </View>
 
               {exercise.sets.map((set, setIndex) => (
-                <View key={setIndex} style={styles.setRow}>
+                <View key={`${exercise.id}-set-${setIndex}`} style={styles.setRow}>
                   <ThemedText style={styles.setNumber}>{setIndex + 1}</ThemedText>
                   <TextInput
                     style={styles.input}
@@ -429,7 +434,10 @@ export default function WorkoutLogScreen() {
               if (latestWorkoutSessionId) {
                 router.push({
                   pathname: '/workout/exercises',
-                  params: { workoutSessionId: latestWorkoutSessionId }
+                  params: { 
+                    workoutSessionId: latestWorkoutSessionId,
+                    onExercisesAdded: 'true'
+                  }
                 });
               } else {
                 router.push('/workout/exercises');

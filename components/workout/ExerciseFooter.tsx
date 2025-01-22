@@ -18,6 +18,7 @@ type ExerciseFooterProps = {
   onPress?: () => void;
   workoutSessionId?: string;
   onAddToWorkoutSession?: (exercises: Exercise[]) => Promise<any>;
+  onExercisesAdded?: string;
 };
 
 export function ExerciseFooter({ 
@@ -31,7 +32,8 @@ export function ExerciseFooter({
   navigationType = 'log',
   onPress,
   workoutSessionId,
-  onAddToWorkoutSession
+  onAddToWorkoutSession,
+  onExercisesAdded
 }: ExerciseFooterProps) {
   const handlePress = async () => {
     if (selectedExercises.length === 0) return;
@@ -50,9 +52,11 @@ export function ExerciseFooter({
       const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
 
       if (workoutSessionId && onAddToWorkoutSession) {
-        // Add exercises to existing workout session
         await onAddToWorkoutSession(selectedExerciseData);
-        router.back();
+        if (onExercisesAdded === 'true') {
+          // The parent component will handle the reload when we navigate back
+          router.back();
+        }
       } else {
         // Create new workout session
         const response = await fetch(`${API_URL}/api/workout/sessions`, {
