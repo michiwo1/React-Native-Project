@@ -439,7 +439,7 @@ export default function WorkoutLogScreen() {
               </View>
 
               {exercise.sets.map((set, setIndex) => (
-                <View key={`${exercise.id}_set_${setIndex}`} style={styles.setRow}>
+                <View key={`exercise_${exercise.id}_set_${setIndex}`} style={styles.setRow}>
                   <ThemedText style={styles.setNumber}>{setIndex + 1}</ThemedText>
                   <TextInput
                     style={styles.input}
