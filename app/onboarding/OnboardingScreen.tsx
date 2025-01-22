@@ -21,7 +21,7 @@ export function OnboardingScreen({ step }: { step: number }) {
         token
       });
       
-      const response = await fetch(`${API_URL}/api/profile`, {
+      const response = await fetch(`${API_URL}/api/user/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ export function OnboardingScreen({ step }: { step: number }) {
       if (!response.ok) {
         const errorData = await response.text();
         console.error('Error response:', errorData);
-        throw new Error('プロフィールの更新に失敗しました');
+        throw new Error(`プロフィールの更新に失敗しました: ${errorData}`);
       }
 
       const data = await response.json();
@@ -51,7 +51,7 @@ export function OnboardingScreen({ step }: { step: number }) {
         message: error.message,
         stack: error.stack
       });
-      // TODO: エラー処理を追加 - ユーザーにエラーを表示する
+      alert(error.message || 'プロフィールの更新に失敗しました');
     }
   };
 
