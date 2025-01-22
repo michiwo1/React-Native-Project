@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { router } from 'expo-router';
 import { Colors } from '@/constants/Colors';
@@ -83,7 +83,7 @@ export default function WorkoutPlanScreen() {
         <ThemedText style={styles.dateText}>{dateString}</ThemedText>
       </View>
       
-      <View style={styles.content}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {hasActiveSession && workoutData ? (
           <View style={styles.workoutCard}>
             <TouchableOpacity 
@@ -141,23 +141,24 @@ export default function WorkoutPlanScreen() {
           </View>
         )}
 
-        <TouchableOpacity 
-          style={styles.routineSection}
-          onPress={() => {/* Handle routine selection */}}
-        >
-          <View>
-            <ThemedText style={styles.sectionTitle}>My routines</ThemedText>
-            <ThemedText style={styles.routineText}>Select routine</ThemedText>
-          </View>
-          <ThemedText style={styles.arrow}>→</ThemedText>
-        </TouchableOpacity>
-
         {!hasActiveSession && !workoutData && (
-          <View style={styles.restMessage}>
-            <ThemedText style={styles.restText}>Today is a rest day 😢</ThemedText>
+          <View>
+            <TouchableOpacity 
+              style={styles.routineSection}
+              onPress={() => {/* Handle routine selection */}}
+            >
+              <View>
+                <ThemedText style={styles.sectionTitle}>My routines</ThemedText>
+                <ThemedText style={styles.routineText}>Select routine</ThemedText>
+              </View>
+              <ThemedText style={styles.arrow}>→</ThemedText>
+            </TouchableOpacity>
+            <View style={styles.restMessage}>
+              <ThemedText style={styles.restText}>Today is a rest day 😢</ThemedText>
+            </View>
           </View>
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 }
