@@ -8,9 +8,23 @@ type ExerciseFooterProps = {
   selectedExercises: number[];
   exercises: Exercise[];
   insets: { bottom: number };
+  buttonText?: {
+    default: string;
+    selected: string;
+  };
+  navigationType?: 'log' | 'home';
 };
 
-export function ExerciseFooter({ selectedExercises, exercises, insets }: ExerciseFooterProps) {
+export function ExerciseFooter({ 
+  selectedExercises, 
+  exercises, 
+  insets, 
+  buttonText = {
+    default: 'Select exercises',
+    selected: `Add ${selectedExercises.length} exercise${selectedExercises.length === 1 ? '' : 's'}`
+  },
+  navigationType = 'log'
+}: ExerciseFooterProps) {
   return (
     <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
       <TouchableOpacity 
@@ -20,11 +34,15 @@ export function ExerciseFooter({ selectedExercises, exercises, insets }: Exercis
         ]}
         onPress={() => {
           if (selectedExercises.length > 0) {
-            const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
-            router.push({
-              pathname: '/workout/log',
-              params: { exercises: JSON.stringify(selectedExerciseData) }
-            });
+            if (navigationType === 'home') {
+              router.push('/(tabs)');
+            } else {
+              const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
+              router.push({
+                pathname: '/workout/log',
+                params: { exercises: JSON.stringify(selectedExerciseData) }
+              });
+            }
           }
         }}
         disabled={selectedExercises.length === 0}
@@ -34,8 +52,8 @@ export function ExerciseFooter({ selectedExercises, exercises, insets }: Exercis
           selectedExercises.length > 0 && styles.selectButtonTextActive
         ]}>
           {selectedExercises.length === 0
-            ? 'Select exercises'
-            : `Add ${selectedExercises.length} exercise${selectedExercises.length === 1 ? '' : 's'}`}
+            ? buttonText.default
+            : buttonText.selected}
         </ThemedText>
       </TouchableOpacity>
     </View>

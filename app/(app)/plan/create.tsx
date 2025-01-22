@@ -51,6 +51,11 @@ export default function CreatePlanScreen() {
         selectedExercises={selectedExercises}
         exercises={exercises}
         insets={insets}
+        buttonText={{
+          default: 'Select exercises',
+          selected: 'Create plan'
+        }}
+        navigationType="home"
       />
     </View>
   );
