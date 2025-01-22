@@ -7,9 +7,13 @@ import { CategoryFilter } from '@/components/workout/CategoryFilter';
 import { ExerciseList, Exercise } from '@/components/workout/ExerciseList';
 import { ExerciseFooter } from '@/components/workout/ExerciseFooter';
 import { API_URL } from '@/constants/api';
+import { useLocalSearchParams } from 'expo-router';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function ExercisesScreen() {
   const insets = useSafeAreaInsets();
+  const { workoutSessionId } = useLocalSearchParams<{ workoutSessionId: string }>();
+  const { token } = useAuth();
   const scrollY = useRef(new Animated.Value(0)).current;
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
@@ -19,17 +23,31 @@ export default function ExercisesScreen() {
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
 
   useEffect(() => {
-    fetchCategories();
-    fetchAllExercises();
-  }, []);
+    if (token) {
+      console.log('Token available:', token);
+      fetchCategories();
+      fetchAllExercises();
+    } else {
+      console.log('No token available');
+    }
+  }, [token]);
 
   useEffect(() => {
     filterExercises();
   }, [selectedCategory, allExercises]);
 
   const fetchCategories = async () => {
+    if (!token) return;
+
     try {
-      const response = await fetch(`${API_URL}/api/exercises/categories`);
+      const response = await fetch(`${API_URL}/api/exercise/categories`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
       const data = await response.json();
       const categoryNames = data.map((cat: any) => cat.name);
       setCategories(categoryNames);
@@ -39,8 +57,17 @@ export default function ExercisesScreen() {
   };
 
   const fetchAllExercises = async () => {
+    if (!token) return;
+
     try {
-      const response = await fetch(`${API_URL}/api/exercises`);
+      const response = await fetch(`${API_URL}/api/exercise`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch exercises');
+      }
       const data = await response.json();
       console.log('Exercises data:', data);
       const exercises = data.map((exercise: any) => ({
@@ -79,6 +106,31 @@ export default function ExercisesScreen() {
     });
   };
 
+  const addExercisesToWorkoutSession = async (exercises: Exercise[]) => {
+    if (!workoutSessionId || !token) return;
+
+    try {
+      const response = await fetch(`${API_URL}/api/workout/${workoutSessionId}/exercises`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          exerciseIds: exercises.map(e => e.id.toString()),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add exercises to workout session');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error adding exercises to workout session:', error);
+    }
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ExerciseHeader scrollY={scrollY} insets={insets} title="Exercises" />
@@ -98,6 +150,8 @@ export default function ExercisesScreen() {
         selectedExercises={selectedExercises}
         exercises={filteredExercises}
         insets={insets}
+        workoutSessionId={workoutSessionId}
+        onAddToWorkoutSession={addExercisesToWorkoutSession}
       />
     </View>
   );

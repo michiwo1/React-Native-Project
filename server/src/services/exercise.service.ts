@@ -24,6 +24,11 @@ export class ExerciseService {
 
   async getAllCategories() {
     return prisma.exerciseCategory.findMany({
+      select: {
+        id: true,
+        name: true,
+        display_order: true,
+      },
       orderBy: {
         display_order: 'asc',
       },

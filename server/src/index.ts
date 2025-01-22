@@ -8,6 +8,7 @@ import bcrypt from 'bcrypt'
 import userRoutes from './routes/user.routes'
 import exerciseRoutes from './routes/exercise.routes'
 import workoutRoutes from './routes/workout.routes'
+import authRoutes from './routes/auth.routes'
 
 dotenv.config()
 
@@ -24,6 +25,10 @@ app.use(express.json())
 // Request logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+  console.log('Headers:', req.headers);
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('Body:', req.body);
+  }
   next();
 });
 
@@ -32,58 +37,17 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' })
 })
 
-// Exercise routes (public)
-app.use('/api/exercises', exerciseRoutes);
+// Auth routes
+app.use('/api/auth', authRoutes);
+
+// Exercise routes (protected)
+app.use('/api/exercise', authenticate, exerciseRoutes);
 
 // Workout routes (protected)
-app.use('/api/workouts', authenticate, workoutRoutes);
+app.use('/api/workout', authenticate, workoutRoutes);
 
-// Auth routes
-app.post('/auth/signup', async (req, res) => {
-  try {
-    const { email, password, displayName } = req.body;
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
-
-    if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password_hash: hashedPassword,
-        display_name: displayName || email.split('@')[0]
-      }
-    });
-
-    // Generate JWT token
-    const token = generateToken(user.id);
-
-    res.json({
-      id: user.id,
-      email: user.email,
-      displayName: user.display_name,
-      token
-    });
-  } catch (error) {
-    console.error('Signup error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Protected routes
-app.use('/api', authenticate, userRoutes);
-app.get('/protected', authenticate, (req, res) => {
-  res.json({ message: 'Protected data', userId: req.user?.userId });
-});
+// User routes (protected)
+app.use('/api/user', authenticate, userRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

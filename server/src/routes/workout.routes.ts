@@ -10,4 +10,7 @@ router.post('/sessions', authenticate, workoutController.createWorkoutSession);
 router.post('/session', authenticate, workoutController.createWorkoutSession);
 router.get('/latest', authenticate, workoutController.getLatestWorkoutSession);
 
+// Add exercises to workout session
+router.post('/:workoutSessionId/exercises', authenticate, workoutController.addExercisesToWorkoutSession);
+
 export default router; 

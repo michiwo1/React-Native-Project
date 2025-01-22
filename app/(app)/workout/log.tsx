@@ -48,6 +48,7 @@ export default function WorkoutLogScreen() {
       note: ''
     }))
   );
+  const [latestWorkoutSessionId, setLatestWorkoutSessionId] = useState<string | null>(null);
   const [isWorkoutStarted, setIsWorkoutStarted] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -81,6 +82,7 @@ export default function WorkoutLogScreen() {
 
         const data = await response.json();
         if (data.exercises && data.exercises.length > 0) {
+          setLatestWorkoutSessionId(data.id);
           const formattedExercises: WorkoutExercise[] = data.exercises.map((exercise: any) => ({
             id: exercise.exercise.id,
             name: exercise.exercise.name,
@@ -422,7 +424,16 @@ export default function WorkoutLogScreen() {
         <View style={styles.addExerciseContainer}>
           <TouchableOpacity
             style={styles.addExerciseButton}
-            onPress={() => router.push('/workout/exercises')}
+            onPress={() => {
+              if (latestWorkoutSessionId) {
+                router.push({
+                  pathname: '/workout/exercises',
+                  params: { workoutSessionId: latestWorkoutSessionId }
+                });
+              } else {
+                router.push('/workout/exercises');
+              }
+            }}
           >
             <ThemedText style={styles.addExerciseText}>+ Add Exercise</ThemedText>
           </TouchableOpacity>

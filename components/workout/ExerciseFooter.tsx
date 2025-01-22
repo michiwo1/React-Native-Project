@@ -16,6 +16,8 @@ type ExerciseFooterProps = {
   };
   navigationType?: 'log' | 'home';
   onPress?: () => void;
+  workoutSessionId?: string;
+  onAddToWorkoutSession?: (exercises: Exercise[]) => Promise<any>;
 };
 
 export function ExerciseFooter({ 
@@ -27,12 +29,22 @@ export function ExerciseFooter({
     selected: `Add ${selectedExercises.length} exercise${selectedExercises.length === 1 ? '' : 's'}`
   },
   navigationType = 'log',
-  onPress
+  onPress,
+  workoutSessionId,
+  onAddToWorkoutSession
 }: ExerciseFooterProps) {
   const handlePress = async () => {
     if (selectedExercises.length > 0) {
       if (onPress) {
         onPress();
+      } else if (workoutSessionId && onAddToWorkoutSession) {
+        try {
+          const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
+          await onAddToWorkoutSession(selectedExerciseData);
+          router.back();
+        } catch (error) {
+          console.error('Error adding exercises to workout session:', error);
+        }
       } else {
         try {
           const token = await AsyncStorage.getItem('userToken');
@@ -44,7 +56,7 @@ export function ExerciseFooter({
           const exerciseIds = selectedExercises.map(id => id.toString());
 
           // Create workout session
-          const response = await fetch(`${API_URL}/api/workouts/sessions`, {
+          const response = await fetch(`${API_URL}/api/workout/sessions`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

@@ -60,4 +60,53 @@ export class WorkoutService {
 
     return latestSession;
   }
+
+  async addExercisesToWorkoutSession(userId: string, workoutSessionId: string, exerciseIds: string[]) {
+    return await this.prisma.$transaction(async (tx) => {
+      // Verify the workout session belongs to the user
+      const workoutSession = await tx.workoutSession.findFirst({
+        where: {
+          id: workoutSessionId,
+          user_id: userId,
+        },
+      });
+
+      if (!workoutSession) {
+        throw new Error('Workout session not found or unauthorized');
+      }
+
+      // Create workout session exercises
+      const workoutSessionExercises = await Promise.all(
+        exerciseIds.map((exerciseId) =>
+          tx.workoutSessionExercise.create({
+            data: {
+              workout_session_id: workoutSessionId,
+              exercise_id: exerciseId,
+            },
+          })
+        )
+      );
+
+      // Get the updated workout session with all exercises
+      const updatedWorkoutSession = await tx.workoutSession.findUnique({
+        where: {
+          id: workoutSessionId,
+        },
+        include: {
+          exercises: {
+            include: {
+              exercise: {
+                include: {
+                  category: true,
+                },
+              },
+              sets: true,
+            },
+          },
+        },
+      });
+
+      return updatedWorkoutSession;
+    });
+  }
 } 
