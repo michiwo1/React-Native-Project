@@ -13,6 +13,7 @@ type ExerciseFooterProps = {
     selected: string;
   };
   navigationType?: 'log' | 'home';
+  onPress?: () => void;
 };
 
 export function ExerciseFooter({ 
@@ -23,8 +24,25 @@ export function ExerciseFooter({
     default: 'Select exercises',
     selected: `Add ${selectedExercises.length} exercise${selectedExercises.length === 1 ? '' : 's'}`
   },
-  navigationType = 'log'
+  navigationType = 'log',
+  onPress
 }: ExerciseFooterProps) {
+  const handlePress = () => {
+    if (selectedExercises.length > 0) {
+      if (onPress) {
+        onPress();
+      } else if (navigationType === 'home') {
+        router.push('/(tabs)');
+      } else {
+        const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
+        router.push({
+          pathname: '/workout/log',
+          params: { exercises: JSON.stringify(selectedExerciseData) }
+        });
+      }
+    }
+  };
+
   return (
     <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
       <TouchableOpacity 
@@ -32,19 +50,7 @@ export function ExerciseFooter({
           styles.selectButton,
           selectedExercises.length > 0 && styles.selectButtonActive
         ]}
-        onPress={() => {
-          if (selectedExercises.length > 0) {
-            if (navigationType === 'home') {
-              router.push('/(tabs)');
-            } else {
-              const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
-              router.push({
-                pathname: '/workout/log',
-                params: { exercises: JSON.stringify(selectedExerciseData) }
-              });
-            }
-          }
-        }}
+        onPress={handlePress}
         disabled={selectedExercises.length === 0}
       >
         <ThemedText style={[

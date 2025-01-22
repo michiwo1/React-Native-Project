@@ -6,6 +6,8 @@ import { SearchBar } from '@/components/workout/SearchBar';
 import { CategoryFilter } from '@/components/workout/CategoryFilter';
 import { ExerciseList, Exercise } from '@/components/workout/ExerciseList';
 import { ExerciseFooter } from '@/components/workout/ExerciseFooter';
+import { PlanNameModal } from '@/components/workout/PlanNameModal';
+import { router } from 'expo-router';
 
 const categories = ['Leg', 'Chest', 'Back', 'Shoulder', 'Arms', 'Core'];
 
@@ -22,6 +24,7 @@ export default function CreatePlanScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const [selectedCategory, setSelectedCategory] = useState('Leg');
   const [selectedExercises, setSelectedExercises] = useState<number[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleExerciseSelect = (exerciseId: number) => {
     setSelectedExercises(prev => {
@@ -30,6 +33,24 @@ export default function CreatePlanScreen() {
       }
       return [...prev, exerciseId];
     });
+  };
+
+  const handleCreatePlan = () => {
+    if (selectedExercises.length > 0) {
+      setIsModalVisible(true);
+    }
+  };
+
+  const handlePlanSubmit = (planName: string) => {
+    // TODO: Here you would typically save the plan to your storage/backend
+    const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
+    const plan = {
+      name: planName,
+      exercises: selectedExerciseData,
+    };
+    console.log('Created plan:', plan);
+    setIsModalVisible(false);
+    router.push('/(tabs)');
   };
 
   return (
@@ -55,7 +76,12 @@ export default function CreatePlanScreen() {
           default: 'Select exercises',
           selected: 'Create plan'
         }}
-        navigationType="home"
+        onPress={handleCreatePlan}
+      />
+      <PlanNameModal
+        isVisible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        onSubmit={handlePlanSubmit}
       />
     </View>
   );
