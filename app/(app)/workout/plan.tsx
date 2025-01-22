@@ -7,10 +7,23 @@ import { useEffect, useState } from 'react';
 import { API_URL } from '@/constants/api';
 import { useAuth } from '@/hooks/useAuth';
 
+interface Exercise {
+  name: string;
+  sets: number;
+  weight: number;
+  reps: number;
+}
+
+interface WorkoutData {
+  exercises: Exercise[];
+  ended_at: string | null;
+}
+
 export default function WorkoutPlanScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const [hasActiveSession, setHasActiveSession] = useState(false);
+  const [workoutData, setWorkoutData] = useState<WorkoutData | null>(null);
   const { token } = useAuth();
 
   useEffect(() => {
@@ -20,7 +33,6 @@ export default function WorkoutPlanScreen() {
   }, [token]);
 
   const checkTodayWorkoutSession = async () => {
-
     try {
       const response = await fetch(`${API_URL}/api/workout/latest`, {
         method: 'GET',
@@ -35,6 +47,7 @@ export default function WorkoutPlanScreen() {
         const data = await response.json();
         if (data && !data.ended_at) {
           setHasActiveSession(true);
+          setWorkoutData(data);
         }
       }
     } catch (error) {
@@ -61,23 +74,55 @@ export default function WorkoutPlanScreen() {
       </View>
       
       <View style={styles.content}>
-        <View style={styles.workoutSection}>
-          <ThemedText style={styles.title}>Today's workout</ThemedText>
-          {hasActiveSession ? (
-            <ThemedText style={[styles.subtitle, { color: '#007AFF' }]}>
-              まだ今日のトレーニングは終了していません
-            </ThemedText>
-          ) : (
+        {hasActiveSession && workoutData ? (
+          <View style={styles.workoutCard}>
+            <TouchableOpacity style={styles.summaryHeader}>
+              <ThemedText style={styles.summaryTitle}>
+                {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} Summary
+              </ThemedText>
+              <ThemedText style={styles.chevron}>›</ThemedText>
+            </TouchableOpacity>
+            
+            <View style={styles.warningBox}>
+              <ThemedText style={styles.warningText}>
+                This workout is not yet completed.
+              </ThemedText>
+              <ThemedText style={styles.warningSubtext}>
+                Finish the workout to view the info.
+              </ThemedText>
+            </View>
+
+            <View style={styles.workoutInfo}>
+              <ThemedText style={styles.workoutInfoTitle}>Workout Info</ThemedText>
+              {workoutData.exercises?.map((exercise, index) => (
+                <View key={index} style={styles.exerciseItem}>
+                  <View style={styles.exerciseHeader}>
+                    <ThemedText style={styles.exerciseNumber}>{index + 1}</ThemedText>
+                    <ThemedText style={styles.exerciseName}>
+                      {exercise.name} | {exercise.sets}set
+                    </ThemedText>
+                    <View style={styles.checkmark} />
+                  </View>
+                  <ThemedText style={styles.exerciseDetails}>
+                    {exercise.weight || 0}lbs x {exercise.reps || 0}reps
+                  </ThemedText>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : (
+          <View style={styles.workoutSection}>
+            <ThemedText style={styles.title}>Today's workout</ThemedText>
             <ThemedText style={styles.subtitle}>Plan your own workout!</ThemedText>
-          )}
               
-          <TouchableOpacity 
-            style={[styles.button, { backgroundColor: '#007AFF' }]}
-            onPress={() => router.push('/workout/exercises')}
-          >
-            <ThemedText style={styles.buttonText}>Add exercises</ThemedText>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity 
+              style={[styles.button, { backgroundColor: '#007AFF' }]}
+              onPress={() => router.push('/workout/exercises')}
+            >
+              <ThemedText style={styles.buttonText}>Add exercises</ThemedText>
+            </TouchableOpacity>
+          </View>
+        )}
 
         <TouchableOpacity 
           style={styles.routineSection}
@@ -193,5 +238,78 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
     fontWeight: '600',
+  },
+  workoutCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  summaryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  chevron: {
+    fontSize: 24,
+    color: '#6B7280',
+  },
+  warningBox: {
+    backgroundColor: '#F3F4F6',
+    padding: 16,
+    alignItems: 'center',
+  },
+  warningText: {
+    fontSize: 16,
+    color: '#374151',
+    marginBottom: 4,
+  },
+  warningSubtext: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  workoutInfo: {
+    padding: 16,
+  },
+  workoutInfoTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  exerciseItem: {
+    marginBottom: 16,
+  },
+  exerciseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  exerciseNumber: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginRight: 8,
+    color: '#007AFF',
+  },
+  exerciseName: {
+    fontSize: 16,
+    flex: 1,
+  },
+  checkmark: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#E5E7EB',
+  },
+  exerciseDetails: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginLeft: 24,
   },
 }); 
