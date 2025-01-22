@@ -125,6 +125,7 @@ export class WorkoutController {
   };
 
   getWorkoutSummary = async (req: Request, res: Response) => {
+    console.log('3----------');
     try {
       const { workoutSessionId } = req.params;
       const userId = req.user?.userId;

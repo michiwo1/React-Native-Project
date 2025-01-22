@@ -24,24 +24,31 @@ export default function WorkoutCompleteScreen() {
   const { token } = useAuth();
   const { colors } = useTheme();
   const [summary, setSummary] = useState<WorkoutSummary | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSummary = async () => {
       try {
+        console.log('Fetching summary with token:', token);
         const response = await fetch(`${API_URL}/api/workout/sessions/${params.workoutSessionId}/summary`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        if (!response.ok) throw new Error('Failed to fetch workout summary');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch workout summary');
+        }
         const data = await response.json();
         setSummary(data);
+        setError(null);
       } catch (error) {
         console.error('Error fetching workout summary:', error);
+        setError(error instanceof Error ? error.message : 'Failed to fetch workout summary');
       }
     };
 
-    if (params.workoutSessionId) {
+    if (params.workoutSessionId && token) {
       fetchSummary();
     }
   }, [params.workoutSessionId, token]);
@@ -62,6 +69,17 @@ export default function WorkoutCompleteScreen() {
   const handleBack = () => {
     router.back();
   };
+
+  if (error) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={styles.content}>
+          <ThemedText style={styles.errorText}>Error: {error}</ThemedText>
+          <Button onPress={handleFinish} title="Return to Home" />
+        </View>
+      </View>
+    );
+  }
 
   if (!summary) {
     return (
@@ -148,5 +166,10 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 20,
+    textAlign: 'center',
   },
 }); 
