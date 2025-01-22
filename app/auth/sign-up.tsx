@@ -52,14 +52,14 @@ export default function SignUpScreen() {
       // ユーザー情報全体を文字列として保存
       await AsyncStorage.setItem('userData', JSON.stringify(data));
 
-      // 保存されたセッション情報をコンソールに表示
+      // 保存されたセッション情報をコンソールに表示（デバッグ用）
       const savedToken = await AsyncStorage.getItem('userToken');
       const savedUserData = await AsyncStorage.getItem('userData');
       console.log('保存されたトークン:', savedToken);
       console.log('保存されたユーザー情報:', savedUserData);
 
       // サインアップ成功後の処理
-      router.replace('/(app)');
+      router.push("/onboarding/1");
     } catch (error) {
       alert(error instanceof Error ? error.message : 'サインアップに失敗しました');
     }
