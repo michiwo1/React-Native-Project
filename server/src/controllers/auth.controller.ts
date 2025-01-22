@@ -54,4 +54,23 @@ export class AuthController {
       next(error);
     }
   };
+
+  public updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        return next(new AppError('User not found', 404));
+      }
+
+      const { height, weight, age } = req.body;
+      const profile = await this.authService.updateProfile(userId, { height, weight, age });
+      
+      res.status(200).json({
+        status: 'success',
+        data: { profile }
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 } 

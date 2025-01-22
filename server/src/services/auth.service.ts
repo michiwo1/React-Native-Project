@@ -59,4 +59,14 @@ export class AuthService {
 
     return { message: 'Password updated successfully' };
   }
+
+  public async updateProfile(userId: string, profileData: { height?: number; weight?: number; age?: number }) {
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+
+    const profile = await this.userService.updateProfile(userId, profileData);
+    return profile;
+  }
 } 

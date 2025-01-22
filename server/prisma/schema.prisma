@@ -36,6 +36,8 @@ model UserProfile {
   id             String     @id @default(cuid())
   user_id        String     @unique
   height         Float?
+  weight         Float?
+  age            Int?
   goal_type_id   String?
   goal_type      GoalType?  @relation(fields: [goal_type_id], references: [id])
   training_level String?

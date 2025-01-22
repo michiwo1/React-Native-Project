@@ -85,4 +85,28 @@ export class UserService {
       throw error;
     }
   }
+
+  public async updateProfile(userId: string, profileData: { height?: number; weight?: number; age?: number }) {
+    try {
+      const profile = await this.prisma.userProfile.upsert({
+        where: {
+          user_id: userId
+        },
+        create: {
+          user_id: userId,
+          height: profileData.height,
+          weight: profileData.weight,
+          age: profileData.age
+        },
+        update: {
+          height: profileData.height,
+          weight: profileData.weight,
+          age: profileData.age
+        }
+      });
+      return profile;
+    } catch (error) {
+      throw error;
+    }
+  }
 } 
