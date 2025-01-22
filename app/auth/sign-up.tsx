@@ -7,13 +7,35 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleSignUp = () => {
-    // TODO: Implement sign up logic
+  const handleSignUp = async () => {
     if (password !== confirmPassword) {
       alert('パスワードが一致しません');
       return;
     }
-    // Add authentication logic here
+
+    try {
+      const response = await fetch('http://192.168.1.0:3000/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'サインアップに失敗しました');
+      }
+
+      // サインアップ成功後の処理
+      router.replace('/(app)');
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'サインアップに失敗しました');
+    }
   };
 
   return (
