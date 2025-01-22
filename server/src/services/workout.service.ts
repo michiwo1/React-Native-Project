@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, WorkoutSession, ExerciseSet, WorkoutSessionExercise } from '@prisma/client';
 
 interface ExerciseSetData {
   setNumber: number;
@@ -150,15 +150,79 @@ export class WorkoutService {
     }
   }
 
-  async completeWorkoutSession(sessionId: string, userId: string) {
-    return await this.prisma.workoutSession.update({
+  async finishWorkoutSession(workoutSessionId: string, userId: string) {
+    try {
+      const workoutSession = await this.prisma.workoutSession.findFirst({
+        where: {
+          id: workoutSessionId,
+          user_id: userId,
+        },
+      });
+
+      if (!workoutSession) {
+        throw new Error('Workout session not found');
+      }
+
+      return await this.prisma.workoutSession.update({
+        where: { 
+          id: workoutSessionId,
+          user_id: userId // Add user_id to ensure ownership
+        },
+        data: { 
+          ended_at: new Date() 
+        },
+        include: { // Include related data for verification
+          exercises: {
+            include: {
+              sets: true
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error finishing workout session:', error);
+      throw new Error('Failed to finish workout session');
+    }
+  }
+
+  async getWorkoutSummary(workoutSessionId: string, userId: string) {
+    const workoutSession = await this.prisma.workoutSession.findFirst({
       where: {
-        id: sessionId,
+        id: workoutSessionId,
         user_id: userId,
       },
-      data: {
-        ended_at: new Date(),
+      include: {
+        exercises: {
+          include: {
+            exercise: true,
+            sets: true,
+          },
+        },
       },
     });
+
+    if (!workoutSession) {
+      throw new Error('Workout session not found');
+    }
+
+    const duration = workoutSession.ended_at 
+      ? Math.floor((workoutSession.ended_at.getTime() - workoutSession.started_at.getTime()) / 1000)
+      : 0;
+
+    const exerciseCount = workoutSession.exercises.length;
+
+    const totalVolume = workoutSession.exercises.reduce((total: number, exercise) => {
+      return total + exercise.sets.reduce((setTotal: number, set) => {
+        return setTotal + (set.weight * set.reps);
+      }, 0);
+    }, 0);
+
+    return {
+      duration,
+      exerciseCount,
+      totalVolume,
+      startedAt: workoutSession.started_at,
+      endedAt: workoutSession.ended_at,
+    };
   }
 } 

@@ -13,8 +13,11 @@ router.get('/latest', authenticate, workoutController.getLatestWorkoutSession);
 // Add exercises to workout session
 router.post('/:workoutSessionId/exercises', authenticate, workoutController.addExercisesToWorkoutSession);
 
-// Save exercise sets and complete workout session
+// Save exercise sets
 router.post('/:workoutSessionExerciseId/sets', authenticate, workoutController.saveExerciseSet);
-router.put('/sessions/:sessionId/complete', authenticate, workoutController.completeWorkoutSession);
+
+// Finish workout session and get summary
+router.post('/sessions/:workoutSessionId/finish', authenticate, workoutController.finishWorkoutSession);
+router.get('/sessions/:workoutSessionId/summary', authenticate, workoutController.getWorkoutSummary);
 
 export default router; 

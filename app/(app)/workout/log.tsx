@@ -221,13 +221,14 @@ export default function WorkoutLogScreen() {
     try {
       if (!latestWorkoutSessionId) return;
 
-      const response = await fetch(`${API_URL}/api/workout/sessions/${latestWorkoutSessionId}/complete`, {
-        method: 'PUT',
+      const response = await fetch(`${API_URL}/api/workout/sessions/${latestWorkoutSessionId}/finish`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
       });
-
+      
       if (!response.ok) {
         throw new Error('Failed to complete workout session');
       }
@@ -239,8 +240,8 @@ export default function WorkoutLogScreen() {
         handleStopRest();
       }
 
-      // Navigate back to the workout plan screen
-      router.push('/workout/plan');
+      // Navigate to the completion screen
+      router.replace(`/workout/complete?workoutSessionId=${latestWorkoutSessionId}`);
     } catch (error) {
       console.error('Error completing workout:', error);
       Alert.alert('Error', 'Failed to complete workout');

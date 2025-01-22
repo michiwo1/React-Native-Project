@@ -99,23 +99,44 @@ export class WorkoutController {
     }
   };
 
-  completeWorkoutSession = async (req: Request, res: Response) => {
+  finishWorkoutSession = async (req: Request, res: Response) => {
+    console.log('2----------');
     try {
-      const { sessionId } = req.params;
+      const { workoutSessionId } = req.params;
       const userId = req.user?.userId;
 
       if (!userId) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
-      const workoutSession = await this.workoutService.completeWorkoutSession(
-        sessionId,
-        userId
-      );
+      if (!workoutSessionId) {
+        return res.status(400).json({ message: 'Workout session ID is required' });
+      }
 
+      const workoutSession = await this.workoutService.finishWorkoutSession(workoutSessionId, userId);
       return res.status(200).json(workoutSession);
     } catch (error) {
-      console.error('Error completing workout session:', error);
+      console.error('Error finishing workout session:', error);
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message });
+      }
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+
+  getWorkoutSummary = async (req: Request, res: Response) => {
+    try {
+      const { workoutSessionId } = req.params;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const summary = await this.workoutService.getWorkoutSummary(workoutSessionId, userId);
+      return res.status(200).json(summary);
+    } catch (error) {
+      console.error('Error getting workout summary:', error);
       return res.status(500).json({ message: 'Internal server error' });
     }
   };
