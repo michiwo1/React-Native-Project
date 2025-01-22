@@ -6,9 +6,10 @@ import { router } from 'expo-router';
 type ExerciseHeaderProps = {
   scrollY: Animated.Value;
   insets: { top: number };
+  title: string;
 };
 
-export function ExerciseHeader({ scrollY, insets }: ExerciseHeaderProps) {
+export function ExerciseHeader({ scrollY, insets, title }: ExerciseHeaderProps) {
   const headerOpacity = scrollY.interpolate({
     inputRange: [0, 50],
     outputRange: [0, 1],
@@ -28,7 +29,7 @@ export function ExerciseHeader({ scrollY, insets }: ExerciseHeaderProps) {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <ThemedText style={styles.backButtonText}>←</ThemedText>
         </TouchableOpacity>
-        <ThemedText style={styles.headerTitle}>Add exercises</ThemedText>
+        <ThemedText style={styles.headerTitle}>{title}</ThemedText>
         <View style={styles.headerRight} />
       </View>
     </>

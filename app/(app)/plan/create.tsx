@@ -34,7 +34,7 @@ export default function CreatePlanScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ExerciseHeader scrollY={scrollY} insets={insets} />
+      <ExerciseHeader scrollY={scrollY} insets={insets} title="Create Plan" />
       <SearchBar />
       <CategoryFilter
         categories={categories}
