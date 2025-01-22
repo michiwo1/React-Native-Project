@@ -28,8 +28,6 @@ model User {
   progress_tracking   ProgressTracking[]
   ai_interactions    AIInteraction[]
   personal_records   ExercisePersonalRecord[]
-
-  @@map("users")
 }
 
 model UserProfile {

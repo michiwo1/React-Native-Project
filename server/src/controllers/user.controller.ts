@@ -31,6 +31,7 @@ export class UserController {
   };
 
   public updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+    console.log('updateProfile', req.body);
     try {
       const userId = req.user?.userId;
       if (!userId) {

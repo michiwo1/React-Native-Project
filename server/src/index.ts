@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import { generateToken } from './utils/jwt'
 import { authenticate } from './middleware/auth'
 import bcrypt from 'bcrypt'
+import userRoutes from './routes/user.routes'
 
 dotenv.config()
 
@@ -23,6 +24,9 @@ app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
   next();
 });
+
+// Mount user routes
+app.use('/api', userRoutes);
 
 // Basic health check endpoint
 app.get('/health', (req, res) => {

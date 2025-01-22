@@ -2,12 +2,58 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'r
 import { router } from 'expo-router';
 import { Button } from '@/components/ui/Button';
 import { useState } from 'react';
+import { API_URL } from '@/constants/api';
+import { useAuth } from '@/hooks/useAuth';
 
 export function OnboardingScreen({ step }: { step: number }) {
+  const { token } = useAuth();
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [age, setAge] = useState('');
   const [goal, setGoal] = useState('');
+
+  const handleUpdateProfile = async () => {
+    try {
+      console.log('Updating profile with:', {
+        height: parseFloat(height),
+        weight: parseFloat(weight),
+        age: parseInt(age),
+        token
+      });
+      
+      const response = await fetch(`${API_URL}/api/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          height: parseFloat(height),
+          weight: parseFloat(weight),
+          age: parseInt(age),
+        }),
+      });
+
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Error response:', errorData);
+        throw new Error('プロフィールの更新に失敗しました');
+      }
+
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      router.push('/onboarding/2');
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack
+      });
+      // TODO: エラー処理を追加 - ユーザーにエラーを表示する
+    }
+  };
 
   const screens = [
     {
@@ -24,7 +70,7 @@ export function OnboardingScreen({ step }: { step: number }) {
         { placeholder: '年齢', value: age, onChangeText: setAge },
       ],
       button: '次へ',
-      onNext: () => router.push('/onboarding/2'),
+      onNext: handleUpdateProfile,
     },
     {
       title: '目標を選択',

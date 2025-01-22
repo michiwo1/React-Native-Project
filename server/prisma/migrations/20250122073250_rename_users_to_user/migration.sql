@@ -15,6 +15,8 @@ CREATE TABLE "UserProfile" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "height" DOUBLE PRECISION,
+    "weight" DOUBLE PRECISION,
+    "age" INTEGER,
     "goal_type_id" TEXT,
     "training_level" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
