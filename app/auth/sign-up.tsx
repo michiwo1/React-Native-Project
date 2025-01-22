@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Link, router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // APIのベースURL設定
 const API_URL = Platform.select({
@@ -39,6 +40,23 @@ export default function SignUpScreen() {
       if (!response.ok) {
         throw new Error(data.error || 'サインアップに失敗しました');
       }
+
+      // レスポンスデータをコンソールに出力（デバッグ用）
+      console.log('サインアップレスポンス:', data);
+
+      // セッショントークンを保存
+      if (data.token) {
+        await AsyncStorage.setItem('userToken', data.token);
+      }
+
+      // ユーザー情報全体を文字列として保存
+      await AsyncStorage.setItem('userData', JSON.stringify(data));
+
+      // 保存されたセッション情報をコンソールに表示
+      const savedToken = await AsyncStorage.getItem('userToken');
+      const savedUserData = await AsyncStorage.getItem('userData');
+      console.log('保存されたトークン:', savedToken);
+      console.log('保存されたユーザー情報:', savedUserData);
 
       // サインアップ成功後の処理
       router.replace('/(app)');
