@@ -5,6 +5,8 @@ import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import TextRecognition from 'react-native-text-recognition';
 
 export default function WeightInputScreen() {
   const router = useRouter();
@@ -15,6 +17,39 @@ export default function WeightInputScreen() {
   const handleSave = () => {
     // TODO: 体重を保存する処理を実装
     router.back();
+  };
+
+  const takePicture = async () => {
+    try {
+      // カメラの許可を要求
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        alert('カメラの使用許可が必要です');
+        return;
+      }
+
+      // カメラを起動して写真を撮影
+      const result = await ImagePicker.launchCameraAsync({
+        quality: 1,
+        allowsEditing: true,
+        aspect: [4, 3],
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const photo = result.assets[0];
+        // OCRで画像から文字を認識
+        console.log('photo.uri', photo.uri);
+        const ocrResult = await TextRecognition.recognize(photo.uri);
+        // 数値のみを抽出（文字列として処理）
+        const weightMatch = ocrResult.join(' ').match(/\d+(\.\d+)?/);
+        if (weightMatch) {
+          setWeight(weightMatch[0]);
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('写真の撮影中にエラーが発生しました');
+    }
   };
 
   const styles = StyleSheet.create({
@@ -44,6 +79,15 @@ export default function WeightInputScreen() {
       padding: 16,
       borderRadius: 8,
       alignItems: 'center',
+      marginBottom: 16,
+    },
+    scanButton: {
+      backgroundColor: colors.tint,
+      padding: 16,
+      borderRadius: 8,
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
     },
     saveButtonText: {
       color: '#FFFFFF',
@@ -58,6 +102,12 @@ export default function WeightInputScreen() {
     },
     backIcon: {
       color: colors.text,
+    },
+    scanButtonText: {
+      color: '#FFFFFF',
+      fontSize: 16,
+      fontWeight: 'bold',
+      marginLeft: 8,
     },
   });
 
@@ -81,6 +131,10 @@ export default function WeightInputScreen() {
       />
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <ThemedText style={styles.saveButtonText}>保存</ThemedText>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.scanButton} onPress={takePicture}>
+        <MaterialIcons name="camera-alt" size={24} color="#FFFFFF" />
+        <ThemedText style={styles.scanButtonText}>カメラでスキャン</ThemedText>
       </TouchableOpacity>
     </View>
   );
