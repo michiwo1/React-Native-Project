@@ -38,7 +38,7 @@ export class UserController {
         return next(new AppError('User not found', 404));
       }
 
-      const updatedUser = await this.userService.update(userId, req.body);
+      const updatedUser = await this.userService.updateProfile(userId, req.body);
       
       res.status(200).json({
         status: 'success',
