@@ -15,28 +15,24 @@ export default function ExercisesScreen() {
   const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
   const [selectedExercises, setSelectedExercises] = useState<number[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [allExercises, setAllExercises] = useState<Exercise[]>([]);
+  const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
 
   useEffect(() => {
     fetchCategories();
+    fetchAllExercises();
   }, []);
 
   useEffect(() => {
-    if (selectedCategory) {
-      fetchExercisesByCategory(selectedCategory);
-    } else {
-      fetchAllExercises();
-    }
-  }, [selectedCategory]);
+    filterExercises();
+  }, [selectedCategory, allExercises]);
 
   const fetchCategories = async () => {
     try {
       const response = await fetch(`${API_URL}/api/exercises/categories`);
       const data = await response.json();
-      setCategories(data.map((cat: any) => cat.name));
-      if (data.length > 0) {
-        setSelectedCategory(data[0].id);
-      }
+      const categoryNames = data.map((cat: any) => cat.name);
+      setCategories(categoryNames);
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
@@ -46,29 +42,31 @@ export default function ExercisesScreen() {
     try {
       const response = await fetch(`${API_URL}/api/exercises`);
       const data = await response.json();
-      setExercises(data.map((exercise: any) => ({
+      console.log('Exercises data:', data);
+      const exercises = data.map((exercise: any) => ({
         id: exercise.id,
         name: exercise.name,
         category: exercise.category.name,
-        bookmarks: 0 // TODO: Implement bookmarks feature
-      })));
+        bookmarks: 0
+      }));
+      setAllExercises(exercises);
+      setFilteredExercises(exercises);
     } catch (error) {
       console.error('Error fetching exercises:', error);
     }
   };
 
-  const fetchExercisesByCategory = async (categoryId: string) => {
-    try {
-      const response = await fetch(`${API_URL}/api/exercises/category/${categoryId}`);
-      const data = await response.json();
-      setExercises(data.map((exercise: any) => ({
-        id: exercise.id,
-        name: exercise.name,
-        category: exercise.category.name,
-        bookmarks: 0 // TODO: Implement bookmarks feature
-      })));
-    } catch (error) {
-      console.error('Error fetching exercises by category:', error);
+  const filterExercises = () => {
+    console.log('Filtering exercises with category:', selectedCategory);
+    if (!selectedCategory) {
+      setFilteredExercises(allExercises);
+    } else {
+      const filtered = allExercises.filter(exercise => {
+        console.log(`Comparing exercise category "${exercise.category}" with selected "${selectedCategory}"`);
+        return exercise.category === selectedCategory;
+      });
+      console.log('Filtered exercises:', filtered);
+      setFilteredExercises(filtered);
     }
   };
 
@@ -91,14 +89,14 @@ export default function ExercisesScreen() {
         onSelectCategory={setSelectedCategory}
       />
       <ExerciseList
-        exercises={exercises}
+        exercises={filteredExercises}
         selectedExercises={selectedExercises}
         onExerciseSelect={handleExerciseSelect}
         scrollY={scrollY}
       />
       <ExerciseFooter
         selectedExercises={selectedExercises}
-        exercises={exercises}
+        exercises={filteredExercises}
         insets={insets}
       />
     </View>
