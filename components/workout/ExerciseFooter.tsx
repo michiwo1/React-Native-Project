@@ -35,7 +35,7 @@ export function ExerciseFooter({
         onPress();
       } else {
         try {
-          const token = await AsyncStorage.getItem('token');
+          const token = await AsyncStorage.getItem('userToken');
           if (!token) {
             throw new Error('No authentication token found');
           }
