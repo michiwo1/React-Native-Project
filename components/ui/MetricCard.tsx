@@ -19,54 +19,67 @@ export function MetricCard({ title, value, change, changeUnit, date }: MetricCar
   const styles = StyleSheet.create({
     card: {
       backgroundColor: colorScheme === 'light' ? '#F5F7FA' : '#1A1D1E',
-      borderRadius: 12,
-      padding: 16,
+      borderRadius: 16,
+      padding: 20,
       flex: 1,
       height: '100%',
+      justifyContent: 'space-between',
     },
     title: {
-      fontSize: 14,
+      fontSize: 16,
+      fontWeight: '600',
       color: '#64748B',
-      marginBottom: 8,
+      marginBottom: 12,
+      letterSpacing: 0.5,
     },
     value: {
-      fontSize: 24,
+      fontSize: 32,
       fontWeight: 'bold',
-      marginBottom: 8,
+      marginBottom: 12,
+      letterSpacing: -0.5,
     },
     changeContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 4,
+      marginBottom: 8,
     },
     change: {
-      fontSize: 14,
-      marginLeft: 4,
-      color: '#64748B',
+      fontSize: 16,
+      marginLeft: 6,
+      fontWeight: '600',
     },
     date: {
-      fontSize: 12,
+      fontSize: 13,
       color: '#94A3B8',
+      marginTop: 4,
     },
+    contentContainer: {
+      flex: 1,
+      justifyContent: 'space-between',
+    }
   });
 
   return (
     <View style={styles.card}>
-      <ThemedText style={styles.title}>{title}</ThemedText>
-      <ThemedText style={styles.value}>{value}</ThemedText>
-      {change !== null && change !== undefined && (
-        <View style={styles.changeContainer}>
-          <MaterialCommunityIcons
-            name={change >= 0 ? 'arrow-up' : 'arrow-down'}
-            size={16}
-            color={change >= 0 ? '#10B981' : '#EF4444'}
-          />
-          <ThemedText style={[styles.change, { color: change >= 0 ? '#10B981' : '#EF4444' }]}>
-            {Math.abs(change)}{changeUnit}
-          </ThemedText>
+      <View style={styles.contentContainer}>
+        <View>
+          <ThemedText style={styles.title}>{title}</ThemedText>
+          <ThemedText style={styles.value}>{value}</ThemedText>
+          {change !== null && change !== undefined && (
+            <View style={styles.changeContainer}>
+              <MaterialCommunityIcons
+                name={change >= 0 ? 'arrow-up' : 'arrow-down'}
+                size={20}
+                color={change >= 0 ? '#10B981' : '#EF4444'}
+              />
+              <ThemedText style={[styles.change, { color: change >= 0 ? '#10B981' : '#EF4444' }]}>
+                {Math.abs(change)}{changeUnit}
+              </ThemedText>
+            </View>
+          )}
         </View>
-      )}
-      {date && <ThemedText style={styles.date}>{date}</ThemedText>}
+        {date && <ThemedText style={styles.date}>{date}</ThemedText>}
+      </View>
     </View>
   );
 } 
