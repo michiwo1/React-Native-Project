@@ -144,6 +144,7 @@ export default function CreatePlanScreen() {
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
         onSubmit={handlePlanSubmit}
+        selectedExercises={allExercises.filter(ex => selectedExercises.includes(ex.id))}
       />
     </View>
   );

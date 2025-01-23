@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Modal, TextInput, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Modal, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
+import { Exercise } from '@/components/workout/ExerciseList';
 
 type PlanNameModalProps = {
   isVisible: boolean;
   onClose: () => void;
   onSubmit: (planName: string) => void;
+  selectedExercises: Exercise[];
 };
 
-export function PlanNameModal({ isVisible, onClose, onSubmit }: PlanNameModalProps) {
+export function PlanNameModal({ isVisible, onClose, onSubmit, selectedExercises }: PlanNameModalProps) {
   const [planName, setPlanName] = useState('');
 
   const handleSubmit = () => {
@@ -35,6 +37,15 @@ export function PlanNameModal({ isVisible, onClose, onSubmit }: PlanNameModalPro
             onChangeText={setPlanName}
             autoFocus
           />
+          <ScrollView style={styles.exerciseList}>
+            <ThemedText style={styles.exerciseListTitle}>Selected Exercises:</ThemedText>
+            {selectedExercises.map((exercise, index) => (
+              <View key={exercise.id} style={styles.exerciseItem}>
+                <ThemedText style={styles.exerciseNumber}>{index + 1}.</ThemedText>
+                <ThemedText style={styles.exerciseName}>{exercise.name}</ThemedText>
+              </View>
+            ))}
+          </ScrollView>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.button, styles.cancelButton]}
@@ -116,5 +127,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  exerciseList: {
+    maxHeight: 200,
+    marginBottom: 16,
+  },
+  exerciseListTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  exerciseItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  exerciseNumber: {
+    width: 24,
+    fontSize: 14,
+    color: '#8E8E93',
+  },
+  exerciseName: {
+    fontSize: 14,
+    flex: 1,
   },
 }); 
