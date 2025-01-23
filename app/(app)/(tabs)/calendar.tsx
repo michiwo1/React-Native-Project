@@ -146,6 +146,12 @@ export default function CalendarScreen() {
           <View style={styles.workoutCard}>
             <View style={styles.workoutInfo}>
               <ThemedText style={styles.workoutInfoTitle}>Workout Info</ThemedText>
+              <ThemedText style={styles.workoutTime}>
+                Started at: {new Date(selectedWorkout.started_at).toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </ThemedText>
               {selectedWorkout.exercises?.map((exercise, index) => (
                 <View key={exercise.id} style={styles.exerciseItem}>
                   <View style={styles.exerciseHeader}>
@@ -229,6 +235,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1E293B',
     marginBottom: 16,
+  },
+  workoutTime: {
+    fontSize: 14,
+    color: '#64748B',
+    marginBottom: 12,
   },
   exerciseItem: {
     marginBottom: 12,
