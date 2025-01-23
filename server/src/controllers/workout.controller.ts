@@ -141,4 +141,21 @@ export class WorkoutController {
       return res.status(500).json({ message: 'Internal server error' });
     }
   };
+
+  getWorkoutHistory = async (req: Request, res: Response) => {
+    console.log('4----------');
+    try {
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const workoutHistory = await this.workoutService.getWorkoutHistory(userId);
+      return res.status(200).json(workoutHistory);
+    } catch (error) {
+      console.error('Error fetching workout history:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  };
 } 

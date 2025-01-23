@@ -225,4 +225,26 @@ export class WorkoutService {
       endedAt: workoutSession.ended_at,
     };
   }
+
+  async getWorkoutHistory(userId: string) {
+    return await this.prisma.workoutSession.findMany({
+      where: {
+        user_id: userId,
+        ended_at: {
+          not: null
+        }
+      },
+      orderBy: {
+        ended_at: 'desc'
+      },
+      include: {
+        exercises: {
+          include: {
+            exercise: true,
+            sets: true,
+          },
+        },
+      },
+    });
+  }
 } 

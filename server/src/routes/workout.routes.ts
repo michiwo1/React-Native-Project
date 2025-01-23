@@ -9,6 +9,7 @@ const workoutController = new WorkoutController();
 router.post('/sessions', authenticate, workoutController.createWorkoutSession);
 router.post('/session', authenticate, workoutController.createWorkoutSession);
 router.get('/latest', authenticate, workoutController.getLatestWorkoutSession);
+router.get('/history', authenticate, workoutController.getWorkoutHistory);
 
 // Add exercises to workout session
 router.post('/:workoutSessionId/exercises', authenticate, workoutController.addExercisesToWorkoutSession);
