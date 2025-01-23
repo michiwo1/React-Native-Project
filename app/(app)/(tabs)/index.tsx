@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
+import { API_URL } from '@/constants/api';
 
 interface Plan {
   id: string;
@@ -36,7 +37,7 @@ export default function HomeScreen() {
 
   const fetchPlans = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/plan', {
+      const response = await fetch(`${API_URL}/api/plan`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -197,7 +198,7 @@ export default function HomeScreen() {
 
   const handleStartPlan = async (planId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/plan/${planId}/start`, {
+      const response = await fetch(`${API_URL}/api/plan/${planId}/start`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
