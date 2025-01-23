@@ -4,9 +4,20 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 import { MetricCard } from '@/components/ui/MetricCard';
 import { Colors, BaseColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useAuth } from '@/hooks/useAuth';
+
+interface Plan {
+  id: string;
+  name: string;
+  exercises: {
+    exercise: {
+      name: string;
+    };
+  }[];
+}
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -15,7 +26,33 @@ export default function HomeScreen() {
   const [isExpanded, setIsExpanded] = useState(false);
   const animatedHeight = useRef(new Animated.Value(0)).current;
   const router = useRouter();
+  const { token } = useAuth();
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
   
+  useEffect(() => {
+    fetchPlans();
+  }, []);
+
+  const fetchPlans = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/plan', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch plans');
+      }
+      const data = await response.json();
+      setPlans(data);
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleAccordion = () => {
     setIsExpanded(!isExpanded);
     Animated.timing(animatedHeight, {
@@ -24,12 +61,6 @@ export default function HomeScreen() {
       useNativeDriver: false,
     }).start();
   };
-
-  const trainingPlans = [
-    { id: 1, name: '胸部 + 三頭筋', duration: '60分' },
-    { id: 2, name: '背中 + 二頭筋', duration: '45分' },
-    { id: 3, name: '脚 + 肩', duration: '50分' },
-  ];
 
   const dummyData = {
     weight: {
@@ -43,10 +74,10 @@ export default function HomeScreen() {
     nutrition: {
       protein: 0.7,
       calories: 0.8,
-      proteinTarget: 180, // 体重 x 2.4g
-      caloriesTarget: 3000, // 増量期の目標カロリー
-      proteinCurrent: 126, // 現在の摂取量
-      caloriesCurrent: 2400, // 現在の摂取量
+      proteinTarget: 180,
+      caloriesTarget: 3000,
+      proteinCurrent: 126,
+      caloriesCurrent: 2400,
     },
   };
 
@@ -149,6 +180,11 @@ export default function HomeScreen() {
       flex: 1,
       height: '100%',
     },
+    exerciseCount: {
+      fontSize: 12,
+      color: colors.background,
+      opacity: 0.8,
+    },
   });
 
   const handleWeightCardPress = () => {
@@ -157,6 +193,24 @@ export default function HomeScreen() {
 
   const handleBenchPressCardPress = () => {
     router.push('/exercises');
+  };
+
+  const handleStartPlan = async (planId: string) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/plan/${planId}/start`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to start workout');
+      }
+      const workoutSession = await response.json();
+      router.push('/workout/exercises');
+    } catch (error) {
+      console.error('Error starting workout:', error);
+    }
   };
 
   return (
@@ -185,15 +239,57 @@ export default function HomeScreen() {
             },
           ]}
         >
-          {trainingPlans.map((plan) => (
-            <TouchableOpacity key={plan.id} style={styles.workoutCard}>
-              <View style={styles.workoutInfo}>
-                <ThemedText style={styles.workoutText}>{plan.name}</ThemedText>
-                <ThemedText style={styles.duration}>{plan.duration}</ThemedText>
-              </View>
-              <ThemedText style={styles.startButton}>開始</ThemedText>
-            </TouchableOpacity>
-          ))}
+          {loading ? (
+            <ThemedText>読み込み中...</ThemedText>
+          ) : plans.length > 0 ? (
+            plans.map((plan) => (
+              <TouchableOpacity 
+                key={plan.id} 
+                style={styles.workoutCard}
+                onPress={() => handleStartPlan(plan.id)}
+              >
+                <View style={styles.workoutInfo}>
+                  <ThemedText style={styles.workoutText}>{plan.name}</ThemedText>
+                  <ThemedText style={styles.exerciseCount}>
+                    {plan.exercises.length}種目
+                  </ThemedText>
+                </View>
+                <ThemedText style={styles.startButton}>開始</ThemedText>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={{
+              padding: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              backgroundColor: colorScheme === 'light' ? '#F5F7FA' : '#1A1D1E',
+              borderRadius: 8,
+              marginBottom: 8,
+            }}>
+              <Ionicons 
+                name="clipboard-outline" 
+                size={32} 
+                color={colors.text}
+                style={{ marginBottom: 8 }}
+              />
+              <ThemedText style={{ 
+                fontSize: 16,
+                fontWeight: '600',
+                marginBottom: 4,
+              }}>
+                プランが未設定です
+              </ThemedText>
+              <ThemedText style={{ 
+                fontSize: 14,
+                color: '#687076',
+                textAlign: 'center',
+                marginBottom: 8,
+              }}>
+                新しいトレーニングプランを作成して{'\n'}トレーニングを始めましょう
+              </ThemedText>
+            </View>
+          )}
         </Animated.View>
 
         <TouchableOpacity 
