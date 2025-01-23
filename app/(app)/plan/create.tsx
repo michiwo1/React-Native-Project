@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExerciseHeader } from '@/components/workout/ExerciseHeader';
@@ -8,23 +8,85 @@ import { ExerciseList, Exercise } from '@/components/workout/ExerciseList';
 import { ExerciseFooter } from '@/components/workout/ExerciseFooter';
 import { PlanNameModal } from '@/components/workout/PlanNameModal';
 import { router } from 'expo-router';
-
-const categories = ['Leg', 'Chest', 'Back', 'Shoulder', 'Arms', 'Core'];
-
-const exercises: Exercise[] = [
-  { id: 1, name: 'Back Squat', category: 'Leg', bookmarks: 0 },
-  { id: 2, name: 'Conventional Deadlift', category: 'Leg', bookmarks: 2 },
-  { id: 3, name: 'Front Squat', category: 'Leg', bookmarks: 0 },
-  { id: 4, name: 'Leg Press', category: 'Leg', bookmarks: 24 },
-  { id: 5, name: 'Leg Curl', category: 'Leg', bookmarks: 1 },
-];
+import { API_URL } from '@/constants/api';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function CreatePlanScreen() {
   const insets = useSafeAreaInsets();
+  const { token } = useAuth();
   const scrollY = useRef(new Animated.Value(0)).current;
-  const [selectedCategory, setSelectedCategory] = useState('Leg');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedExercises, setSelectedExercises] = useState<number[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [allExercises, setAllExercises] = useState<Exercise[]>([]);
+  const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
+
+  useEffect(() => {
+    if (token) {
+      fetchCategories();
+      fetchAllExercises();
+    }
+  }, [token]);
+
+  useEffect(() => {
+    filterExercises();
+  }, [selectedCategory, allExercises]);
+
+  const fetchCategories = async () => {
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_URL}/api/exercise/categories`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+      const data = await response.json();
+      const categoryNames = data.map((cat: any) => cat.name);
+      setCategories(categoryNames);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const fetchAllExercises = async () => {
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_URL}/api/exercise`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch exercises');
+      }
+      const data = await response.json();
+      const exercises = data.map((exercise: any) => ({
+        id: exercise.id,
+        name: exercise.name,
+        category: exercise.category.name,
+        bookmarks: 0
+      }));
+      setAllExercises(exercises);
+      setFilteredExercises(exercises);
+    } catch (error) {
+      console.error('Error fetching exercises:', error);
+    }
+  };
+
+  const filterExercises = () => {
+    if (!selectedCategory) {
+      setFilteredExercises(allExercises);
+    } else {
+      const filtered = allExercises.filter(exercise => exercise.category === selectedCategory);
+      setFilteredExercises(filtered);
+    }
+  };
 
   const handleExerciseSelect = (exerciseId: number) => {
     setSelectedExercises(prev => {
@@ -43,14 +105,14 @@ export default function CreatePlanScreen() {
 
   const handlePlanSubmit = (planName: string) => {
     // TODO: Here you would typically save the plan to your storage/backend
-    const selectedExerciseData = exercises.filter(ex => selectedExercises.includes(ex.id));
+    const selectedExerciseData = allExercises.filter(ex => selectedExercises.includes(ex.id));
     const plan = {
       name: planName,
       exercises: selectedExerciseData,
     };
     console.log('Created plan:', plan);
     setIsModalVisible(false);
-    router.push('/(tabs)');
+    router.push('/(app)/(tabs)');
   };
 
   return (
@@ -63,14 +125,14 @@ export default function CreatePlanScreen() {
         onSelectCategory={setSelectedCategory}
       />
       <ExerciseList
-        exercises={exercises}
+        exercises={filteredExercises}
         selectedExercises={selectedExercises}
         onExerciseSelect={handleExerciseSelect}
         scrollY={scrollY}
       />
       <ExerciseFooter
         selectedExercises={selectedExercises}
-        exercises={exercises}
+        exercises={allExercises}
         insets={insets}
         buttonText={{
           default: 'Select exercises',
