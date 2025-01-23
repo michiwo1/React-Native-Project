@@ -208,7 +208,7 @@ export default function HomeScreen() {
           onPress={() => router.push('/plan/create')}
         >
           <ThemedText style={{ color: '#FFFFFF', fontWeight: '600' }}>
-            プランを作成
+            今日のトレーニング始める
           </ThemedText>
         </TouchableOpacity>
 
