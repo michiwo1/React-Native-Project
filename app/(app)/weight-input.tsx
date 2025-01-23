@@ -71,6 +71,7 @@ export default function WeightInputScreen() {
 
       await fetchWeightHistory(); // 保存後に履歴を更新
       setWeight(''); // 入力をクリア
+      router.replace('/(app)/(tabs)'); // ホーム画面に戻る
     } catch (error) {
       console.error('Error saving weight:', error);
       alert('体重の記録中にエラーが発生しました');
