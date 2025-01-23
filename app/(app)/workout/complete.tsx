@@ -1,14 +1,13 @@
-import { View, StyleSheet, Button } from 'react-native';
+import { View, StyleSheet, Animated } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '@/constants/api';
 import { useAuth } from '@/hooks/useAuth';
-
+import { Button } from '@/components/Button';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
-
 
 type WorkoutSummary = {
   duration: number;
@@ -25,6 +24,11 @@ export default function WorkoutCompleteScreen() {
   const { colors } = useTheme();
   const [summary, setSummary] = useState<WorkoutSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Animation values
+  const iconAnimation = useRef(new Animated.Value(0)).current;
+  const textAnimation = useRef(new Animated.Value(0)).current;
+  const statsAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -53,6 +57,38 @@ export default function WorkoutCompleteScreen() {
     }
   }, [params.workoutSessionId, token]);
 
+  useEffect(() => {
+    if (summary) {
+      // Reset animation values
+      iconAnimation.setValue(0);
+      textAnimation.setValue(0);
+      statsAnimation.setValue(0);
+
+      // Start all animations immediately in parallel
+      Animated.parallel([
+        // Trophy icon animation with bounce
+        Animated.spring(iconAnimation, {
+          toValue: 1,
+          useNativeDriver: true,
+          tension: 280,
+          friction: 1.8,
+        }),
+        // Text animation - simple fade
+        Animated.timing(textAnimation, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        // Stats container animation - simple fade
+        Animated.timing(statsAnimation, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [summary]);
+
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -75,7 +111,7 @@ export default function WorkoutCompleteScreen() {
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.content}>
           <ThemedText style={styles.errorText}>Error: {error}</ThemedText>
-          <Button onPress={handleFinish} title="Return to Home" />
+          <Button title="Return to Home" onPress={handleFinish} />
         </View>
       </View>
     );
@@ -92,13 +128,43 @@ export default function WorkoutCompleteScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Button onPress={handleBack} title="Back" />
+        <Button title="Back" onPress={handleBack} variant="secondary" />
       </View>
       <View style={styles.content}>
-        <MaterialCommunityIcons name="trophy" size={64} color={colors.primary} style={styles.icon} />
-        <ThemedText style={styles.congratsText}>Workout Complete!</ThemedText>
+        <Animated.View style={[{
+          opacity: iconAnimation,
+          transform: [
+            {
+              scale: iconAnimation.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.3, 1],
+              }),
+            },
+            {
+              translateY: iconAnimation.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-50, 0],
+              }),
+            },
+          ],
+        }]}>
+          <MaterialCommunityIcons 
+            name="trophy" 
+            size={80} 
+            color={colors.primary} 
+            style={styles.icon} 
+          />
+        </Animated.View>
+
+        <Animated.View style={[{
+          opacity: textAnimation,
+        }]}>
+          <ThemedText style={styles.congratsText}>Workout Complete!</ThemedText>
+        </Animated.View>
         
-        <View style={styles.statsContainer}>
+        <Animated.View style={[styles.statsContainer, {
+          opacity: statsAnimation,
+        }]}>
           <View style={styles.statItem}>
             <ThemedText style={styles.statValue}>{formatDuration(summary.duration)}</ThemedText>
             <ThemedText style={styles.statLabel}>Duration</ThemedText>
@@ -113,11 +179,11 @@ export default function WorkoutCompleteScreen() {
             <ThemedText style={styles.statValue}>{summary.totalVolume}kg</ThemedText>
             <ThemedText style={styles.statLabel}>Total Volume</ThemedText>
           </View>
-        </View>
+        </Animated.View>
       </View>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
-        <Button onPress={handleFinish} title="Finish" />
+        <Button title="Finish" onPress={handleFinish} />
       </View>
     </View>
   );
@@ -126,6 +192,7 @@ export default function WorkoutCompleteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -139,36 +206,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   icon: {
-    marginBottom: 16,
+    marginBottom: 24,
   },
   congratsText: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 32,
+    marginBottom: 40,
+    color: '#1F2937',
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
     marginTop: 16,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    padding: 20,
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 8,
+    color: '#1F2937',
   },
   statLabel: {
     fontSize: 14,
-    opacity: 0.7,
+    color: '#6B7280',
+    fontWeight: '500',
   },
   footer: {
     padding: 16,
   },
   errorText: {
-    color: 'red',
+    color: '#EF4444',
     marginBottom: 20,
     textAlign: 'center',
   },
