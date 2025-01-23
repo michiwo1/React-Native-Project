@@ -1,5 +1,5 @@
-import { View, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
-import React, { useState } from 'react';
+import { View, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import { ThemedText } from '@/components/ThemedText';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
@@ -9,12 +9,44 @@ import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '@/constants/api';
 import { useAuth } from '@/hooks/useAuth';
 
+interface WeightHistory {
+  id: string;
+  value: number;
+  measured_at: string;
+}
+
 export default function WeightInputScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const [weight, setWeight] = useState('');
   const { token } = useAuth();
+  const [weightHistory, setWeightHistory] = useState<WeightHistory[]>([]);
+
+  const fetchWeightHistory = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/measurement/weight/history`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('体重履歴の取得に失敗しました');
+      }
+
+      const data = await response.json();
+      setWeightHistory(data.slice(0, 10)); // 最新10件を表示
+    } catch (error) {
+      console.error('Error fetching weight history:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchWeightHistory();
+    }
+  }, [token]);
 
   const handleSave = async () => {
     try {
@@ -37,7 +69,8 @@ export default function WeightInputScreen() {
         throw new Error('体重の記録に失敗しました');
       }
 
-      router.back();
+      await fetchWeightHistory(); // 保存後に履歴を更新
+      setWeight(''); // 入力をクリア
     } catch (error) {
       console.error('Error saving weight:', error);
       alert('体重の記録中にエラーが発生しました');
@@ -46,14 +79,12 @@ export default function WeightInputScreen() {
 
   const takePicture = async () => {
     try {
-      // カメラの許可を要求
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
         alert('カメラの使用許可が必要です');
         return;
       }
 
-      // カメラを起動して写真を撮影
       const result = await ImagePicker.launchCameraAsync({
         quality: 1,
         allowsEditing: true,
@@ -61,13 +92,17 @@ export default function WeightInputScreen() {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        // OCR機能は一時的に無効化
         alert('OCR機能は現在利用できません');
       }
     } catch (error) {
       console.error('Error:', error);
       alert('写真の撮影中にエラーが発生しました');
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
   };
 
   const styles = StyleSheet.create({
@@ -106,6 +141,7 @@ export default function WeightInputScreen() {
       alignItems: 'center',
       flexDirection: 'row',
       justifyContent: 'center',
+      marginBottom: 24,
     },
     saveButtonText: {
       color: '#FFFFFF',
@@ -127,10 +163,34 @@ export default function WeightInputScreen() {
       fontWeight: 'bold',
       marginLeft: 8,
     },
+    historyContainer: {
+      flex: 1,
+    },
+    historyHeader: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 16,
+    },
+    historyItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    historyDate: {
+      fontSize: 16,
+      color: colors.text,
+    },
+    historyWeight: {
+      fontSize: 16,
+      color: colors.text,
+      fontWeight: 'bold',
+    },
   });
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <MaterialIcons 
           name="arrow-back" 
@@ -154,6 +214,16 @@ export default function WeightInputScreen() {
         <MaterialIcons name="camera-alt" size={24} color="#FFFFFF" />
         <ThemedText style={styles.scanButtonText}>カメラでスキャン</ThemedText>
       </TouchableOpacity>
-    </View>
+
+      <View style={styles.historyContainer}>
+        <ThemedText style={styles.historyHeader}>履歴</ThemedText>
+        {weightHistory.map((item) => (
+          <View key={item.id} style={styles.historyItem}>
+            <ThemedText style={styles.historyDate}>{formatDate(item.measured_at)}</ThemedText>
+            <ThemedText style={styles.historyWeight}>{item.value.toFixed(1)} kg</ThemedText>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 } 
