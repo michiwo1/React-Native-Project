@@ -32,8 +32,10 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    fetchPlans();
-  }, []);
+    if (token) {
+      fetchPlans();
+    }
+  }, [token]);
 
   const fetchPlans = async () => {
     try {
