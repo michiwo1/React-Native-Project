@@ -254,6 +254,9 @@ export default function HomeScreen() {
                   <ThemedText style={styles.exerciseCount}>
                     {plan.exercises.length}種目
                   </ThemedText>
+                  <ThemedText style={[styles.duration, { marginTop: 4 }]} numberOfLines={1} ellipsizeMode="tail">
+                    {plan.exercises.map(e => e.exercise.name).join(', ')}
+                  </ThemedText>
                 </View>
                 <ThemedText style={styles.startButton}>開始</ThemedText>
               </TouchableOpacity>
