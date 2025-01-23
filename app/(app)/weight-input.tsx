@@ -110,12 +110,12 @@ export default function WeightInputScreen() {
       flex: 1,
       padding: 16,
       backgroundColor: colors.background,
-      paddingTop: 60,
+      paddingTop: 16,
     },
     header: {
       fontSize: 24,
       fontWeight: 'bold',
-      marginTop: 16,
+      marginTop: 48,
       marginBottom: 24,
     },
     input: {
@@ -150,9 +150,10 @@ export default function WeightInputScreen() {
     },
     backButton: {
       position: 'absolute',
-      top: 60,
+      top: 16,
       left: 16,
       padding: 8,
+      zIndex: 1,
     },
     backIcon: {
       color: colors.text,
