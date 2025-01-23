@@ -24,7 +24,6 @@ export default function ExercisesScreen() {
 
   useEffect(() => {
     if (token) {
-      console.log('Token available:', token);
       fetchCategories();
       fetchAllExercises();
     } else {

@@ -110,7 +110,6 @@ export default function CreatePlanScreen() {
       name: planName,
       exercises: selectedExerciseData,
     };
-    console.log('Created plan:', plan);
     setIsModalVisible(false);
     router.push('/(app)/(tabs)');
   };

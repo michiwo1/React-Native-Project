@@ -33,7 +33,6 @@ export default function WorkoutCompleteScreen() {
   useEffect(() => {
     const fetchSummary = async () => {
       try {
-        console.log('Fetching summary with token:', token);
         const response = await fetch(`${API_URL}/api/workout/sessions/${params.workoutSessionId}/summary`, {
           headers: {
             Authorization: `Bearer ${token}`,

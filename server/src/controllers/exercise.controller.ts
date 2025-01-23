@@ -5,6 +5,7 @@ const exerciseService = new ExerciseService();
 
 export class ExerciseController {
   async getAllExercises(req: Request, res: Response) {
+    console.log('1----------');
     try {
       const exercises = await exerciseService.getAllExercises();
       res.json(exercises);
