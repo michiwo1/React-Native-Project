@@ -10,5 +10,6 @@ router.use(authenticate);
 
 router.get('/profile', userController.getProfile);
 router.put('/profile', userController.updateProfile);
+router.get('/weight', userController.getLatestWeight);
 
 export default router; 

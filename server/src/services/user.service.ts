@@ -122,4 +122,47 @@ export class UserService {
       throw error;
     }
   }
+
+  public async getLatestWeight(userId: string) {
+    // First, try to get the latest weight measurement
+    const latestMeasurement = await this.prisma.measurement.findFirst({
+      where: {
+        user_id: userId,
+        metric_type: {
+          name: 'weight'
+        }
+      },
+      orderBy: {
+        measured_at: 'desc'
+      },
+      include: {
+        metric_type: true
+      }
+    });
+
+    if (latestMeasurement) {
+      return {
+        weight: latestMeasurement.value,
+        date: latestMeasurement.measured_at,
+        source: 'measurement'
+      };
+    }
+
+    // If no measurement exists, get weight from user profile
+    const userProfile = await this.prisma.userProfile.findUnique({
+      where: {
+        user_id: userId
+      }
+    });
+
+    if (userProfile?.weight) {
+      return {
+        weight: userProfile.weight,
+        date: userProfile.updated_at,
+        source: 'profile'
+      };
+    }
+
+    return null;
+  }
 } 

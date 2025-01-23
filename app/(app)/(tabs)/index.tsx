@@ -30,10 +30,16 @@ export default function HomeScreen() {
   const { token } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [weightData, setWeightData] = useState<{
+    weight: number;
+    date: string;
+    source: string;
+  } | null>(null);
   
   useEffect(() => {
     if (token) {
       fetchPlans();
+      fetchWeightData();
     }
   }, [token]);
 
@@ -56,6 +62,23 @@ export default function HomeScreen() {
     }
   };
 
+  const fetchWeightData = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/user/weight`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch weight data');
+      }
+      const data = await response.json();
+      setWeightData(data);
+    } catch (error) {
+      console.error('Error fetching weight data:', error);
+    }
+  };
+
   const toggleAccordion = () => {
     setIsExpanded(!isExpanded);
     Animated.timing(animatedHeight, {
@@ -66,10 +89,6 @@ export default function HomeScreen() {
   };
 
   const dummyData = {
-    weight: {
-      current: 75.5,
-      change: -2.0,
-    },
     benchPress: {
       current: 80,
       change: 5,
@@ -365,10 +384,10 @@ export default function HomeScreen() {
           <TouchableOpacity style={styles.metricCardWrapper} onPress={handleWeightCardPress}>
             <MetricCard
               title="体重"
-              value={`${dummyData.weight.current}kg`}
-              change={dummyData.weight.change}
+              value={weightData ? `${weightData.weight}kg` : '未設定'}
+              change={null}
               changeUnit="kg"
-              date={new Date().toLocaleDateString('ja-JP')}
+              date={weightData ? new Date(weightData.date).toLocaleDateString('ja-JP') : undefined}
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.metricCardWrapper} onPress={handleBenchPressCardPress}>
