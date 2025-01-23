@@ -9,6 +9,7 @@ import userRoutes from './routes/user.routes'
 import exerciseRoutes from './routes/exercise.routes'
 import workoutRoutes from './routes/workout.routes'
 import authRoutes from './routes/auth.routes'
+import planRoutes from './routes/plan.routes'
 
 dotenv.config()
 
@@ -48,6 +49,9 @@ app.use('/api/workout', authenticate, workoutRoutes);
 
 // User routes (protected)
 app.use('/api/user', authenticate, userRoutes);
+
+// Plan routes (protected)
+app.use('/api/plan', authenticate, planRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
