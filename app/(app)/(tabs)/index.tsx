@@ -212,6 +212,23 @@ export default function HomeScreen() {
           </ThemedText>
         </TouchableOpacity>
 
+        <TouchableOpacity 
+          style={{
+            backgroundColor: colors.background,
+            padding: 12,
+            borderRadius: 8,
+            alignItems: 'center',
+            marginBottom: 12,
+            borderWidth: 1,
+            borderColor: colors.tint
+          }}
+          onPress={() => router.push('/plan/create')}
+        >
+          <ThemedText style={{ color: colors.tint, fontWeight: '600' }}>
+            新しいプランを作成
+          </ThemedText>
+        </TouchableOpacity>
+
         <View style={styles.progressSection}>
           <View style={styles.progressTitleContainer}>
             <ThemedText>週間目標達成率</ThemedText>
