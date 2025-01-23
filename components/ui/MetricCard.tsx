@@ -1,4 +1,5 @@
-import { View, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { ThemedText } from '../ThemedText';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -11,9 +12,10 @@ interface MetricCardProps {
   changeUnit: string;
   date?: string;
   hint?: string;
+  isLoading?: boolean;
 }
 
-export function MetricCard({ title, value, change, changeUnit, date, hint }: MetricCardProps) {
+export function MetricCard({ title, value, change, changeUnit, date, hint, isLoading }: MetricCardProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const isHistory = value.startsWith('過去の記録');
@@ -69,30 +71,43 @@ export function MetricCard({ title, value, change, changeUnit, date, hint }: Met
     },
     upperContent: {
       flex: 0,
-    }
+    },
+    loadingContainer: {
+      minHeight: 34,
+      justifyContent: 'center',
+      marginBottom: 6,
+    },
   });
 
   return (
     <View style={styles.card}>
       <View style={styles.contentContainer}>
         <View style={styles.upperContent}>
-                  {hint && <ThemedText style={styles.hint}>{hint}</ThemedText>}
+          {hint && <ThemedText style={styles.hint}>{hint}</ThemedText>}
           <ThemedText style={styles.title}>{title}</ThemedText>
-          <ThemedText style={styles.value}>{value}</ThemedText>
-          {change !== null && change !== undefined && (
-            <View style={styles.changeContainer}>
-              <MaterialCommunityIcons
-                name={change >= 0 ? 'arrow-up' : 'arrow-down'}
-                size={16}
-                color={change >= 0 ? '#10B981' : '#EF4444'}
-              />
-              <ThemedText style={[styles.change, { color: change >= 0 ? '#10B981' : '#EF4444' }]}>
-                {Math.abs(change)}{changeUnit}
-              </ThemedText>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator color={colors.text} />
             </View>
+          ) : (
+            <>
+              <ThemedText style={styles.value}>{value}</ThemedText>
+              {change !== null && change !== undefined && (
+                <View style={styles.changeContainer}>
+                  <MaterialCommunityIcons
+                    name={change >= 0 ? 'arrow-up' : 'arrow-down'}
+                    size={16}
+                    color={change >= 0 ? '#10B981' : '#EF4444'}
+                  />
+                  <ThemedText style={[styles.change, { color: change >= 0 ? '#10B981' : '#EF4444' }]}>
+                    {Math.abs(change)}{changeUnit}
+                  </ThemedText>
+                </View>
+              )}
+            </>
           )}
         </View>
-          {date && <ThemedText style={styles.date}>{date}</ThemedText>}
+        {date && <ThemedText style={styles.date}>{date}</ThemedText>}
       </View>
     </View>
   );

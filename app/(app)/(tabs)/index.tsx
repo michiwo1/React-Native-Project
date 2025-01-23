@@ -30,6 +30,7 @@ export default function HomeScreen() {
   const { token } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [weightLoading, setWeightLoading] = useState(true);
   const [weightData, setWeightData] = useState<{
     weight: number;
     date: string;
@@ -63,6 +64,7 @@ export default function HomeScreen() {
   };
 
   const fetchWeightData = async () => {
+    setWeightLoading(true);
     try {
       const response = await fetch(`${API_URL}/api/user/weight`, {
         headers: {
@@ -76,6 +78,8 @@ export default function HomeScreen() {
       setWeightData(data);
     } catch (error) {
       console.error('Error fetching weight data:', error);
+    } finally {
+      setWeightLoading(false);
     }
   };
 
@@ -389,6 +393,7 @@ export default function HomeScreen() {
               changeUnit="kg"
               date={weightData ? new Date(weightData.date).toLocaleDateString('ja-JP') : undefined}
               hint="クリックで体重を入力"
+              isLoading={weightLoading}
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.metricCardWrapper} onPress={handleBenchPressCardPress}>
