@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Animated, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { MetricCard } from '@/components/ui/MetricCard';
@@ -110,25 +110,52 @@ export default function HomeScreen() {
       justifyContent: 'space-between',
       alignItems: 'center',
       backgroundColor: colors.tint,
-      padding: 16,
-      borderRadius: 8,
-      marginBottom: 8,
+      padding: 20,
+      borderRadius: 12,
+      marginBottom: 12,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 3,
     },
     startButton: {
       color: colors.background,
-      fontWeight: '600',
+      fontWeight: '700',
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 8,
+      fontSize: 15,
     },
     workoutText: {
       color: colors.background,
+      fontSize: 18,
+      fontWeight: '700',
+      marginBottom: 8,
+      letterSpacing: 0.5,
     },
     workoutInfo: {
+      flex: 1,
       flexDirection: 'column',
-      gap: 4,
+      gap: 6,
+      marginRight: 16,
+    },
+    exerciseCount: {
+      fontSize: 14,
+      color: colors.background,
+      opacity: 0.9,
+      fontWeight: '500',
     },
     duration: {
       color: colors.background,
-      fontSize: 12,
-      opacity: 0.8,
+      fontSize: 13,
+      opacity: 0.7,
+      maxWidth: '90%',
+      lineHeight: 18,
     },
     progressSection: {
       marginBottom: 24,
@@ -181,10 +208,8 @@ export default function HomeScreen() {
       flex: 1,
       height: '100%',
     },
-    exerciseCount: {
-      fontSize: 12,
-      color: colors.background,
-      opacity: 0.8,
+    plansScrollContainer: {
+      maxHeight: 300,
     },
   });
 
@@ -243,24 +268,26 @@ export default function HomeScreen() {
           {loading ? (
             <ThemedText>読み込み中...</ThemedText>
           ) : plans.length > 0 ? (
-            plans.map((plan) => (
-              <TouchableOpacity 
-                key={plan.id} 
-                style={styles.workoutCard}
-                onPress={() => handleStartPlan(plan.id)}
-              >
-                <View style={styles.workoutInfo}>
-                  <ThemedText style={styles.workoutText}>{plan.name}</ThemedText>
-                  <ThemedText style={styles.exerciseCount}>
-                    {plan.exercises.length}種目
-                  </ThemedText>
-                  <ThemedText style={[styles.duration, { marginTop: 4 }]} numberOfLines={1} ellipsizeMode="tail">
-                    {plan.exercises.map(e => e.exercise.name).join(', ')}
-                  </ThemedText>
-                </View>
-                <ThemedText style={styles.startButton}>開始</ThemedText>
-              </TouchableOpacity>
-            ))
+            <ScrollView style={styles.plansScrollContainer}>
+              {plans.map((plan) => (
+                <TouchableOpacity 
+                  key={plan.id} 
+                  style={styles.workoutCard}
+                  onPress={() => handleStartPlan(plan.id)}
+                >
+                  <View style={styles.workoutInfo}>
+                    <ThemedText style={styles.workoutText}>{plan.name}</ThemedText>
+                    <ThemedText style={styles.exerciseCount}>
+                      {plan.exercises.length}種目
+                    </ThemedText>
+                    <ThemedText style={[styles.duration]} numberOfLines={1} ellipsizeMode="tail">
+                      {plan.exercises.map(e => e.exercise.name).join(', ')}
+                    </ThemedText>
+                  </View>
+                  <ThemedText style={styles.startButton}>開始</ThemedText>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           ) : (
             <View style={{
               padding: 16,
