@@ -143,7 +143,6 @@ export class WorkoutController {
   };
 
   getWorkoutHistory = async (req: Request, res: Response) => {
-    console.log('4----------');
     try {
       const userId = req.user?.userId;
 
