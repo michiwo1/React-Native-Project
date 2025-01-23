@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions, SafeAreaView, StatusBar, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, SafeAreaView, StatusBar, Platform, ActivityIndicator, Modal, TextInput } from 'react-native';
 import { TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -33,6 +33,9 @@ const ExercisesScreen = () => {
   const [categories, setCategories] = useState<ExerciseCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [newExerciseName, setNewExerciseName] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -87,6 +90,39 @@ const ExercisesScreen = () => {
     }, [fetchData])
   );
 
+  const handleAddExercise = async () => {
+    if (!newExerciseName.trim() || !selectedCategoryId || !token) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/exercise`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newExerciseName.trim(),
+          category_id: selectedCategoryId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('種目の追加に失敗しました');
+      }
+
+      // 新しい種目を追加した後、リストを更新
+      await fetchData();
+      setIsModalVisible(false);
+      setNewExerciseName('');
+      setSelectedCategoryId('');
+    } catch (err) {
+      console.error('Error adding exercise:', err);
+      setError(err instanceof Error ? err.message : '種目の追加に失敗しました');
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -118,7 +154,7 @@ const ExercisesScreen = () => {
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView style={styles.container}>
+        <ScrollView style={[styles.container, { paddingBottom: 80 }]}>
           <View style={styles.header}>
             <TouchableOpacity 
               onPress={() => router.back()} 
@@ -150,6 +186,75 @@ const ExercisesScreen = () => {
             </View>
           ))}
         </ScrollView>
+
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setIsModalVisible(true)}
+        >
+          <Text style={styles.addButtonText}>種目を追加</Text>
+        </TouchableOpacity>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isModalVisible}
+          onRequestClose={() => setIsModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>新しい種目を追加</Text>
+              
+              <Text style={styles.inputLabel}>カテゴリー</Text>
+              <ScrollView style={styles.categoryList}>
+                {categories.map((category) => (
+                  <TouchableOpacity
+                    key={category.id}
+                    style={[
+                      styles.categoryItem,
+                      selectedCategoryId === category.id && styles.selectedCategory
+                    ]}
+                    onPress={() => setSelectedCategoryId(category.id)}
+                  >
+                    <Text style={[
+                      styles.categoryItemText,
+                      selectedCategoryId === category.id && styles.selectedCategoryText
+                    ]}>
+                      {category.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              <Text style={styles.inputLabel}>種目名</Text>
+              <TextInput
+                style={styles.input}
+                value={newExerciseName}
+                onChangeText={setNewExerciseName}
+                placeholder="種目名を入力"
+                placeholderTextColor="#999"
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => {
+                    setIsModalVisible(false);
+                    setNewExerciseName('');
+                    setSelectedCategoryId('');
+                  }}
+                >
+                  <Text style={styles.cancelButtonText}>キャンセル</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.submitButton]}
+                  onPress={handleAddExercise}
+                >
+                  <Text style={styles.submitButtonText}>追加</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </>
   );
@@ -245,6 +350,109 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  addButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: '#007AFF',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  categoryList: {
+    maxHeight: 150,
+    marginBottom: 20,
+  },
+  categoryItem: {
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: '#f5f5f5',
+  },
+  selectedCategory: {
+    backgroundColor: '#007AFF',
+  },
+  categoryItemText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  selectedCategoryText: {
+    color: '#fff',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#f5f5f5',
+  },
+  submitButton: {
+    backgroundColor: '#007AFF',
+  },
+  cancelButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

@@ -32,4 +32,19 @@ export class ExerciseController {
       res.status(500).json({ message: 'Error fetching exercise categories', error });
     }
   }
+
+  async createExercise(req: Request, res: Response) {
+    try {
+      const { name, category_id } = req.body;
+      
+      if (!name || !category_id) {
+        return res.status(400).json({ message: '種目名とカテゴリーIDは必須です' });
+      }
+
+      const exercise = await exerciseService.createExercise({ name, category_id });
+      res.status(201).json(exercise);
+    } catch (error) {
+      res.status(500).json({ message: '種目の作成に失敗しました', error });
+    }
+  }
 } 

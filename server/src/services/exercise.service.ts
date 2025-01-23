@@ -34,4 +34,16 @@ export class ExerciseService {
       },
     });
   }
+
+  async createExercise(data: { name: string; category_id: string }) {
+    return prisma.exercise.create({
+      data: {
+        name: data.name,
+        category_id: data.category_id,
+      },
+      include: {
+        category: true,
+      },
+    });
+  }
 } 
