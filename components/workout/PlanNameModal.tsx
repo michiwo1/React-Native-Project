@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Modal, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, Modal, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Exercise } from '@/components/workout/ExerciseList';
+import { API_URL } from '@/constants/api';
+import { useAuth } from '@/hooks/useAuth';
 
 type PlanNameModalProps = {
   isVisible: boolean;
@@ -12,11 +14,42 @@ type PlanNameModalProps = {
 
 export function PlanNameModal({ isVisible, onClose, onSubmit, selectedExercises }: PlanNameModalProps) {
   const [planName, setPlanName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { token } = useAuth();
 
-  const handleSubmit = () => {
-    if (planName.trim()) {
+  const handleSubmit = async () => {
+    if (!planName.trim()) {
+      Alert.alert('Error', 'Please enter a plan name');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_URL}/api/plan`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: planName,
+          exerciseIds: selectedExercises.map(exercise => exercise.id),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create plan');
+      }
+
+      const data = await response.json();
       onSubmit(planName);
       setPlanName('');
+      Alert.alert('Success', 'Plan created successfully');
+    } catch (error) {
+      console.error('Error creating plan:', error);
+      Alert.alert('Error', 'Failed to create plan. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -50,14 +83,18 @@ export function PlanNameModal({ isVisible, onClose, onSubmit, selectedExercises 
             <TouchableOpacity
               style={[styles.button, styles.cancelButton]}
               onPress={onClose}
+              disabled={isLoading}
             >
               <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.button, styles.createButton]}
+              style={[styles.button, styles.createButton, isLoading && styles.disabledButton]}
               onPress={handleSubmit}
+              disabled={isLoading}
             >
-              <ThemedText style={styles.createButtonText}>Create</ThemedText>
+              <ThemedText style={styles.createButtonText}>
+                {isLoading ? 'Creating...' : 'Create'}
+              </ThemedText>
             </TouchableOpacity>
           </View>
         </View>
@@ -117,6 +154,9 @@ const styles = StyleSheet.create({
   },
   createButton: {
     backgroundColor: '#007AFF',
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
   cancelButtonText: {
     fontSize: 16,
