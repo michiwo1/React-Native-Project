@@ -10,9 +10,10 @@ interface MetricCardProps {
   change?: number | null;
   changeUnit: string;
   date?: string;
+  hint?: string;
 }
 
-export function MetricCard({ title, value, change, changeUnit, date }: MetricCardProps) {
+export function MetricCard({ title, value, change, changeUnit, date, hint }: MetricCardProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const isHistory = value.startsWith('過去の記録');
@@ -21,39 +22,45 @@ export function MetricCard({ title, value, change, changeUnit, date }: MetricCar
     card: {
       backgroundColor: colorScheme === 'light' ? '#F5F7FA' : '#1A1D1E',
       borderRadius: 16,
-      padding: 20,
+      padding: 16,
       flex: 1,
       height: '100%',
     },
     title: {
-      fontSize: 15,
+      fontSize: 14,
       fontWeight: '600',
       color: '#64748B',
-      marginBottom: 8,
+      marginBottom: 6,
       letterSpacing: 0.3,
     },
     value: {
-      fontSize: isHistory ? 14 : 32,
+      fontSize: isHistory ? 13 : 28,
       fontWeight: isHistory ? '500' : 'bold',
-      marginBottom: 8,
-      letterSpacing: isHistory ? 0 : -0.5,
-      lineHeight: isHistory ? 20 : 38,
+      marginBottom: 6,
+      letterSpacing: isHistory ? 0 : -0.3,
+      lineHeight: isHistory ? 18 : 34,
     },
     changeContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 4,
+      marginBottom: 6,
     },
     change: {
-      fontSize: 15,
+      fontSize: 14,
       marginLeft: 4,
       fontWeight: '600',
     },
     date: {
-      fontSize: 13,
+      fontSize: 12,
       color: '#94A3B8',
       marginTop: 'auto',
-      paddingTop: 12,
+      paddingTop: 8,
+    },
+    hint: {
+      fontSize: 11,
+      color: '#94A3B8',
+      marginTop: 2,
+      fontStyle: 'italic',
     },
     contentContainer: {
       flex: 1,
@@ -69,13 +76,14 @@ export function MetricCard({ title, value, change, changeUnit, date }: MetricCar
     <View style={styles.card}>
       <View style={styles.contentContainer}>
         <View style={styles.upperContent}>
+                  {hint && <ThemedText style={styles.hint}>{hint}</ThemedText>}
           <ThemedText style={styles.title}>{title}</ThemedText>
           <ThemedText style={styles.value}>{value}</ThemedText>
           {change !== null && change !== undefined && (
             <View style={styles.changeContainer}>
               <MaterialCommunityIcons
                 name={change >= 0 ? 'arrow-up' : 'arrow-down'}
-                size={18}
+                size={16}
                 color={change >= 0 ? '#10B981' : '#EF4444'}
               />
               <ThemedText style={[styles.change, { color: change >= 0 ? '#10B981' : '#EF4444' }]}>
@@ -84,7 +92,7 @@ export function MetricCard({ title, value, change, changeUnit, date }: MetricCar
             </View>
           )}
         </View>
-        {date && <ThemedText style={styles.date}>{date}</ThemedText>}
+          {date && <ThemedText style={styles.date}>{date}</ThemedText>}
       </View>
     </View>
   );

@@ -388,6 +388,7 @@ export default function HomeScreen() {
               change={null}
               changeUnit="kg"
               date={weightData ? new Date(weightData.date).toLocaleDateString('ja-JP') : undefined}
+              hint="クリックで体重を入力"
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.metricCardWrapper} onPress={handleBenchPressCardPress}>
@@ -397,6 +398,7 @@ export default function HomeScreen() {
               change={dummyData.benchPress.change}
               changeUnit="kg"
               date={new Date().toLocaleDateString('ja-JP')}
+              hint="クリックで表示を変更"
             />
           </TouchableOpacity>
         </View>
