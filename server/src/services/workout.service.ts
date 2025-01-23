@@ -14,7 +14,41 @@ export class WorkoutService {
     this.prisma = new PrismaClient();
   }
 
+  async hasOngoingWorkoutSession(userId: string): Promise<boolean> {
+    const ongoingSession = await this.prisma.workoutSession.findFirst({
+      where: {
+        user_id: userId,
+        ended_at: null,
+      },
+    });
+    return !!ongoingSession;
+  }
+
+
+  async getOngoingWorkoutSession(userId: string) {
+    return await this.prisma.workoutSession.findFirst({
+      where: {
+        user_id: userId,
+        ended_at: null,
+      },
+      include: {
+        exercises: {
+          include: {
+            exercise: true,
+            sets: true,
+          },
+        },
+      },
+    });
+  }
+
   async createWorkoutSession(userId: string, exerciseIds: string[]) {
+    // Check for ongoing session first
+    const hasOngoing = await this.hasOngoingWorkoutSession(userId);
+    if (hasOngoing) {
+      throw new Error('You have an ongoing workout session. Please finish it before starting a new one.');
+    }
+
     return await this.prisma.$transaction(async (tx) => {
       // Create workout session
       const workoutSession = await tx.workoutSession.create({

@@ -59,6 +59,24 @@ export class PlanController {
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
+      // Check for ongoing workout session
+      const ongoingSession = await this.workoutService.getOngoingWorkoutSession(userId);
+
+      if (ongoingSession) {
+        return res.status(400).json({ 
+          message: 'You have an ongoing workout session',
+          ongoingSession: {
+            id: ongoingSession.id,
+            startedAt: ongoingSession.started_at,
+            exercises: ongoingSession.exercises.map(e => ({
+              name: e.exercise.name,
+              sets: e.sets
+            }))
+          }
+        });
+      }
+
+
       const plan = await this.planService.getPlanById(planId);
       if (!plan) {
         return res.status(404).json({ message: 'Plan not found' });
@@ -77,6 +95,9 @@ export class PlanController {
       return res.status(201).json(workoutSession);
     } catch (error) {
       console.error('Error starting workout from plan:', error);
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message });
+      }
       return res.status(500).json({ message: 'Internal server error' });
     }
   };

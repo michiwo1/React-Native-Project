@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Animated, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Animated, ScrollView, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { MetricCard } from '@/components/ui/MetricCard';
@@ -254,13 +254,36 @@ export default function HomeScreen() {
           'Authorization': `Bearer ${token}`,
         },
       });
+
+      const data = await response.json();
+      
       if (!response.ok) {
-        throw new Error('Failed to start workout');
+        if (response.status === 400 && data.ongoingSession) {
+          // 進行中のセッションがある場合
+          Alert.alert(
+            '進行中のトレーニング',
+            'まだ終了していないトレーニングがあります。\n先に進行中のトレーニングを終了してください。',
+            [
+              {
+                text: 'キャンセル',
+                style: 'cancel',
+              },
+            ],
+            { cancelable: true }
+          );
+          return;
+        }
+        throw new Error(data.message || 'Failed to start workout');
       }
-      const workoutSession = await response.json();
-      router.push('/workout/exercises');
+
+      router.push('/workout/log');
     } catch (error) {
       console.error('Error starting workout:', error);
+      Alert.alert(
+        'エラー',
+        'トレーニングの開始に失敗しました。\nもう一度お試しください。',
+        [{ text: 'OK' }]
+      );
     }
   };
 
