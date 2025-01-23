@@ -31,6 +31,7 @@ const ExercisesScreen = () => {
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [categories, setCategories] = useState<ExerciseCategory[]>([]);
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -76,6 +77,12 @@ const ExercisesScreen = () => {
       
       setExercises(exercisesRes);
       setCategories(categoriesRes);
+
+      // ベンチプレスを自動選択
+      const benchPress = exercisesRes.find((exercise: Exercise) => exercise.name === 'Bench Press');
+      if (benchPress) {
+        setSelectedExerciseId(benchPress.id);
+      }
     } catch (err) {
       console.error('Error details:', err);
       setError(err instanceof Error ? err.message : 'データの取得に失敗しました');
@@ -173,13 +180,17 @@ const ExercisesScreen = () => {
                   .map((exercise) => (
                     <TouchableOpacity
                       key={exercise.id}
-                      style={[styles.card, { width: cardWidth }]}
-                      onPress={() => {
-                        // TODO: 種目詳細画面への遷移を実装
-                        console.log('Exercise pressed:', exercise.name);
-                      }}
+                      style={[
+                        styles.card,
+                        { width: cardWidth },
+                        selectedExerciseId === exercise.id && styles.selectedCard
+                      ]}
+                      onPress={() => setSelectedExerciseId(exercise.id)}
                     >
                       <Text style={styles.exerciseName}>{exercise.name}</Text>
+                      {selectedExerciseId === exercise.id && (
+                        <Text style={styles.selectedExerciseText}>このカードの最大重量を表示中</Text>
+                      )}
                     </TouchableOpacity>
                   ))}
               </View>
@@ -307,17 +318,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 20,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
     minHeight: 80,
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  selectedCard: {
+    backgroundColor: '#e3f2fd',
+    borderColor: '#2196f3',
+    borderWidth: 2,
   },
   exerciseName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
     textAlign: 'center',
-    lineHeight: 22,
+    marginBottom: 4,
+  },
+  selectedExerciseText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,
