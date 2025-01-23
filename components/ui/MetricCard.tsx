@@ -23,20 +23,20 @@ export function MetricCard({ title, value, change, changeUnit, date }: MetricCar
       padding: 20,
       flex: 1,
       height: '100%',
-      justifyContent: 'space-between',
     },
     title: {
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '600',
       color: '#64748B',
       marginBottom: 12,
-      letterSpacing: 0.5,
+      letterSpacing: 0.3,
     },
     value: {
       fontSize: 32,
       fontWeight: 'bold',
       marginBottom: 12,
       letterSpacing: -0.5,
+      lineHeight: 38,
     },
     changeContainer: {
       flexDirection: 'row',
@@ -44,32 +44,37 @@ export function MetricCard({ title, value, change, changeUnit, date }: MetricCar
       marginBottom: 8,
     },
     change: {
-      fontSize: 16,
-      marginLeft: 6,
+      fontSize: 15,
+      marginLeft: 4,
       fontWeight: '600',
     },
     date: {
       fontSize: 13,
       color: '#94A3B8',
-      marginTop: 4,
+      marginTop: 'auto',
+      paddingTop: 12,
     },
     contentContainer: {
       flex: 1,
       justifyContent: 'space-between',
+      minHeight: '100%',
+    },
+    upperContent: {
+      flex: 0,
     }
   });
 
   return (
     <View style={styles.card}>
       <View style={styles.contentContainer}>
-        <View>
+        <View style={styles.upperContent}>
           <ThemedText style={styles.title}>{title}</ThemedText>
           <ThemedText style={styles.value}>{value}</ThemedText>
           {change !== null && change !== undefined && (
             <View style={styles.changeContainer}>
               <MaterialCommunityIcons
                 name={change >= 0 ? 'arrow-up' : 'arrow-down'}
-                size={20}
+                size={18}
                 color={change >= 0 ? '#10B981' : '#EF4444'}
               />
               <ThemedText style={[styles.change, { color: change >= 0 ? '#10B981' : '#EF4444' }]}>

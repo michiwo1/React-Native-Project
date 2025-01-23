@@ -185,7 +185,7 @@ export default function HomeScreen() {
       flexDirection: 'row',
       gap: 12,
       marginBottom: 16,
-      minHeight: 100,
+      minHeight: 180,
     },
     nutritionBars: {
       gap: 12,
@@ -227,7 +227,7 @@ export default function HomeScreen() {
     },
     metricCardWrapper: {
       flex: 1,
-      height: '100%',
+      minHeight: 180,
     },
     plansScrollContainer: {
       maxHeight: 300,
