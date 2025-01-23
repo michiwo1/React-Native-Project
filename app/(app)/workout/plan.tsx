@@ -148,14 +148,11 @@ export default function WorkoutPlanScreen() {
               onPress={() => {/* Handle routine selection */}}
             >
               <View>
-                <ThemedText style={styles.sectionTitle}>My routines</ThemedText>
+                <ThemedText style={styles.sectionTitle}>My Plans</ThemedText>
                 <ThemedText style={styles.routineText}>Select routine</ThemedText>
               </View>
               <ThemedText style={styles.arrow}>→</ThemedText>
             </TouchableOpacity>
-            <View style={styles.restMessage}>
-              <ThemedText style={styles.restText}>Today is a rest day 😢</ThemedText>
-            </View>
           </View>
         )}
       </ScrollView>
