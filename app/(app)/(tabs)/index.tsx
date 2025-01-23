@@ -357,14 +357,6 @@ export default function HomeScreen() {
             新しいプランを作成
           </ThemedText>
         </TouchableOpacity>
-
-        <View style={styles.progressSection}>
-          <View style={styles.progressTitleContainer}>
-            <ThemedText>週間目標達成率</ThemedText>
-            <ThemedText style={styles.trainingCount}>4/7回</ThemedText>
-          </View>
-          <ProgressBar progress={weeklyGoalProgress} />
-        </View>
       </View>
 
       <View style={styles.progressSection}>
