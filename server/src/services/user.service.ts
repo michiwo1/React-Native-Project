@@ -124,8 +124,8 @@ export class UserService {
   }
 
   public async getLatestWeight(userId: string) {
-    // First, try to get the latest weight measurement
-    const latestMeasurement = await this.prisma.measurement.findFirst({
+    // 最新の2件の体重測定を取得
+    const measurements = await this.prisma.measurement.findMany({
       where: {
         user_id: userId,
         metric_type: {
@@ -135,34 +135,51 @@ export class UserService {
       orderBy: {
         measured_at: 'desc'
       },
+      take: 2,
       include: {
         metric_type: true
       }
     });
 
-    if (latestMeasurement) {
-      return {
-        weight: latestMeasurement.value,
-        date: latestMeasurement.measured_at,
-        source: 'measurement'
-      };
-    }
+    if (measurements.length === 0) {
+      // 測定データがない場合はユーザープロファイルから体重を取得
+      const userProfile = await this.prisma.userProfile.findUnique({
+        where: {
+          user_id: userId
+        }
+      });
 
-    // If no measurement exists, get weight from user profile
-    const userProfile = await this.prisma.userProfile.findUnique({
-      where: {
-        user_id: userId
+      if (!userProfile?.weight) {
+        return null;
       }
-    });
 
-    if (userProfile?.weight) {
       return {
         weight: userProfile.weight,
         date: userProfile.updated_at,
-        source: 'profile'
+        change: null
       };
     }
 
-    return null;
+    let change: number | null = null;
+
+    if (measurements.length === 1) {
+      // 測定が1件の場合、ユーザープロファイルの体重と比較
+      const userProfile = await this.prisma.userProfile.findUnique({
+        where: { user_id: userId },
+      });
+
+      if (userProfile?.weight) {
+        change = Number((measurements[0].value - userProfile.weight).toFixed(1));
+      }
+    } else {
+      // 測定が2件以上の場合、最新の2件を比較
+      change = Number((measurements[0].value - measurements[1].value).toFixed(1));
+    }
+
+    return {
+      weight: measurements[0].value,
+      date: measurements[0].measured_at,
+      change
+    };
   }
 } 

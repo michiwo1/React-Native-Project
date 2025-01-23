@@ -33,7 +33,7 @@ export default function HomeScreen() {
   const [weightData, setWeightData] = useState<{
     weight: number;
     date: string;
-    source: string;
+    change: number | null;
   } | null>(null);
   
   useEffect(() => {
@@ -385,7 +385,7 @@ export default function HomeScreen() {
             <MetricCard
               title="体重"
               value={weightData ? `${weightData.weight}kg` : '未設定'}
-              change={null}
+              change={weightData?.change}
               changeUnit="kg"
               date={weightData ? new Date(weightData.date).toLocaleDateString('ja-JP') : undefined}
               hint="クリックで体重を入力"
