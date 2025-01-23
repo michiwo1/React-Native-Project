@@ -15,6 +15,7 @@ interface MetricCardProps {
 export function MetricCard({ title, value, change, changeUnit, date }: MetricCardProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+  const isHistory = value.startsWith('過去の記録');
 
   const styles = StyleSheet.create({
     card: {
@@ -28,20 +29,20 @@ export function MetricCard({ title, value, change, changeUnit, date }: MetricCar
       fontSize: 15,
       fontWeight: '600',
       color: '#64748B',
-      marginBottom: 12,
+      marginBottom: 8,
       letterSpacing: 0.3,
     },
     value: {
-      fontSize: 32,
-      fontWeight: 'bold',
-      marginBottom: 12,
-      letterSpacing: -0.5,
-      lineHeight: 38,
+      fontSize: isHistory ? 14 : 32,
+      fontWeight: isHistory ? '500' : 'bold',
+      marginBottom: 8,
+      letterSpacing: isHistory ? 0 : -0.5,
+      lineHeight: isHistory ? 20 : 38,
     },
     changeContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 8,
+      marginBottom: 4,
     },
     change: {
       fontSize: 15,
@@ -57,7 +58,7 @@ export function MetricCard({ title, value, change, changeUnit, date }: MetricCar
     contentContainer: {
       flex: 1,
       justifyContent: 'space-between',
-      minHeight: '100%',
+      height: '100%',
     },
     upperContent: {
       flex: 0,
