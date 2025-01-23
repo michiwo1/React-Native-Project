@@ -154,7 +154,7 @@ const ExercisesScreen = () => {
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView style={[styles.container, { paddingBottom: 80 }]}>
+        <ScrollView style={[styles.container, { marginBottom: 80 }]}>
           <View style={styles.header}>
             <TouchableOpacity 
               onPress={() => router.back()} 
@@ -360,14 +360,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
   addButtonText: {
     color: '#fff',
