@@ -6,16 +6,42 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { API_URL } from '@/constants/api';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function WeightInputScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const [weight, setWeight] = useState('');
+  const { token } = useAuth();
 
-  const handleSave = () => {
-    // TODO: 体重を保存する処理を実装
-    router.back();
+  const handleSave = async () => {
+    try {
+      const weightValue = parseFloat(weight);
+      if (isNaN(weightValue)) {
+        alert('有効な体重を入力してください');
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/api/measurement/weight`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ weight: weightValue }),
+      });
+
+      if (!response.ok) {
+        throw new Error('体重の記録に失敗しました');
+      }
+
+      router.back();
+    } catch (error) {
+      console.error('Error saving weight:', error);
+      alert('体重の記録中にエラーが発生しました');
+    }
   };
 
   const takePicture = async () => {
