@@ -85,7 +85,7 @@ export function OnboardingScreen({ step }: { step: number }) {
               'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify({
-              goal: goal,
+              goal_type: goal,
             }),
           });
 

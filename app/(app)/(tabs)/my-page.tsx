@@ -94,7 +94,7 @@ export default function MyPageScreen() {
                       await AsyncStorage.removeItem('userToken');
                       
                       // ログインページに遷移
-                      router.replace('/');
+                      router.replace('/auth/sign-in');
                     } catch (error) {
                       console.error('ログアウトエラー:', error);
                       Alert.alert('エラー', 'ログアウトに失敗しました');
