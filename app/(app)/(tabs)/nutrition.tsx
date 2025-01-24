@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { API_URL } from '@/constants/api';
 
@@ -79,11 +79,13 @@ export default function NutritionScreen() {
     }
   };
 
-  useEffect(() => {
-    if (token) {
-      fetchMeals();
-    }
-  }, [token]);
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        fetchMeals();
+      }
+    }, [token])
+  );
 
   return (
     <SafeAreaView style={styles.container}>
