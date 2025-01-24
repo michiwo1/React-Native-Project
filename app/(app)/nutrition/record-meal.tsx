@@ -446,8 +446,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   formSection: {
-    marginTop: 16,
-    marginBottom: 24,
+    marginTop: 8,
+    marginBottom: 8,
     paddingHorizontal: 16,
     backgroundColor: '#FFFFFF',
     paddingVertical: 16,
