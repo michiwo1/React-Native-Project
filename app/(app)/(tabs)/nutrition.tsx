@@ -186,13 +186,16 @@ export default function NutritionScreen() {
                   style={[
                     styles.progressBar, 
                     { 
-                      width: `${(nutrient.current / nutrient.target) * 100}%`,
+                      width: `${Math.min((nutrient.current / nutrient.target) * 100, 100)}%`,
                       backgroundColor: nutrient.color
                     }
                   ]} 
                 />
               </View>
-              <Text style={styles.nutrientValue}>
+              <Text style={[
+                styles.nutrientValue,
+                nutrient.current > nutrient.target && { color: '#FF3B30' }
+              ]}>
                 {nutrient.current}/{nutrient.target} {nutrient.label === 'カロリー' ? 'kcal' : 'g'}
               </Text>
             </View>
