@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Platform, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { router } from 'expo-router';
-import RNPickerSelect from 'react-native-picker-select';
 import { launchCameraAsync } from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
 type MealType = '朝食' | '昼食' | '夕食' | '間食';
+
+const MEAL_TYPES: MealType[] = ['朝食', '昼食', '夕食', '間食'];
 
 export default function RecordMealScreen() {
   const [mealType, setMealType] = useState<MealType>('朝食');
@@ -128,18 +129,26 @@ export default function RecordMealScreen() {
 
         <View style={styles.formSection}>
           <Text style={styles.label}>食事の種類</Text>
-          <View style={styles.pickerContainer}>
-            <RNPickerSelect
-              onValueChange={(value) => setMealType(value)}
-              value={mealType}
-              items={[
-                { label: '朝食', value: '朝食' },
-                { label: '昼食', value: '昼食' },
-                { label: '夕食', value: '夕食' },
-                { label: '間食', value: '間食' },
-              ]}
-              style={pickerSelectStyles}
-            />
+          <View style={styles.mealTypeContainer}>
+            {MEAL_TYPES.map((type) => (
+              <TouchableOpacity
+                key={type}
+                style={[
+                  styles.mealTypeButton,
+                  mealType === type && styles.mealTypeButtonSelected,
+                ]}
+                onPress={() => setMealType(type)}
+              >
+                <Text
+                  style={[
+                    styles.mealTypeButtonText,
+                    mealType === type && styles.mealTypeButtonTextSelected,
+                  ]}
+                >
+                  {type}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -339,23 +348,35 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 8,
   },
-});
-
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    color: '#000',
+  picker: {
+    width: '100%',
+    height: Platform.OS === 'ios' ? 200 : 50,
   },
-  inputAndroid: {
-    fontSize: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    color: '#000',
+  mealTypeContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
   },
-  iconContainer: {
-    top: 16,
-    right: 12,
+  mealTypeButton: {
+    flex: 1,
+    minWidth: '48%',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    backgroundColor: '#F9F9FB',
+    alignItems: 'center',
+  },
+  mealTypeButtonSelected: {
+    backgroundColor: Colors.light.tint,
+    borderColor: Colors.light.tint,
+  },
+  mealTypeButtonText: {
+    fontSize: 16,
+    color: '#000',
+    fontWeight: '500',
+  },
+  mealTypeButtonTextSelected: {
+    color: '#fff',
   },
 }); 
