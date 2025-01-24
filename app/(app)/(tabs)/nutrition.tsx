@@ -2,6 +2,9 @@ import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { API_URL } from '@/constants/api';
 
 type NutrientProgress = {
   current: number;
@@ -10,7 +13,20 @@ type NutrientProgress = {
   color: string;
 };
 
+type Meal = {
+  id: string;
+  name: string;
+  calories: number;
+  description: string;
+  mealType: string;
+  createdAt: string;
+};
+
 export default function NutritionScreen() {
+  const { token } = useAuth();
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const nutrients: NutrientProgress[] = [
     { label: 'カロリー', current: 1800, target: 2500, color: '#007AFF' },
     { label: 'タンパク質', current: 120, target: 150, color: '#34C759' },
@@ -18,6 +34,33 @@ export default function NutritionScreen() {
     { label: '脂質', current: 60, target: 80, color: '#FF3B30' },
   ];
 
+  const fetchMeals = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/meal`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch meals');
+      }
+      const data = await response.json();
+      setMeals(data);
+    } catch (error) {
+      console.error('Error fetching meals:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchMeals();
+    }
+  }, [token]);
+
+  console.log('1----------');
+  console.log('meals:', meals);
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
@@ -55,16 +98,13 @@ export default function NutritionScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>食事記録</Text>
-          <View style={styles.mealCard}>
-            <Text style={styles.mealTitle}>朝食</Text>
-            <Text style={styles.mealCalories}>450kcal</Text>
-            <Text style={styles.mealDetails}>玄米ご飯、納豆、味噌汁</Text>
-          </View>
-          <View style={styles.mealCard}>
-            <Text style={styles.mealTitle}>昼食</Text>
-            <Text style={styles.mealCalories}>600kcal</Text>
-            <Text style={styles.mealDetails}>サラダチキン、全粒粉パン</Text>
-          </View>
+          {meals.map((meal) => (
+            <View key={meal.id} style={styles.mealCard}>
+              <Text style={styles.mealTitle}>{meal.name}</Text>
+              <Text style={styles.mealCalories}>{meal.calories}kcal</Text>
+              <Text style={styles.mealDetails}>{meal.description}</Text>
+            </View>
+          ))}
         </View>
 
         <TouchableOpacity 
