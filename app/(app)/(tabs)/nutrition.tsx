@@ -116,10 +116,10 @@ export default function NutritionScreen() {
 
     console.log('Final totals:', totals);
     return {
-      calories: Math.round(totals.calories * 100) / 100,
-      protein: Math.round(totals.protein * 100) / 100,
-      carbs: Math.round(totals.carbs * 100) / 100,
-      fat: Math.round(totals.fat * 100) / 100,
+      calories: Math.round(totals.calories),
+      protein: Math.round(totals.protein),
+      carbs: Math.round(totals.carbs),
+      fat: Math.round(totals.fat),
     };
   };
 

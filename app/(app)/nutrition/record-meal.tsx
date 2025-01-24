@@ -54,6 +54,10 @@ export default function RecordMealScreen() {
   const [selectedQuantity, setSelectedQuantity] = useState('');
   const [tempSelectedFood, setTempSelectedFood] = useState<FoodItem | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [showAddFoodModal, setShowAddFoodModal] = useState(false);
+  const [newFoodName, setNewFoodName] = useState('');
+  const [newFoodBaseQuantity, setNewFoodBaseQuantity] = useState('');
+  const [newFoodBaseUnit, setNewFoodBaseUnit] = useState('');
 
   useEffect(() => {
     const getToken = async () => {
@@ -188,6 +192,41 @@ export default function RecordMealScreen() {
     } catch (error) {
       console.error('Error saving meal:', error);
       Alert.alert('エラー', '食事の記録に失敗しました');
+    }
+  };
+
+  const handleAddNewFood = async () => {
+    if (!token || !newFoodName || !newFoodBaseQuantity || !newFoodBaseUnit) {
+      Alert.alert('エラー', '全ての項目を入力してください');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/food`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: newFoodName,
+          base_quantity: parseFloat(newFoodBaseQuantity),
+          base_unit: newFoodBaseUnit,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('食品の追加に失敗しました');
+      }
+
+      Alert.alert('成功', '食品を追加しました');
+      setShowAddFoodModal(false);
+      setNewFoodName('');
+      setNewFoodBaseQuantity('');
+      setNewFoodBaseUnit('');
+    } catch (error) {
+      console.error('Error adding food:', error);
+      Alert.alert('エラー', '食品の追加に失敗しました');
     }
   };
 
@@ -332,7 +371,12 @@ export default function RecordMealScreen() {
               <Text style={styles.modalCancelButton}>キャンセル</Text>
             </TouchableOpacity>
             <Text style={styles.modalTitle}>食品を選択</Text>
-            <View style={{ width: 70 }} />
+            <TouchableOpacity
+              onPress={() => setShowAddFoodModal(true)}
+              style={styles.addFoodButton}
+            >
+              <Ionicons name="add" size={24} color="#007AFF" />
+            </TouchableOpacity>
           </View>
           <FoodItemSelector onSelect={handleAddFood} />
         </SafeAreaView>
@@ -375,6 +419,65 @@ export default function RecordMealScreen() {
                 onPress={handleConfirmQuantity}
               >
                 <Text style={styles.quantityModalButtonTextConfirm}>確定</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 食品追加モーダル */}
+      <Modal
+        visible={showAddFoodModal}
+        animationType="fade"
+        transparent
+      >
+        <View style={styles.quantityModalContainer}>
+          <View style={styles.quantityModalContent}>
+            <Text style={styles.quantityModalTitle}>新しい食品を追加</Text>
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>食品名</Text>
+              <TextInput
+                style={styles.formInput}
+                value={newFoodName}
+                onChangeText={setNewFoodName}
+                placeholder="食品名を入力"
+              />
+            </View>
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>基準量</Text>
+              <View style={styles.quantityInputContainer}>
+                <TextInput
+                  style={[styles.formInput, { flex: 2 }]}
+                  value={newFoodBaseQuantity}
+                  onChangeText={setNewFoodBaseQuantity}
+                  keyboardType="numeric"
+                  placeholder="基準量を入力"
+                />
+                <TextInput
+                  style={[styles.formInput, { flex: 1, marginLeft: 8 }]}
+                  value={newFoodBaseUnit}
+                  onChangeText={setNewFoodBaseUnit}
+                  placeholder="単位"
+                />
+              </View>
+            </View>
+            <View style={styles.quantityModalButtons}>
+              <TouchableOpacity
+                style={[styles.quantityModalButton, styles.quantityModalButtonCancel]}
+                onPress={() => {
+                  setShowAddFoodModal(false);
+                  setNewFoodName('');
+                  setNewFoodBaseQuantity('');
+                  setNewFoodBaseUnit('');
+                }}
+              >
+                <Text style={styles.quantityModalButtonTextCancel}>キャンセル</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.quantityModalButton, styles.quantityModalButtonConfirm]}
+                onPress={handleAddNewFood}
+              >
+                <Text style={styles.quantityModalButtonTextConfirm}>追加</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -659,5 +762,25 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     fontWeight: '600',
+  },
+  addFoodButton: {
+    width: 70,
+    alignItems: 'flex-end',
+  },
+  formGroup: {
+    marginBottom: 16,
+  },
+  formLabel: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 8,
+  },
+  formInput: {
+    height: 42,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    fontSize: 16,
   },
 }); 
