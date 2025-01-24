@@ -5,8 +5,12 @@ const exerciseService = new ExerciseService();
 
 export class ExerciseController {
   async getAllExercises(req: Request, res: Response) {
+    console.log('1-------');
+    console.log('getAllExercises');
     try {
       const exercises = await exerciseService.getAllExercises();
+      console.log('2-------');
+      console.log(exercises);
       res.json(exercises);
     } catch (error) {
       res.status(500).json({ message: 'Error fetching exercises', error });
