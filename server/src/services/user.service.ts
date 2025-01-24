@@ -13,6 +13,15 @@ interface UpdateUserData {
   password_hash?: string;
 }
 
+interface UserProfileResponse {
+  weight: number;
+  goal_type: string;
+  calorie_target: number;
+  protein_target: number;
+  carb_target: number;
+  fat_target: number;
+}
+
 export class UserService {
   private prisma: PrismaClient;
 
@@ -181,5 +190,89 @@ export class UserService {
       date: measurements[0].measured_at,
       change
     };
+  }
+
+  public async getUserProfile(userId: string): Promise<UserProfileResponse> {
+    try {
+      const userProfile = await this.prisma.userProfile.findUnique({
+        where: {
+          user_id: userId,
+        },
+        select: {
+          weight: true,
+          goal_type_id: true,
+          goal_type: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      if (!userProfile) {
+        throw new Error('User profile not found');
+      }
+
+      // 目標タイプに基づいて栄養目標を計算
+      const goalType = userProfile.goal_type?.name || 'maintain';
+      const weight = userProfile.weight || 70; // デフォルト値として70kgを設定
+
+      return {
+        weight,
+        goal_type: goalType,
+        calorie_target: this.calculateCalorieTarget(weight, goalType),
+        protein_target: this.calculateProteinTarget(weight, goalType),
+        carb_target: this.calculateCarbTarget(weight, goalType),
+        fat_target: this.calculateFatTarget(weight, goalType),
+      };
+    } catch (error) {
+      console.error('Error in getUserProfile:', error);
+      throw error;
+    }
+  }
+
+  private calculateCalorieTarget(weight: number, goalType: string): number {
+    const baseCalories = weight * 30; // 基礎代謝を体重×30で概算
+    switch (goalType) {
+      case 'bulk':
+        return Math.round(baseCalories * 1.2); // 筋肥大時は20%増
+      case 'cut':
+        return Math.round(baseCalories * 0.8); // 減量時は20%減
+      default:
+        return Math.round(baseCalories); // 維持
+    }
+  }
+
+  private calculateProteinTarget(weight: number, goalType: string): number {
+    switch (goalType) {
+      case 'bulk':
+        return Math.round(weight * 2.2); // 筋肥大時は体重×2.2g
+      case 'cut':
+        return Math.round(weight * 2.4); // 減量時は体重×2.4g
+      default:
+        return Math.round(weight * 2.0); // 維持時は体重×2.0g
+    }
+  }
+
+  private calculateCarbTarget(weight: number, goalType: string): number {
+    switch (goalType) {
+      case 'bulk':
+        return Math.round(weight * 6); // 筋肥大時は体重×6g
+      case 'cut':
+        return Math.round(weight * 3); // 減量時は体重×3g
+      default:
+        return Math.round(weight * 4); // 維持時は体重×4g
+    }
+  }
+
+  private calculateFatTarget(weight: number, goalType: string): number {
+    switch (goalType) {
+      case 'bulk':
+        return Math.round(weight * 1.5); // 筋肥大時は体重×1.5g
+      case 'cut':
+        return Math.round(weight * 1.0); // 減量時は体重×1.0g
+      default:
+        return Math.round(weight * 1.2); // 維持時は体重×1.2g
+    }
   }
 } 

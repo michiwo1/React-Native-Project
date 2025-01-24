@@ -67,4 +67,19 @@ export class UserController {
       return res.status(500).json({ message: 'Internal server error' });
     }
   };
+
+  public getUserProfile = async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const userProfile = await this.userService.getUserProfile(userId);
+      return res.status(200).json(userProfile);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  };
 } 

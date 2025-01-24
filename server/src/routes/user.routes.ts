@@ -8,7 +8,7 @@ const userController = new UserController();
 // Protected routes
 router.use(authenticate);
 
-router.get('/profile', userController.getProfile);
+router.get('/profile', userController.getUserProfile);
 router.put('/profile', userController.updateProfile);
 router.get('/weight', userController.getLatestWeight);
 

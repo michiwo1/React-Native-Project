@@ -6,6 +6,15 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { API_URL } from '@/constants/api';
 
+type UserProfile = {
+  calorie_target: number;
+  protein_target: number;
+  carb_target: number;
+  fat_target: number;
+  goal_type: 'bulk' | 'cut' | 'maintain'; // 筋肥大、減量、維持
+  weight: number;  // 体重を追加
+};
+
 type NutrientProgress = {
   current: number;
   target: number;
@@ -55,6 +64,7 @@ export default function NutritionScreen() {
   const { token } = useAuth();
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [totalNutrients, setTotalNutrients] = useState({
     calories: 0,
     protein: 0,
@@ -149,20 +159,114 @@ export default function NutritionScreen() {
     }
   };
 
-  const nutrients: NutrientProgress[] = [
-    { label: 'カロリー', current: totalNutrients.calories, target: 2500, color: '#007AFF' },
-    { label: 'タンパク質', current: totalNutrients.protein, target: 150, color: '#34C759' },
-    { label: '炭水化物', current: totalNutrients.carbs, target: 300, color: '#FF9500' },
-    { label: '脂質', current: totalNutrients.fat, target: 80, color: '#FF3B30' },
-  ];
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/user/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch user profile');
+      }
+      const data = await response.json();
+      
+      // 目標タイプに基づいて栄養目標値を調整
+      const adjustedProfile = {
+        ...data,
+        calorie_target: calculateCalorieTarget(data.weight, data.goal_type),
+        protein_target: calculateProteinTarget(data.weight, data.goal_type),
+        carb_target: calculateCarbTarget(data.weight, data.goal_type),
+        fat_target: calculateFatTarget(data.weight, data.goal_type),
+      };
+      
+      setUserProfile(adjustedProfile);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
+  // 体重と目標タイプに基づいて各栄養素の目標値を計算する関数
+  const calculateCalorieTarget = (weight: number, goalType: string) => {
+    const baseCalories = weight * 30; // 基礎代謝を体重×30で概算
+    switch (goalType) {
+      case 'bulk':
+        return Math.round(baseCalories * 1.2); // 筋肥大時は20%増
+      case 'cut':
+        return Math.round(baseCalories * 0.8); // 減量時は20%減
+      default:
+        return Math.round(baseCalories); // 維持
+    }
+  };
+
+  const calculateProteinTarget = (weight: number, goalType: string) => {
+    switch (goalType) {
+      case 'bulk':
+        return Math.round(weight * 2.2); // 筋肥大時は体重×2.2g
+      case 'cut':
+        return Math.round(weight * 2.4); // 減量時は体重×2.4g
+      default:
+        return Math.round(weight * 2.0); // 維持時は体重×2.0g
+    }
+  };
+
+  const calculateCarbTarget = (weight: number, goalType: string) => {
+    switch (goalType) {
+      case 'bulk':
+        return Math.round(weight * 6); // 筋肥大時は体重×6g
+      case 'cut':
+        return Math.round(weight * 3); // 減量時は体重×3g
+      default:
+        return Math.round(weight * 4); // 維持時は体重×4g
+    }
+  };
+
+  const calculateFatTarget = (weight: number, goalType: string) => {
+    switch (goalType) {
+      case 'bulk':
+        return Math.round(weight * 1.5); // 筋肥大時は体重×1.5g
+      case 'cut':
+        return Math.round(weight * 1.0); // 減量時は体重×1.0g
+      default:
+        return Math.round(weight * 1.2); // 維持時は体重×1.2g
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
       if (token) {
         fetchMeals();
+        fetchUserProfile();
       }
     }, [token])
   );
+
+  const nutrients: NutrientProgress[] = [
+    { 
+      label: 'カロリー', 
+      current: totalNutrients.calories, 
+      target: userProfile?.calorie_target || 2500, 
+      color: '#007AFF' 
+    },
+    { 
+      label: 'タンパク質', 
+      current: totalNutrients.protein, 
+      target: userProfile?.protein_target || 150, 
+      color: '#34C759' 
+    },
+    { 
+      label: '炭水化物', 
+      current: totalNutrients.carbs, 
+      target: userProfile?.carb_target || 300, 
+      color: '#FF9500' 
+    },
+    { 
+      label: '脂質', 
+      current: totalNutrients.fat, 
+      target: userProfile?.fat_target || 80, 
+      color: '#FF3B30' 
+    },
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
