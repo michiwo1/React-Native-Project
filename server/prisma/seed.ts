@@ -2,11 +2,13 @@ import { PrismaClient } from '@prisma/client';
 import { seedGoalTypes } from './seeds/goalTypes';
 import { seedMealTypes } from './seeds/mealTypes';
 import { seedFoodData } from './seeds/foodData';
+import { seedMetricTypes } from './seeds/metricTypes';
 
 const prisma = new PrismaClient();
 
 async function main() {
   try {
+    await seedMetricTypes(prisma);
     await seedGoalTypes(prisma);
     await seedMealTypes(prisma);
     await seedFoodData(prisma);
