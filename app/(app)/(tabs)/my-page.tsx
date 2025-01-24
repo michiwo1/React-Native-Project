@@ -1,9 +1,21 @@
-import { View, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+type SettingItem = {
+  label: string;
+  icon: string;
+  action: () => void;
+  textColor?: string;
+};
+
+type SettingSection = {
+  title: string;
+  items: SettingItem[];
+};
 
 export default function MyPageScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -16,7 +28,7 @@ export default function MyPageScreen() {
     { color: '#CD7F32', icon: '💪' }, // Bronze
   ];
 
-  const settingItems = [
+  const settingItems: SettingSection[] = [
     {
       title: 'アカウント設定',
       items: [
@@ -36,6 +48,37 @@ export default function MyPageScreen() {
       items: [
         { label: 'ヘルプ', icon: 'help-circle-outline', action: () => {} },
         { label: 'アプリについて', icon: 'information-circle-outline', action: () => {} },
+      ]
+    },
+    {
+      title: 'その他',
+      items: [
+        { 
+          label: 'ログアウト', 
+          icon: 'log-out-outline', 
+          action: () => {
+            Alert.alert(
+              'ログアウト',
+              'ログアウトしますか？',
+              [
+                {
+                  text: 'キャンセル',
+                  style: 'cancel',
+                },
+                {
+                  text: 'ログアウト',
+                  style: 'destructive',
+                  onPress: () => {
+                    // TODO: ここにログアウト処理を実装
+                    console.log('ログアウト処理を実行');
+                  },
+                },
+              ],
+              { cancelable: false }
+            );
+          }, 
+          textColor: '#FF3B30' 
+        },
       ]
     }
   ];
@@ -120,7 +163,7 @@ export default function MyPageScreen() {
                     <View style={styles.iconContainer}>
                       <Ionicons name={item.icon as any} size={22} color={colors.text} />
                     </View>
-                    <ThemedText style={styles.settingItemText}>{item.label}</ThemedText>
+                    <ThemedText style={[styles.settingItemText, item.textColor && styles.settingItemTextRed]}>{item.label}</ThemedText>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color={colors.text} />
                 </TouchableOpacity>
@@ -314,5 +357,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.light.text,
     fontWeight: '500',
+  },
+  settingItemTextRed: {
+    color: '#FF3B30',
   },
 }); 
