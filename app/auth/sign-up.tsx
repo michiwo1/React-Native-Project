@@ -45,18 +45,16 @@ export default function SignUpScreen() {
       console.log('サインアップレスポンス:', data);
 
       // セッショントークンを保存
-      if (data.token) {
-        await AsyncStorage.setItem('userToken', data.token);
+      if (data.data.token) {
+        await AsyncStorage.setItem('userToken', data.data.token);
       }
 
       // ユーザー情報全体を文字列として保存
-      await AsyncStorage.setItem('userData', JSON.stringify(data));
+      await AsyncStorage.setItem('userData', JSON.stringify(data.data.user));
 
       // 保存されたセッション情報をコンソールに表示（デバッグ用）
       const savedToken = await AsyncStorage.getItem('userToken');
       const savedUserData = await AsyncStorage.getItem('userData');
-      console.log('保存されたトークン:', savedToken);
-      console.log('保存されたユーザー情報:', savedUserData);
 
       // サインアップ成功後の処理
       router.push("/onboarding/1");

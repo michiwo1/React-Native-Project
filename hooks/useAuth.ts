@@ -59,6 +59,7 @@ export function useAuth() {
   return {
     token: authState.token,
     isLoading: authState.isLoading,
+    isAuthenticated: !!authState.token,
     signIn,
     signOut,
   };

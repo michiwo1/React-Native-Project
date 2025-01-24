@@ -7,7 +7,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: {
-        id: string;
+        userId: string;
       };
     }
   }
@@ -22,7 +22,7 @@ export class AuthController {
 
   public logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.userId;
       if (!userId) {
         return next(new AppError('User not found', 404));
       }
@@ -67,7 +67,7 @@ export class AuthController {
 
   public resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.userId;
       if (!userId) {
         return next(new AppError('User not found', 404));
       }
@@ -86,7 +86,7 @@ export class AuthController {
 
   public updateProfile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.userId;
       if (!userId) {
         return next(new AppError('User not found', 404));
       }

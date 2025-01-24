@@ -22,7 +22,7 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  const { token, isLoading } = useAuth();
+  const { token, isLoading, isAuthenticated } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
@@ -38,14 +38,14 @@ export default function RootLayout() {
     const inAuthGroup = segments[0] === 'auth';
     const inProtectedGroup = PROTECTED_GROUPS.includes(segments[0]);
 
-    if (token && inAuthGroup) {
+    if (isAuthenticated && inAuthGroup) {
       // ログイン済みユーザーが認証画面にアクセスした場合
       router.replace('/(app)/(tabs)');
-    } else if (!token && inProtectedGroup) {
-      // 未ログインユーザーが保護されたルートにアクセスした場合
+    } else if (!isAuthenticated && inProtectedGroup) {
+      // 未認証ユーザーが保護されたルートにアクセスした場合
       router.replace('/auth/sign-in');
     }
-  }, [token, segments, isLoading]);
+  }, [isAuthenticated, segments, isLoading]);
 
   if (!loaded) {
     return null;
