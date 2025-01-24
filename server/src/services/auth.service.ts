@@ -10,6 +10,12 @@ export class AuthService {
     this.userService = new UserService();
   }
 
+  public async logout(userId: string): Promise<{ success: boolean }> {
+    // セッション情報をクリアする処理を実装
+    // 今回はJWTを使用しているため、クライアント側でトークンを削除する
+    return { success: true };
+  }
+
   public async signUp(userData: { email: string; password: string; displayName?: string }) {
     const existingUser = await this.userService.findByEmail(userData.email);
     if (existingUser) {

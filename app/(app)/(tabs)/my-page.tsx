@@ -4,6 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '@/hooks/useAuth';
+import { API_URL } from '@/constants/api';
 
 type SettingItem = {
   label: string;
@@ -21,6 +25,7 @@ export default function MyPageScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
+  const { token } = useAuth();
 
   const badges = [
     { color: '#FFD700', icon: '🏆' }, // Gold
@@ -56,7 +61,7 @@ export default function MyPageScreen() {
         { 
           label: 'ログアウト', 
           icon: 'log-out-outline', 
-          action: () => {
+          action: async () => {
             Alert.alert(
               'ログアウト',
               'ログアウトしますか？',
@@ -68,9 +73,32 @@ export default function MyPageScreen() {
                 {
                   text: 'ログアウト',
                   style: 'destructive',
-                  onPress: () => {
-                    // TODO: ここにログアウト処理を実装
-                    console.log('ログアウト処理を実行');
+                  onPress: async () => {
+                    try {
+                      // サーバーにログアウトリクエストを送信
+                      const response = await fetch(`${API_URL}/api/auth/logout`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`,
+                        },
+                        credentials: 'include'
+                      });
+
+                      if (!response.ok) {
+                        console.error('Logout failed:', await response.text());
+                        throw new Error('ログアウトに失敗しました');
+                      }
+
+                      // ローカルのトークンを削除
+                      await AsyncStorage.removeItem('userToken');
+                      
+                      // ログインページに遷移
+                      router.replace('/');
+                    } catch (error) {
+                      console.error('ログアウトエラー:', error);
+                      Alert.alert('エラー', 'ログアウトに失敗しました');
+                    }
                   },
                 },
               ],

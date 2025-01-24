@@ -2,12 +2,41 @@ import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
 import { AppError } from '../utils/appError';
 
+// Express Requestの型を拡張
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: string;
+      };
+    }
+  }
+}
+
 export class AuthController {
   private authService: AuthService;
 
   constructor() {
     this.authService = new AuthService();
   }
+
+  public logout = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return next(new AppError('User not found', 404));
+      }
+
+      await this.authService.logout(userId);
+      
+      res.status(200).json({
+        status: 'success',
+        message: 'Successfully logged out'
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
   public signUp = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -38,7 +67,7 @@ export class AuthController {
 
   public resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
       if (!userId) {
         return next(new AppError('User not found', 404));
       }
@@ -57,7 +86,7 @@ export class AuthController {
 
   public updateProfile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
       if (!userId) {
         return next(new AppError('User not found', 404));
       }
