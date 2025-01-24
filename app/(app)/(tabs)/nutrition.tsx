@@ -15,9 +15,12 @@ type NutrientProgress = {
 
 type Nutrient = {
   id: string;
-  name: string;
-  value: number;
-  unit: string;
+  amount_per_unit: number;
+  nutrient_type: {
+    id: string;
+    name: string;
+    unit: string;
+  };
 };
 
 type FoodItem = {
@@ -52,16 +55,67 @@ export default function NutritionScreen() {
   const { token } = useAuth();
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalNutrients, setTotalNutrients] = useState({
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+  });
 
-  const nutrients: NutrientProgress[] = [
-    { label: 'カロリー', current: 1800, target: 2500, color: '#007AFF' },
-    { label: 'タンパク質', current: 120, target: 150, color: '#34C759' },
-    { label: '炭水化物', current: 200, target: 300, color: '#FF9500' },
-    { label: '脂質', current: 60, target: 80, color: '#FF3B30' },
-  ];
+  const calculateTotalNutrients = (meals: Meal[]) => {
+    console.log('Calculating nutrients for meals:', meals);
+    const totals = {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+    };
+
+    meals.forEach((meal) => {
+      meal.items.forEach((item) => {
+        if (!item.food_item?.nutrients) {
+          console.log('No nutrients found for item:', item);
+          return;
+        }
+        
+        const ratio = item.quantity / (item.food_item.base_quantity || 1);
+        console.log('Processing item:', item.food_item.name, 'with ratio:', ratio);
+        
+        item.food_item.nutrients.forEach((nutrient) => {
+          if (!nutrient?.nutrient_type?.name) {
+            console.log('Invalid nutrient:', nutrient);
+            return;
+          }
+          
+          const nutrientName = nutrient.nutrient_type.name.toLowerCase();
+          const nutrientValue = nutrient.amount_per_unit || 0;
+          console.log('Processing nutrient:', nutrientName, 'with value:', nutrientValue);
+          
+          if (nutrientName.includes('calor') || nutrientName.includes('カロリー')) {
+            totals.calories += nutrientValue * ratio;
+          } else if (nutrientName.includes('protein') || nutrientName.includes('タンパク')) {
+            totals.protein += nutrientValue * ratio;
+          } else if (nutrientName.includes('carb') || nutrientName.includes('炭水')) {
+            totals.carbs += nutrientValue * ratio;
+          } else if (nutrientName.includes('fat') || nutrientName.includes('脂')) {
+            totals.fat += nutrientValue * ratio;
+          }
+        });
+      });
+    });
+
+    console.log('Final totals:', totals);
+    return {
+      calories: Math.round(totals.calories * 100) / 100,
+      protein: Math.round(totals.protein * 100) / 100,
+      carbs: Math.round(totals.carbs * 100) / 100,
+      fat: Math.round(totals.fat * 100) / 100,
+    };
+  };
 
   const fetchMeals = async () => {
     try {
+      console.log('Fetching meals with token:', token);
       const response = await fetch(`${API_URL}/api/meal`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -71,13 +125,36 @@ export default function NutritionScreen() {
         throw new Error('Failed to fetch meals');
       }
       const data = await response.json();
-      setMeals(data);
+      console.log('Received meals data:', data);
+      
+      // 今日の食事のみをフィルタリング
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const todaysMeals = data.filter((meal: Meal) => {
+        const mealDate = new Date(meal.eaten_at);
+        mealDate.setHours(0, 0, 0, 0);
+        return mealDate.getTime() === today.getTime();
+      });
+      
+      console.log('Today\'s meals:', todaysMeals);
+      setMeals(todaysMeals);
+      const calculatedNutrients = calculateTotalNutrients(todaysMeals);
+      console.log('Setting total nutrients:', calculatedNutrients);
+      setTotalNutrients(calculatedNutrients);
     } catch (error) {
       console.error('Error fetching meals:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  const nutrients: NutrientProgress[] = [
+    { label: 'カロリー', current: totalNutrients.calories, target: 2500, color: '#007AFF' },
+    { label: 'タンパク質', current: totalNutrients.protein, target: 150, color: '#34C759' },
+    { label: '炭水化物', current: totalNutrients.carbs, target: 300, color: '#FF9500' },
+    { label: '脂質', current: totalNutrients.fat, target: 80, color: '#FF3B30' },
+  ];
 
   useFocusEffect(
     useCallback(() => {
