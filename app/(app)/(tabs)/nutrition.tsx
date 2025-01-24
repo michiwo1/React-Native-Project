@@ -196,7 +196,7 @@ export default function NutritionScreen() {
                 styles.nutrientValue,
                 nutrient.current > nutrient.target && { color: '#FF3B30' }
               ]}>
-                {nutrient.current}/{nutrient.target} {nutrient.label === 'カロリー' ? 'kcal' : 'g'}
+                {nutrient.current.toLocaleString()}/{nutrient.target.toLocaleString()} {nutrient.label === 'カロリー' ? 'kcal' : 'g'}
               </Text>
             </View>
           ))}
@@ -241,108 +241,111 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    padding: 16,
+    padding: 24,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 24,
+    marginBottom: 32,
+    color: '#000',
   },
   aiAdviceButton: {
-    backgroundColor: '#F2F2F7',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
+    backgroundColor: Colors.light.tint,
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 32,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   aiAdviceButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.light.tint,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 16,
+    color: '#fff',
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    marginBottom: 24,
+    color: '#000',
   },
   nutrientRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   nutrientLabel: {
-    width: 80,
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+    color: '#333',
   },
   progressContainer: {
-    flex: 1,
-    height: 8,
-    backgroundColor: '#E5E5EA',
-    borderRadius: 4,
-    marginHorizontal: 12,
+    height: 12,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 6,
+    marginBottom: 4,
   },
   progressBar: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 6,
   },
   nutrientValue: {
-    width: 100,
     fontSize: 14,
-    textAlign: 'right',
+    color: '#666',
   },
   mealCard: {
-    backgroundColor: '#F2F2F7',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: '#F8F8FA',
+    padding: 24,
+    borderRadius: 16,
+    marginBottom: 16,
   },
   mealHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   mealTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
+    color: '#000',
   },
   mealTime: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#666',
   },
   foodItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   foodName: {
-    fontSize: 14,
+    fontSize: 16,
+    color: '#333',
   },
   foodQuantity: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#666',
   },
   mealNote: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#666',
-    marginTop: 8,
+    marginTop: 12,
     fontStyle: 'italic',
   },
   addButton: {
     backgroundColor: Colors.light.tint,
-    padding: 16,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 16,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 16,
+    marginBottom: 32,
   },
   addButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
 }); 
