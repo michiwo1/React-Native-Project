@@ -13,13 +13,39 @@ type NutrientProgress = {
   color: string;
 };
 
-type Meal = {
+type Nutrient = {
   id: string;
   name: string;
-  calories: number;
-  description: string;
-  mealType: string;
-  createdAt: string;
+  value: number;
+  unit: string;
+};
+
+type FoodItem = {
+  id: string;
+  name: string;
+  base_quantity: number;
+  base_unit: string;
+  nutrients: Nutrient[];
+};
+
+type MealItem = {
+  id: string;
+  food_item: FoodItem;
+  quantity: number;
+  unit: string;
+};
+
+type MealType = {
+  id: string;
+  name: string;
+};
+
+type Meal = {
+  id: string;
+  meal_type: MealType;
+  eaten_at: string;
+  note: string;
+  items: MealItem[];
 };
 
 export default function NutritionScreen() {
@@ -59,8 +85,6 @@ export default function NutritionScreen() {
     }
   }, [token]);
 
-  console.log('1----------');
-  console.log('meals:', meals);
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
@@ -100,9 +124,19 @@ export default function NutritionScreen() {
           <Text style={styles.sectionTitle}>食事記録</Text>
           {meals.map((meal) => (
             <View key={meal.id} style={styles.mealCard}>
-              <Text style={styles.mealTitle}>{meal.name}</Text>
-              <Text style={styles.mealCalories}>{meal.calories}kcal</Text>
-              <Text style={styles.mealDetails}>{meal.description}</Text>
+              <View style={styles.mealHeader}>
+                <Text style={styles.mealTitle}>{meal.meal_type.name}</Text>
+                <Text style={styles.mealTime}>
+                  {new Date(meal.eaten_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              </View>
+              {meal.items.map((item) => (
+                <View key={item.id} style={styles.foodItem}>
+                  <Text style={styles.foodName}>{item.food_item.name}</Text>
+                  <Text style={styles.foodQuantity}>{item.quantity}{item.unit}</Text>
+                </View>
+              ))}
+              {meal.note && <Text style={styles.mealNote}>{meal.note}</Text>}
             </View>
           ))}
         </View>
@@ -185,19 +219,37 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 12,
   },
+  mealHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   mealTitle: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  mealTime: {
+    fontSize: 14,
+    color: '#666',
+  },
+  foodItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 4,
   },
-  mealCalories: {
+  foodName: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
   },
-  mealDetails: {
+  foodQuantity: {
     fontSize: 14,
     color: '#666',
+  },
+  mealNote: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
   addButton: {
     backgroundColor: Colors.light.tint,
