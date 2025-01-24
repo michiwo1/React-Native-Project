@@ -120,11 +120,12 @@ model ExercisePersonalRecord {
 }
 
 model FoodCategory {
-  id         String      @id @default(cuid())
-  name       String      @unique
-  created_at DateTime    @default(now())
-  updated_at DateTime    @updatedAt
-  food_items FoodItem[]
+  id            String      @id @default(cuid())
+  name          String      @unique
+  display_order Int         @default(0)
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+  food_items    FoodItem[]
 }
 
 model FoodItem {
@@ -138,6 +139,8 @@ model FoodItem {
   category      FoodCategory       @relation(fields: [category_id], references: [id])
   nutrients     FoodItemNutrient[]
   meal_items    MealItem[]
+
+  @@unique([name, category_id])
 }
 
 model FoodItemNutrient {
@@ -149,6 +152,8 @@ model FoodItemNutrient {
   updated_at      DateTime     @updatedAt
   food_item       FoodItem     @relation(fields: [food_item_id], references: [id])
   nutrient_type   NutrientType @relation(fields: [nutrient_type_id], references: [id])
+
+  @@unique([food_item_id, nutrient_type_id])
 }
 
 model NutrientType {
