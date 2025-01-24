@@ -11,8 +11,8 @@ type UserProfile = {
   protein_target: number;
   carb_target: number;
   fat_target: number;
-  goal_type: 'bulk' | 'cut' | 'maintain'; // 筋肥大、減量、維持
-  weight: number;  // 体重を追加
+  goal_type: string; // 文字列型に変更
+  weight: number;
 };
 
 type NutrientProgress = {
@@ -190,9 +190,9 @@ export default function NutritionScreen() {
   const calculateCalorieTarget = (weight: number, goalType: string) => {
     const baseCalories = weight * 30; // 基礎代謝を体重×30で概算
     switch (goalType) {
-      case 'bulk':
+      case '筋肥大':
         return Math.round(baseCalories * 1.2); // 筋肥大時は20%増
-      case 'cut':
+      case '減量':
         return Math.round(baseCalories * 0.8); // 減量時は20%減
       default:
         return Math.round(baseCalories); // 維持
@@ -201,9 +201,9 @@ export default function NutritionScreen() {
 
   const calculateProteinTarget = (weight: number, goalType: string) => {
     switch (goalType) {
-      case 'bulk':
+      case '筋肥大':
         return Math.round(weight * 2.2); // 筋肥大時は体重×2.2g
-      case 'cut':
+      case '減量':
         return Math.round(weight * 2.4); // 減量時は体重×2.4g
       default:
         return Math.round(weight * 2.0); // 維持時は体重×2.0g
@@ -212,9 +212,9 @@ export default function NutritionScreen() {
 
   const calculateCarbTarget = (weight: number, goalType: string) => {
     switch (goalType) {
-      case 'bulk':
+      case '筋肥大':
         return Math.round(weight * 6); // 筋肥大時は体重×6g
-      case 'cut':
+      case '減量':
         return Math.round(weight * 3); // 減量時は体重×3g
       default:
         return Math.round(weight * 4); // 維持時は体重×4g
@@ -223,9 +223,9 @@ export default function NutritionScreen() {
 
   const calculateFatTarget = (weight: number, goalType: string) => {
     switch (goalType) {
-      case 'bulk':
+      case '筋肥大':
         return Math.round(weight * 1.5); // 筋肥大時は体重×1.5g
-      case 'cut':
+      case '減量':
         return Math.round(weight * 1.0); // 減量時は体重×1.0g
       default:
         return Math.round(weight * 1.2); // 維持時は体重×1.2g
@@ -268,6 +268,9 @@ export default function NutritionScreen() {
     },
   ];
 
+  console.log('1----------');
+  console.log(userProfile);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
@@ -282,6 +285,21 @@ export default function NutritionScreen() {
         
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>今日の摂取状況</Text>
+          {userProfile && (
+            <View style={styles.goalTypeContainer}>
+              <Text style={styles.goalTypeText}>
+                目標タイプ: {userProfile.goal_type}
+              </Text>
+              <Text style={styles.calculationText}>
+                現在の体重: {userProfile.weight}kg
+              </Text>
+              <Text style={styles.calculationText}>
+                {userProfile.goal_type === '減量' ? '減量モード - 基礎代謝×0.8倍' :
+                 userProfile.goal_type === '筋肥大' ? '筋肥大モード - 基礎代謝×1.2倍' :
+                 '維持モード - 基礎代謝を維持'}
+              </Text>
+            </View>
+          )}
           {nutrients.map((nutrient, index) => (
             <View key={index} style={styles.nutrientRow}>
               <Text style={styles.nutrientLabel}>{nutrient.label}</Text>
@@ -451,5 +469,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
+  },
+  goalTypeContainer: {
+    backgroundColor: '#F8F8FA',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  goalTypeText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.light.tint,
+    marginBottom: 8,
+  },
+  calculationText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
   },
 }); 
