@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { router, useFocusEffect } from 'expo-router';
@@ -270,85 +270,92 @@ export default function NutritionScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <Text style={styles.title}>栄養管理</Text>
-        
-        <TouchableOpacity 
-          style={styles.aiAdviceButton}
-          onPress={() => router.push('/nutrition/ai-advice')}
-        >
-          <Text style={styles.aiAdviceButtonText}>AIに食事アドバイスを相談する</Text>
-        </TouchableOpacity>
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>今日の摂取状況</Text>
-          {userProfile && (
-            <View style={styles.goalTypeContainer}>
-              <Text style={styles.goalTypeText}>
-                目標タイプ: {userProfile.goal_type}
-              </Text>
-              <Text style={styles.calculationText}>
-                現在の体重: {userProfile.weight}kg
-              </Text>
-              <Text style={styles.calculationText}>
-                {userProfile.goal_type === '減量' ? '減量モード - 基礎代謝×0.8倍' :
-                 userProfile.goal_type === '筋肥大' ? '筋肥大モード - 基礎代謝×1.2倍' :
-                 '維持モード - 基礎代謝を維持'}
-              </Text>
-            </View>
-          )}
-          {nutrients.map((nutrient, index) => (
-            <View key={index} style={styles.nutrientRow}>
-              <Text style={styles.nutrientLabel}>{nutrient.label}</Text>
-              <View style={styles.progressContainer}>
-                <View 
-                  style={[
-                    styles.progressBar, 
-                    { 
-                      width: `${Math.min((nutrient.current / nutrient.target) * 100, 100)}%`,
-                      backgroundColor: nutrient.color
-                    }
-                  ]} 
-                />
-              </View>
-              <Text style={[
-                styles.nutrientValue,
-                nutrient.current > nutrient.target && { color: '#FF3B30' }
-              ]}>
-                {nutrient.current.toLocaleString()}/{nutrient.target.toLocaleString()} {nutrient.label === 'カロリー' ? 'kcal' : 'g'}
-              </Text>
-            </View>
-          ))}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.light.tint} />
+          <Text style={styles.loadingText}>データを読み込み中...</Text>
         </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>食事記録</Text>
-          {meals.map((meal) => (
-            <View key={meal.id} style={styles.mealCard}>
-              <View style={styles.mealHeader}>
-                <Text style={styles.mealTitle}>{meal.meal_type.name}</Text>
-                <Text style={styles.mealTime}>
-                  {new Date(meal.eaten_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+      ) : (
+        <ScrollView style={styles.scrollView}>
+          <Text style={styles.title}>栄養管理</Text>
+          
+          <TouchableOpacity 
+            style={styles.aiAdviceButton}
+            onPress={() => router.push('/nutrition/ai-advice')}
+          >
+            <Text style={styles.aiAdviceButtonText}>AIに食事アドバイスを相談する</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>今日の摂取状況</Text>
+            {userProfile && (
+              <View style={styles.goalTypeContainer}>
+                <Text style={styles.goalTypeText}>
+                  目標タイプ: {userProfile.goal_type}
+                </Text>
+                <Text style={styles.calculationText}>
+                  現在の体重: {userProfile.weight}kg
+                </Text>
+                <Text style={styles.calculationText}>
+                  {userProfile.goal_type === '減量' ? '減量モード - 基礎代謝×0.8倍' :
+                   userProfile.goal_type === '筋肥大' ? '筋肥大モード - 基礎代謝×1.2倍' :
+                   '維持モード - 基礎代謝を維持'}
                 </Text>
               </View>
-              {meal.items.map((item) => (
-                <View key={item.id} style={styles.foodItem}>
-                  <Text style={styles.foodName}>{item.food_item.name}</Text>
-                  <Text style={styles.foodQuantity}>{item.quantity}{item.unit}</Text>
+            )}
+            {nutrients.map((nutrient, index) => (
+              <View key={index} style={styles.nutrientRow}>
+                <Text style={styles.nutrientLabel}>{nutrient.label}</Text>
+                <View style={styles.progressContainer}>
+                  <View 
+                    style={[
+                      styles.progressBar, 
+                      { 
+                        width: `${Math.min((nutrient.current / nutrient.target) * 100, 100)}%`,
+                        backgroundColor: nutrient.color
+                      }
+                    ]} 
+                  />
                 </View>
-              ))}
-              {meal.note && <Text style={styles.mealNote}>{meal.note}</Text>}
-            </View>
-          ))}
-        </View>
+                <Text style={[
+                  styles.nutrientValue,
+                  nutrient.current > nutrient.target && { color: '#FF3B30' }
+                ]}>
+                  {nutrient.current.toLocaleString()}/{nutrient.target.toLocaleString()} {nutrient.label === 'カロリー' ? 'kcal' : 'g'}
+                </Text>
+              </View>
+            ))}
+          </View>
 
-        <TouchableOpacity 
-          style={styles.addButton}
-          onPress={() => router.push('/nutrition/record-meal')}
-        >
-          <Text style={styles.addButtonText}>食事を記録</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>食事記録</Text>
+            {meals.map((meal) => (
+              <View key={meal.id} style={styles.mealCard}>
+                <View style={styles.mealHeader}>
+                  <Text style={styles.mealTitle}>{meal.meal_type.name}</Text>
+                  <Text style={styles.mealTime}>
+                    {new Date(meal.eaten_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                </View>
+                {meal.items.map((item) => (
+                  <View key={item.id} style={styles.foodItem}>
+                    <Text style={styles.foodName}>{item.food_item.name}</Text>
+                    <Text style={styles.foodQuantity}>{item.quantity}{item.unit}</Text>
+                  </View>
+                ))}
+                {meal.note && <Text style={styles.mealNote}>{meal.note}</Text>}
+              </View>
+            ))}
+          </View>
+
+          <TouchableOpacity 
+            style={styles.addButton}
+            onPress={() => router.push('/nutrition/record-meal')}
+          >
+            <Text style={styles.addButtonText}>食事を記録</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -487,5 +494,15 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#666',
     marginBottom: 3,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
   },
 }); 
