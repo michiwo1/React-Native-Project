@@ -130,6 +130,26 @@ const ExercisesScreen = () => {
     }
   };
 
+  const handleExerciseSelect = async (exerciseId: string) => {
+    try {
+      setSelectedExerciseId(exerciseId);
+      const response = await fetch(`${API_URL}/api/exercise/${exerciseId}/select`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('種目の選択状態の更新に失敗しました');
+      }
+    } catch (err) {
+      console.error('Error selecting exercise:', err);
+      // エラーが発生しても、UIの選択状態は維持します
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -185,7 +205,7 @@ const ExercisesScreen = () => {
                         { width: cardWidth },
                         selectedExerciseId === exercise.id && styles.selectedCard
                       ]}
-                      onPress={() => setSelectedExerciseId(exercise.id)}
+                      onPress={() => handleExerciseSelect(exercise.id)}
                     >
                       <Text style={styles.exerciseName}>{exercise.name}</Text>
                       {selectedExerciseId === exercise.id && (

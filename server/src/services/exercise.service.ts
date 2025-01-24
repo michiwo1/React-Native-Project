@@ -46,4 +46,43 @@ export class ExerciseService {
       },
     });
   }
+
+  async setLastSelectedExercise(exerciseId: string) {
+    // トランザクションを使用して、すべての更新を一度に行う
+    return prisma.$transaction(async (tx) => {
+      // 現在選択されている種目のis_last_selectedをfalseに設定
+      await tx.exercise.updateMany({
+        where: {
+          is_last_selected: true,
+        },
+        data: {
+          is_last_selected: false,
+        },
+      });
+
+      // 指定された種目のis_last_selectedをtrueに設定
+      return tx.exercise.update({
+        where: {
+          id: exerciseId,
+        },
+        data: {
+          is_last_selected: true,
+        },
+        include: {
+          category: true,
+        },
+      });
+    });
+  }
+
+  async getLastSelectedExercise() {
+    return prisma.exercise.findFirst({
+      where: {
+        is_last_selected: true,
+      },
+      include: {
+        category: true,
+      },
+    });
+  }
 } 

@@ -5,7 +5,6 @@ const exerciseService = new ExerciseService();
 
 export class ExerciseController {
   async getAllExercises(req: Request, res: Response) {
-    console.log('1----------');
     try {
       const exercises = await exerciseService.getAllExercises();
       res.json(exercises);
@@ -45,6 +44,33 @@ export class ExerciseController {
       res.status(201).json(exercise);
     } catch (error) {
       res.status(500).json({ message: '種目の作成に失敗しました', error });
+    }
+  }
+
+  async setLastSelectedExercise(req: Request, res: Response) {
+    try {
+      const { exerciseId } = req.params;
+      
+      if (!exerciseId) {
+        return res.status(400).json({ message: '種目IDは必須です' });
+      }
+
+      const exercise = await exerciseService.setLastSelectedExercise(exerciseId);
+      res.json(exercise);
+    } catch (error) {
+      res.status(500).json({ message: '種目の選択状態の更新に失敗しました', error });
+    }
+  }
+
+  async getLastSelectedExercise(req: Request, res: Response) {
+    try {
+      const exercise = await exerciseService.getLastSelectedExercise();
+      if (!exercise) {
+        return res.status(404).json({ message: '選択された種目が見つかりません' });
+      }
+      res.json(exercise);
+    } catch (error) {
+      res.status(500).json({ message: '最後に選択された種目の取得に失敗しました', error });
     }
   }
 } 

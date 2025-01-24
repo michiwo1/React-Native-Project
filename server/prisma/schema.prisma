@@ -61,6 +61,7 @@ model Exercise {
   description          String?
   instruction          String?
   thumbnail_url        String?
+  is_last_selected    Boolean                   @default(false)
   created_at           DateTime                   @default(now())
   updated_at           DateTime                   @updatedAt
   category             ExerciseCategory           @relation(fields: [category_id], references: [id])
