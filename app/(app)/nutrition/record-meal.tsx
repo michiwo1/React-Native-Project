@@ -212,7 +212,7 @@ export default function RecordMealScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity 
+        {/* <TouchableOpacity 
           style={styles.cameraButton} 
           onPress={handleTakePhoto}
         >
@@ -224,7 +224,7 @@ export default function RecordMealScreen() {
               <Text style={styles.cameraButtonText}>写真を撮影</Text>
             </>
           )}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <View style={styles.formSection}>
           <Text style={styles.label}>食事の種類</Text>
@@ -446,6 +446,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   formSection: {
+    marginTop: 16,
     marginBottom: 24,
     paddingHorizontal: 16,
     backgroundColor: '#FFFFFF',
