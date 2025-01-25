@@ -403,17 +403,13 @@ export default function RecordMealScreen() {
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <TouchableOpacity
+              style={styles.modalHeaderButton}
               onPress={() => setShowFoodSelector(false)}
             >
               <Text style={styles.modalCancelButton}>キャンセル</Text>
             </TouchableOpacity>
             <Text style={styles.modalTitle}>食品を選択</Text>
-            <TouchableOpacity
-              onPress={() => setShowAddFoodModal(true)}
-              style={styles.addFoodButton}
-            >
-              <Ionicons name="add" size={24} color="#007AFF" />
-            </TouchableOpacity>
+            <View style={styles.modalHeaderButton} />
           </View>
           <FoodItemSelector onSelect={handleAddFood} />
         </SafeAreaView>
@@ -821,15 +817,19 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E5E5EA',
     backgroundColor: '#FFFFFF',
   },
+  modalHeaderButton: {
+    width: 70,
+  },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#1C1C1E',
+    flex: 1,
+    textAlign: 'center',
   },
   modalCancelButton: {
     fontSize: 16,
     color: '#007AFF',
-    width: 70,
   },
   quantityModalContainer: {
     flex: 1,
