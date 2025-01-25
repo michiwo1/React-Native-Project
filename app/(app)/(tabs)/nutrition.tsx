@@ -349,6 +349,13 @@ export default function NutritionScreen() {
           </View>
 
           <TouchableOpacity 
+            style={[styles.addButton, { marginBottom: 12 }]}
+            onPress={() => router.push('/nutrition/manual-input')}
+          >
+            <Text style={styles.addButtonText}>栄養成分を手動入力</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
             style={styles.addButton}
             onPress={() => router.push('/nutrition/record-meal')}
           >
