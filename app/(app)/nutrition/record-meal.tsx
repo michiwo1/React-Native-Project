@@ -10,6 +10,7 @@ import {
   Image,
   Alert,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -63,6 +64,7 @@ export default function RecordMealScreen() {
   const [newFoodFat, setNewFoodFat] = useState('');
   const [newFoodCarbs, setNewFoodCarbs] = useState('');
   const [showUnitSelector, setShowUnitSelector] = useState(false);
+  const [loading, setLoading] = useState(true);
   const units = ['g', 'ml', '個', '枚', '杯', '切れ', '本'];
 
   useEffect(() => {
@@ -81,6 +83,7 @@ export default function RecordMealScreen() {
 
   const fetchMealTypes = async () => {
     try {
+      setLoading(true);
       const response = await fetch(`${API_URL}/api/meal/types`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -93,6 +96,9 @@ export default function RecordMealScreen() {
       }
     } catch (error) {
       console.error('Error fetching meal types:', error);
+      Alert.alert('エラー', '食事の種類の取得に失敗しました');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -287,129 +293,136 @@ export default function RecordMealScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* <TouchableOpacity 
-          style={styles.cameraButton} 
-          onPress={handleTakePhoto}
-        >
-          {image ? (
-            <Image source={{ uri: image }} style={styles.previewImage} />
-          ) : (
-            <>
-              <Ionicons name="camera" size={32} color="#007AFF" />
-              <Text style={styles.cameraButtonText}>写真を撮影</Text>
-            </>
-          )}
-        </TouchableOpacity> */}
-
-        <View style={styles.formSection}>
-          <Text style={styles.label}>食事の種類</Text>
-          <View style={styles.mealTypeContainer}>
-            {mealTypes.map((type) => (
-              <TouchableOpacity
-                key={type.id}
-                style={[
-                  styles.mealTypeButton,
-                  selectedMealType === type.id && styles.mealTypeButtonSelected,
-                ]}
-                onPress={() => setSelectedMealType(type.id)}
-              >
-                <Text
-                  style={[
-                    styles.mealTypeButtonText,
-                    selectedMealType === type.id && styles.mealTypeButtonTextSelected,
-                  ]}
-                >
-                  {type.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          {!selectedMealType && (
-            <Text style={styles.warningText}>※ 食事の種類を選択してください</Text>
-          )}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>読み込み中...</Text>
         </View>
+      ) : (
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          {/* <TouchableOpacity 
+            style={styles.cameraButton} 
+            onPress={handleTakePhoto}
+          >
+            {image ? (
+              <Image source={{ uri: image }} style={styles.previewImage} />
+            ) : (
+              <>
+                <Ionicons name="camera" size={32} color="#007AFF" />
+                <Text style={styles.cameraButtonText}>写真を撮影</Text>
+              </>
+            )}
+          </TouchableOpacity> */}
 
-        <View style={styles.formSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.label}>食品</Text>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => {
-                if (!selectedMealType) {
-                  Alert.alert('エラー', '先に食事の種類を選択してください');
-                  return;
-                }
-                setShowFoodSelector(true);
-              }}
-            >
-              <Ionicons name="add-circle" size={20} color="#FFFFFF" style={styles.addButtonIcon} />
-              <Text style={styles.addButtonText}>食品を追加</Text>
-            </TouchableOpacity>
-          </View>
-
-          {!selectedMealType ? (
-            <Text style={styles.warningText}>※ 上の食事の種類を選択してから食品を追加してください</Text>
-          ) : selectedFoods.length === 0 ? (
-            <Text style={[styles.warningText, { color: '#8E8E93' }]}>食品を追加してください</Text>
-          ) : (
-            selectedFoods.map((food, index) => (
-              <View key={index} style={styles.selectedFood}>
-                <View style={styles.selectedFoodInfo}>
-                  <Text style={styles.selectedFoodName}>{food.item.name}</Text>
-                  <Text style={styles.selectedFoodQuantity}>
-                    {food.quantity}{food.item.base_unit}
-                  </Text>
-                </View>
+          <View style={styles.formSection}>
+            <Text style={styles.label}>食事の種類</Text>
+            <View style={styles.mealTypeContainer}>
+              {mealTypes.map((type) => (
                 <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => handleRemoveFood(index)}
+                  key={type.id}
+                  style={[
+                    styles.mealTypeButton,
+                    selectedMealType === type.id && styles.mealTypeButtonSelected,
+                  ]}
+                  onPress={() => setSelectedMealType(type.id)}
                 >
-                  <Ionicons name="close-circle" size={24} color="#FF3B30" />
+                  <Text
+                    style={[
+                      styles.mealTypeButtonText,
+                      selectedMealType === type.id && styles.mealTypeButtonTextSelected,
+                    ]}
+                  >
+                    {type.name}
+                  </Text>
                 </TouchableOpacity>
+              ))}
+            </View>
+            {!selectedMealType && (
+              <Text style={styles.warningText}>※ 食事の種類を選択してください</Text>
+            )}
+          </View>
+
+          <View style={styles.formSection}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.label}>食品</Text>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => {
+                  if (!selectedMealType) {
+                    Alert.alert('エラー', '先に食事の種類を選択してください');
+                    return;
+                  }
+                  setShowFoodSelector(true);
+                }}
+              >
+                <Ionicons name="add-circle" size={20} color="#FFFFFF" style={styles.addButtonIcon} />
+                <Text style={styles.addButtonText}>食品を追加</Text>
+              </TouchableOpacity>
+            </View>
+
+            {!selectedMealType ? (
+              <Text style={styles.warningText}>※ 上の食事の種類を選択してから食品を追加してください</Text>
+            ) : selectedFoods.length === 0 ? (
+              <Text style={[styles.warningText, { color: '#8E8E93' }]}>食品を追加してください</Text>
+            ) : (
+              selectedFoods.map((food, index) => (
+                <View key={index} style={styles.selectedFood}>
+                  <View style={styles.selectedFoodInfo}>
+                    <Text style={styles.selectedFoodName}>{food.item.name}</Text>
+                    <Text style={styles.selectedFoodQuantity}>
+                      {food.quantity}{food.item.base_unit}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => handleRemoveFood(index)}
+                  >
+                    <Ionicons name="close-circle" size={24} color="#FF3B30" />
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
+          </View>
+
+          <View style={styles.formSection}>
+            <Text style={styles.label}>栄養成分</Text>
+            <View style={styles.nutrientsGrid}>
+              <View style={styles.nutrientItem}>
+                <Text style={styles.nutrientLabel}>カロリー</Text>
+                <Text style={styles.nutrientValue}>{Math.round(totals['カロリー'])} kcal</Text>
               </View>
-            ))
-          )}
-        </View>
-
-        <View style={styles.formSection}>
-          <Text style={styles.label}>栄養成分</Text>
-          <View style={styles.nutrientsGrid}>
-            <View style={styles.nutrientItem}>
-              <Text style={styles.nutrientLabel}>カロリー</Text>
-              <Text style={styles.nutrientValue}>{Math.round(totals['カロリー'])} kcal</Text>
-            </View>
-            <View style={styles.nutrientItem}>
-              <Text style={styles.nutrientLabel}>タンパク質</Text>
-              <Text style={styles.nutrientValue}>{totals['タンパク質'].toFixed(1)} g</Text>
-            </View>
-            <View style={styles.nutrientItem}>
-              <Text style={styles.nutrientLabel}>脂質</Text>
-              <Text style={styles.nutrientValue}>{totals['脂質'].toFixed(1)} g</Text>
-            </View>
-            <View style={styles.nutrientItem}>
-              <Text style={styles.nutrientLabel}>炭水化物</Text>
-              <Text style={styles.nutrientValue}>{totals['炭水化物'].toFixed(1)} g</Text>
+              <View style={styles.nutrientItem}>
+                <Text style={styles.nutrientLabel}>タンパク質</Text>
+                <Text style={styles.nutrientValue}>{totals['タンパク質'].toFixed(1)} g</Text>
+              </View>
+              <View style={styles.nutrientItem}>
+                <Text style={styles.nutrientLabel}>脂質</Text>
+                <Text style={styles.nutrientValue}>{totals['脂質'].toFixed(1)} g</Text>
+              </View>
+              <View style={styles.nutrientItem}>
+                <Text style={styles.nutrientLabel}>炭水化物</Text>
+                <Text style={styles.nutrientValue}>{totals['炭水化物'].toFixed(1)} g</Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        <View style={styles.formSection}>
-          <Text style={styles.label}>メモ</Text>
-          <View style={[styles.inputWrapper, styles.textAreaWrapper]}>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={mealDetails}
-              onChangeText={setMealDetails}
-              multiline
-              numberOfLines={4}
-              placeholder="メモを入力"
-              placeholderTextColor="#A1A1A6"
-              textAlignVertical="top"
-            />
+          <View style={styles.formSection}>
+            <Text style={styles.label}>メモ</Text>
+            <View style={[styles.inputWrapper, styles.textAreaWrapper]}>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={mealDetails}
+                onChangeText={setMealDetails}
+                multiline
+                numberOfLines={4}
+                placeholder="メモを入力"
+                placeholderTextColor="#A1A1A6"
+                textAlignVertical="top"
+              />
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      )}
 
       <Modal
         visible={showFoodSelector}
@@ -1053,5 +1066,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#8E8E93',
   },
 }); 
