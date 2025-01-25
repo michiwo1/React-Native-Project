@@ -421,7 +421,7 @@ export default function RecordMealScreen() {
 
       <Modal
         visible={!!tempSelectedFood}
-        animationType="fade"
+        animationType="slide"
         transparent
       >
         <View style={styles.quantityModalContainer}>
@@ -430,16 +430,19 @@ export default function RecordMealScreen() {
               {tempSelectedFood?.name}の量を入力
             </Text>
             <View style={styles.quantityInputContainer}>
-              <TextInput
-                style={styles.quantityInput}
-                value={selectedQuantity}
-                onChangeText={setSelectedQuantity}
-                keyboardType="numeric"
-                placeholder="数量を入力"
-              />
-              <Text style={styles.quantityUnit}>
-                {tempSelectedFood?.base_unit}
-              </Text>
+              <View style={styles.quantityInputWrapper}>
+                <TextInput
+                  style={styles.quantityInput}
+                  value={selectedQuantity}
+                  onChangeText={setSelectedQuantity}
+                  keyboardType="numeric"
+                  placeholder="数量を入力"
+                  autoFocus
+                />
+                <Text style={styles.quantityUnit}>
+                  {tempSelectedFood?.base_unit}
+                </Text>
+              </View>
             </View>
             <View style={styles.quantityModalButtons}>
               <TouchableOpacity
@@ -465,14 +468,14 @@ export default function RecordMealScreen() {
       {/* 食品追加モーダル */}
       <Modal
         visible={showAddFoodModal}
-        animationType="fade"
+        animationType="slide"
         transparent
       >
-        <View style={styles.quantityModalContainer}>
-          <View style={styles.modalScrollContainer}>
+        <View style={styles.addFoodModalContainer}>
+          <View style={styles.addFoodModalContent}>
             <ScrollView>
-              <View style={styles.quantityModalContent}>
-                <Text style={styles.quantityModalTitle}>新しい食品を追加</Text>
+              <View style={styles.modalInnerContent}>
+                <Text style={styles.modalTitle}>新しい食品を追加</Text>
                 <View style={styles.formGroup}>
                   <Text style={styles.formLabel}>食品名</Text>
                   <TextInput
@@ -833,54 +836,59 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  modalScrollContainer: {
-    width: '100%',
-    maxHeight: '80%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    padding: 20,
   },
   quantityModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    width: '100%',
     padding: 24,
   },
   quantityModalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
     color: '#1C1C1E',
   },
   quantityInputContainer: {
+    marginBottom: 24,
+  },
+  quantityInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    borderRadius: 12,
+    padding: 12,
   },
   quantityInput: {
     flex: 1,
-    height: 42,
+    height: 56,
+    fontSize: 24,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E5EA',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    marginRight: 10,
-    fontSize: 16,
+    textAlign: 'center',
+    marginRight: 12,
   },
   quantityUnit: {
-    fontSize: 15,
-    width: 40,
-    color: '#8E8E93',
-    textAlign: 'center',
+    fontSize: 17,
+    color: '#1C1C1E',
+    width: 30,
+    textAlign: 'left',
   },
   quantityModalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 12,
   },
   quantityModalButton: {
     flex: 1,
-    paddingVertical: 12,
+    height: 56,
     borderRadius: 12,
-    marginHorizontal: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   quantityModalButtonCancel: {
     backgroundColor: '#F2F2F7',
@@ -889,16 +897,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
   },
   quantityModalButtonTextCancel: {
-    fontSize: 16,
+    fontSize: 17,
+    fontWeight: '600',
     color: '#1C1C1E',
-    textAlign: 'center',
-    fontWeight: '500',
   },
   quantityModalButtonTextConfirm: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    textAlign: 'center',
+    fontSize: 17,
     fontWeight: '600',
+    color: '#FFFFFF',
   },
   addFoodButton: {
     width: 70,
@@ -1001,5 +1007,21 @@ const styles = StyleSheet.create({
   unitItemText: {
     fontSize: 16,
     color: '#1C1C1E',
+  },
+  addFoodModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  addFoodModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    width: '100%',
+    maxHeight: '80%',
+  },
+  modalInnerContent: {
+    padding: 20,
   },
 }); 
