@@ -157,7 +157,7 @@ export default function RecordMealScreen() {
 
   const handleSubmit = async () => {
     if (!selectedMealType) {
-      Alert.alert('エラー', '食事の種類を選択してください');
+      Alert.alert('エラー', '食事の種類（朝食・昼食・夕食など）を選択してください');
       return;
     }
 
@@ -325,6 +325,9 @@ export default function RecordMealScreen() {
               </TouchableOpacity>
             ))}
           </View>
+          {!selectedMealType && (
+            <Text style={styles.warningText}>※ 食事の種類を選択してください</Text>
+          )}
         </View>
 
         <View style={styles.formSection}>
@@ -332,29 +335,41 @@ export default function RecordMealScreen() {
             <Text style={styles.label}>食品</Text>
             <TouchableOpacity
               style={styles.addButton}
-              onPress={() => setShowFoodSelector(true)}
+              onPress={() => {
+                if (!selectedMealType) {
+                  Alert.alert('エラー', '先に食事の種類を選択してください');
+                  return;
+                }
+                setShowFoodSelector(true);
+              }}
             >
               <Ionicons name="add-circle" size={20} color="#FFFFFF" style={styles.addButtonIcon} />
               <Text style={styles.addButtonText}>食品を追加</Text>
             </TouchableOpacity>
           </View>
 
-          {selectedFoods.map((food, index) => (
-            <View key={index} style={styles.selectedFood}>
-              <View style={styles.selectedFoodInfo}>
-                <Text style={styles.selectedFoodName}>{food.item.name}</Text>
-                <Text style={styles.selectedFoodQuantity}>
-                  {food.quantity}{food.item.base_unit}
-                </Text>
+          {!selectedMealType ? (
+            <Text style={styles.warningText}>※ 上の食事の種類を選択してから食品を追加してください</Text>
+          ) : selectedFoods.length === 0 ? (
+            <Text style={[styles.warningText, { color: '#8E8E93' }]}>食品を追加してください</Text>
+          ) : (
+            selectedFoods.map((food, index) => (
+              <View key={index} style={styles.selectedFood}>
+                <View style={styles.selectedFoodInfo}>
+                  <Text style={styles.selectedFoodName}>{food.item.name}</Text>
+                  <Text style={styles.selectedFoodQuantity}>
+                    {food.quantity}{food.item.base_unit}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => handleRemoveFood(index)}
+                >
+                  <Ionicons name="close-circle" size={24} color="#FF3B30" />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => handleRemoveFood(index)}
-              >
-                <Ionicons name="close-circle" size={24} color="#FF3B30" />
-              </TouchableOpacity>
-            </View>
-          ))}
+            ))
+          )}
         </View>
 
         <View style={styles.formSection}>
@@ -1032,5 +1047,11 @@ const styles = StyleSheet.create({
   },
   modalInnerContent: {
     padding: 20,
+  },
+  warningText: {
+    color: '#FF3B30',
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
   },
 }); 

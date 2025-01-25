@@ -132,6 +132,10 @@ export default function FoodItemSelector({ onSelect }: Props) {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
         </View>
+      ) : !selectedCategory ? (
+        <View style={styles.noSelectionContainer}>
+          <Text style={styles.noSelectionText}>カテゴリーを選択してください</Text>
+        </View>
       ) : (
         <FlatList
           data={filteredFoodItems}
@@ -269,5 +273,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  noSelectionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    margin: 16,
+    borderRadius: 8,
+  },
+  noSelectionText: {
+    fontSize: 16,
+    color: '#666666',
   },
 }); 
