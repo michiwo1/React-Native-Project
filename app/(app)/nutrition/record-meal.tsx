@@ -58,6 +58,10 @@ export default function RecordMealScreen() {
   const [newFoodName, setNewFoodName] = useState('');
   const [newFoodBaseQuantity, setNewFoodBaseQuantity] = useState('');
   const [newFoodBaseUnit, setNewFoodBaseUnit] = useState('');
+  const [newFoodCalories, setNewFoodCalories] = useState('');
+  const [newFoodProtein, setNewFoodProtein] = useState('');
+  const [newFoodFat, setNewFoodFat] = useState('');
+  const [newFoodCarbs, setNewFoodCarbs] = useState('');
 
   useEffect(() => {
     const getToken = async () => {
@@ -197,7 +201,7 @@ export default function RecordMealScreen() {
 
   const handleAddNewFood = async () => {
     if (!token || !newFoodName || !newFoodBaseQuantity || !newFoodBaseUnit) {
-      Alert.alert('エラー', '全ての項目を入力してください');
+      Alert.alert('エラー', '食品名、基準量、単位は必須項目です');
       return;
     }
 
@@ -212,6 +216,28 @@ export default function RecordMealScreen() {
           name: newFoodName,
           base_quantity: parseFloat(newFoodBaseQuantity),
           base_unit: newFoodBaseUnit,
+          nutrients: [
+            {
+              nutrient_type_name: 'カロリー',
+              amount_per_unit: parseFloat(newFoodCalories) || 0,
+              unit: 'kcal'
+            },
+            {
+              nutrient_type_name: 'タンパク質',
+              amount_per_unit: parseFloat(newFoodProtein) || 0,
+              unit: 'g'
+            },
+            {
+              nutrient_type_name: '脂質',
+              amount_per_unit: parseFloat(newFoodFat) || 0,
+              unit: 'g'
+            },
+            {
+              nutrient_type_name: '炭水化物',
+              amount_per_unit: parseFloat(newFoodCarbs) || 0,
+              unit: 'g'
+            }
+          ]
         }),
       });
 
@@ -224,6 +250,10 @@ export default function RecordMealScreen() {
       setNewFoodName('');
       setNewFoodBaseQuantity('');
       setNewFoodBaseUnit('');
+      setNewFoodCalories('');
+      setNewFoodProtein('');
+      setNewFoodFat('');
+      setNewFoodCarbs('');
     } catch (error) {
       console.error('Error adding food:', error);
       Alert.alert('エラー', '食品の追加に失敗しました');
@@ -432,54 +462,117 @@ export default function RecordMealScreen() {
         transparent
       >
         <View style={styles.quantityModalContainer}>
-          <View style={styles.quantityModalContent}>
-            <Text style={styles.quantityModalTitle}>新しい食品を追加</Text>
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>食品名</Text>
-              <TextInput
-                style={styles.formInput}
-                value={newFoodName}
-                onChangeText={setNewFoodName}
-                placeholder="食品名を入力"
-              />
-            </View>
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>基準量</Text>
-              <View style={styles.quantityInputContainer}>
-                <TextInput
-                  style={[styles.formInput, { flex: 2 }]}
-                  value={newFoodBaseQuantity}
-                  onChangeText={setNewFoodBaseQuantity}
-                  keyboardType="numeric"
-                  placeholder="基準量を入力"
-                />
-                <TextInput
-                  style={[styles.formInput, { flex: 1, marginLeft: 8 }]}
-                  value={newFoodBaseUnit}
-                  onChangeText={setNewFoodBaseUnit}
-                  placeholder="単位"
-                />
+          <View style={styles.modalScrollContainer}>
+            <ScrollView>
+              <View style={styles.quantityModalContent}>
+                <Text style={styles.quantityModalTitle}>新しい食品を追加</Text>
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>食品名</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    value={newFoodName}
+                    onChangeText={setNewFoodName}
+                    placeholder="食品名を入力"
+                  />
+                </View>
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>基準量</Text>
+                  <View style={styles.quantityInputContainer}>
+                    <TextInput
+                      style={[styles.formInput, { flex: 2 }]}
+                      value={newFoodBaseQuantity}
+                      onChangeText={setNewFoodBaseQuantity}
+                      keyboardType="numeric"
+                      placeholder="基準量を入力"
+                    />
+                    <TextInput
+                      style={[styles.formInput, { flex: 1, marginLeft: 8 }]}
+                      value={newFoodBaseUnit}
+                      onChangeText={setNewFoodBaseUnit}
+                      placeholder="単位"
+                    />
+                  </View>
+                </View>
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>栄養成分（基準量あたり）</Text>
+                  <View style={styles.nutrientInputGroup}>
+                    <Text style={styles.nutrientInputLabel}>カロリー</Text>
+                    <View style={styles.nutrientInputContainer}>
+                      <TextInput
+                        style={styles.nutrientInput}
+                        value={newFoodCalories}
+                        onChangeText={setNewFoodCalories}
+                        keyboardType="numeric"
+                        placeholder="0"
+                      />
+                      <Text style={styles.nutrientUnit}>kcal</Text>
+                    </View>
+                  </View>
+                  <View style={styles.nutrientInputGroup}>
+                    <Text style={styles.nutrientInputLabel}>タンパク質</Text>
+                    <View style={styles.nutrientInputContainer}>
+                      <TextInput
+                        style={styles.nutrientInput}
+                        value={newFoodProtein}
+                        onChangeText={setNewFoodProtein}
+                        keyboardType="numeric"
+                        placeholder="0"
+                      />
+                      <Text style={styles.nutrientUnit}>g</Text>
+                    </View>
+                  </View>
+                  <View style={styles.nutrientInputGroup}>
+                    <Text style={styles.nutrientInputLabel}>脂質</Text>
+                    <View style={styles.nutrientInputContainer}>
+                      <TextInput
+                        style={styles.nutrientInput}
+                        value={newFoodFat}
+                        onChangeText={setNewFoodFat}
+                        keyboardType="numeric"
+                        placeholder="0"
+                      />
+                      <Text style={styles.nutrientUnit}>g</Text>
+                    </View>
+                  </View>
+                  <View style={styles.nutrientInputGroup}>
+                    <Text style={styles.nutrientInputLabel}>炭水化物</Text>
+                    <View style={styles.nutrientInputContainer}>
+                      <TextInput
+                        style={styles.nutrientInput}
+                        value={newFoodCarbs}
+                        onChangeText={setNewFoodCarbs}
+                        keyboardType="numeric"
+                        placeholder="0"
+                      />
+                      <Text style={styles.nutrientUnit}>g</Text>
+                    </View>
+                  </View>
+                </View>
+                <View style={styles.quantityModalButtons}>
+                  <TouchableOpacity
+                    style={[styles.quantityModalButton, styles.quantityModalButtonCancel]}
+                    onPress={() => {
+                      setShowAddFoodModal(false);
+                      setNewFoodName('');
+                      setNewFoodBaseQuantity('');
+                      setNewFoodBaseUnit('');
+                      setNewFoodCalories('');
+                      setNewFoodProtein('');
+                      setNewFoodFat('');
+                      setNewFoodCarbs('');
+                    }}
+                  >
+                    <Text style={styles.quantityModalButtonTextCancel}>キャンセル</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.quantityModalButton, styles.quantityModalButtonConfirm]}
+                    onPress={handleAddNewFood}
+                  >
+                    <Text style={styles.quantityModalButtonTextConfirm}>追加</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-            <View style={styles.quantityModalButtons}>
-              <TouchableOpacity
-                style={[styles.quantityModalButton, styles.quantityModalButtonCancel]}
-                onPress={() => {
-                  setShowAddFoodModal(false);
-                  setNewFoodName('');
-                  setNewFoodBaseQuantity('');
-                  setNewFoodBaseUnit('');
-                }}
-              >
-                <Text style={styles.quantityModalButtonTextCancel}>キャンセル</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.quantityModalButton, styles.quantityModalButtonConfirm]}
-                onPress={handleAddNewFood}
-              >
-                <Text style={styles.quantityModalButtonTextConfirm}>追加</Text>
-              </TouchableOpacity>
-            </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -698,14 +791,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
-  quantityModalContent: {
-    width: '85%',
+  modalScrollContainer: {
+    width: '100%',
+    maxHeight: '80%',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
+  },
+  quantityModalContent: {
     padding: 24,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
   },
   quantityModalTitle: {
     fontSize: 18,
@@ -782,5 +877,32 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     fontSize: 16,
+  },
+  nutrientInputGroup: {
+    marginBottom: 12,
+  },
+  nutrientInputLabel: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 4,
+  },
+  nutrientInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  nutrientInput: {
+    flex: 1,
+    height: 42,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    fontSize: 16,
+    marginRight: 8,
+  },
+  nutrientUnit: {
+    width: 40,
+    fontSize: 14,
+    color: '#8E8E93',
   },
 }); 
