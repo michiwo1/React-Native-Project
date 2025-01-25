@@ -168,6 +168,7 @@ export default function ManualInputScreen() {
             value={dateString}
             onChangeText={setDateString}
             placeholder="YYYY/MM/DD HH:MM"
+            editable={false}
           />
 
           <Text style={styles.sectionTitle}>栄養成分</Text>
