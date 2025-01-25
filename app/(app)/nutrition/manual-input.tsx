@@ -9,18 +9,38 @@ import { API_URL } from '@/constants/api';
 export default function ManualInputScreen() {
   const { token } = useAuth();
   const [mealType, setMealType] = useState('');
+  const [foodCategory, setFoodCategory] = useState('');
   const [calories, setCalories] = useState('');
   const [protein, setProtein] = useState('');
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
   const [note, setNote] = useState('');
-  const [dateString, setDateString] = useState(new Date().toLocaleString('ja-JP'));
+  const [dateString, setDateString] = useState(
+    new Date().toLocaleString('ja-JP', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).replace(/\//g, '-')
+  );
 
   const mealTypes = [
-    { label: '朝食', value: 'breakfast' },
-    { label: '昼食', value: 'lunch' },
-    { label: '夕食', value: 'dinner' },
-    { label: '間食', value: 'snack' },
+    { label: '朝食', value: '朝食' },
+    { label: '昼食', value: '昼食' },
+    { label: '夕食', value: '夕食' },
+    { label: '間食', value: '間食' },
+  ];
+
+  const foodCategories = [
+    { label: '主食', value: '主食' },
+    { label: 'タンパク源', value: 'タンパク源' },
+    { label: '野菜', value: '野菜' },
+    { label: '果物', value: '果物' },
+    { label: '乳製品', value: '乳製品' },
+    { label: '調味料・油', value: '調味料・油' },
+    { label: '飲み物', value: '飲み物' },
+    { label: 'お菓子・デザート', value: 'お菓子・デザート' },
   ];
 
   const handleSubmit = async () => {
@@ -29,29 +49,56 @@ export default function ManualInputScreen() {
       return;
     }
 
+    if (!foodCategory) {
+      alert('食品カテゴリーを選択してください');
+      return;
+    }
+
     try {
-      const date = new Date(dateString);
+      const [datePart, timePart] = dateString.split(' ');
+      const [year, month, day] = datePart.split('-');
+      const [hour, minute] = timePart ? timePart.split(':') : ['00', '00'];
       
+      const date = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day),
+        parseInt(hour),
+        parseInt(minute)
+      );
+
+      if (isNaN(date.getTime())) {
+        alert('正しい日付形式で入力してください（例：2024-01-25 14:30）');
+        return;
+      }
+
+      const requestData = {
+        meal_type: mealType,
+        food_category: foodCategory,
+        eaten_at: date.toISOString(),
+        nutrients: {
+          calories: parseFloat(calories) || 0,
+          protein: parseFloat(protein) || 0,
+          carbs: parseFloat(carbs) || 0,
+          fat: parseFloat(fat) || 0,
+        },
+        note,
+      };
+
+      console.log('Sending request data:', requestData);
+
       const response = await fetch(`${API_URL}/api/meal/manual`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          meal_type: mealType,
-          eaten_at: date.toISOString(),
-          nutrients: {
-            calories: parseFloat(calories),
-            protein: parseFloat(protein),
-            carbs: parseFloat(carbs),
-            fat: parseFloat(fat),
-          },
-          note,
-        }),
+        body: JSON.stringify(requestData),
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server error:', errorData);
         throw new Error('Failed to save meal');
       }
 
@@ -65,6 +112,7 @@ export default function ManualInputScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
+        <Text style={styles.title}>栄養成分を手動入力</Text>
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>食事の種類</Text>
           <View style={styles.mealTypeContainer}>
@@ -82,6 +130,27 @@ export default function ManualInputScreen() {
                   mealType === type.value && styles.mealTypeButtonTextSelected
                 ]}>
                   {type.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text style={styles.sectionTitle}>食品カテゴリー</Text>
+          <View style={styles.foodCategoryContainer}>
+            {foodCategories.map((category) => (
+              <TouchableOpacity
+                key={category.value}
+                style={[
+                  styles.foodCategoryButton,
+                  foodCategory === category.value && styles.foodCategoryButtonSelected
+                ]}
+                onPress={() => setFoodCategory(category.value)}
+              >
+                <Text style={[
+                  styles.foodCategoryButtonText,
+                  foodCategory === category.value && styles.foodCategoryButtonTextSelected
+                ]}>
+                  {category.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -274,5 +343,34 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
+  },
+  foodCategoryContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  foodCategoryButton: {
+    width: '48%',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    backgroundColor: '#F8F8FA',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  foodCategoryButtonSelected: {
+    backgroundColor: Colors.light.tint,
+    borderColor: Colors.light.tint,
+  },
+  foodCategoryButtonText: {
+    fontSize: 15,
+    color: '#333',
+    fontWeight: '500',
+  },
+  foodCategoryButtonTextSelected: {
+    color: '#fff',
   },
 }); 

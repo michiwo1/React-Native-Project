@@ -9,4 +9,17 @@ export interface CreateMealDto {
   eatenAt: string;
   note?: string;
   items: CreateMealItemDto[];
+}
+
+export interface CreateManualMealDto {
+  meal_type: string;
+  food_category: string;
+  eaten_at: string;
+  note?: string;
+  nutrients: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
 } 

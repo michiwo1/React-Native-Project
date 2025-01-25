@@ -67,4 +67,18 @@ export class MealController {
       res.status(500).json({ message: 'Error getting meal types' });
     }
   }
+
+  async createManualMeal(req: Request, res: Response) {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      const meal = await mealService.createManualMeal(userId, req.body);
+      res.status(201).json(meal);
+    } catch (error) {
+      console.error('Error creating manual meal:', error);
+      res.status(500).json({ message: 'Error creating manual meal' });
+    }
+  }
 } 
