@@ -334,7 +334,8 @@ export default function RecordMealScreen() {
               style={styles.addButton}
               onPress={() => setShowFoodSelector(true)}
             >
-              <Text style={styles.addButtonText}>追加</Text>
+              <Ionicons name="add-circle" size={20} color="#FFFFFF" style={styles.addButtonIcon} />
+              <Text style={styles.addButtonText}>食品を追加</Text>
             </TouchableOpacity>
           </View>
 
@@ -733,15 +734,23 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   addButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 100,
     backgroundColor: '#007AFF',
+    minWidth: 140,
+  },
+  addButtonIcon: {
+    marginRight: 8,
   },
   addButtonText: {
     fontSize: 16,
     color: '#FFFFFF',
     fontWeight: '600',
+    lineHeight: 20,
   },
   selectedFood: {
     flexDirection: 'row',
