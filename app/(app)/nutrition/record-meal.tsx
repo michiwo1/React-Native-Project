@@ -81,7 +81,7 @@ export default function RecordMealScreen() {
 
   const fetchMealTypes = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/meal/meal-types`, {
+      const response = await fetch(`${API_URL}/api/meal/types`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -208,7 +208,7 @@ export default function RecordMealScreen() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/food`, {
+      const response = await fetch(`${API_URL}/api/meal/food-items`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

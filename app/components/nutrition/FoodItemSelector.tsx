@@ -60,7 +60,7 @@ export default function FoodItemSelector({ onSelect }: Props) {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/meal/food-categories`, {
+      const response = await fetch(`${API_URL}/api/meal/categories`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
