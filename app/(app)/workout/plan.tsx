@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Dimensions, ScrollView, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { router } from 'expo-router';
 import { Colors } from '@/constants/Colors';
@@ -6,10 +6,16 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useEffect, useState } from 'react';
 import { API_URL } from '@/constants/api';
 import { useAuth } from '@/hooks/useAuth';
+import React from 'react';
 
-interface Set {
-  reps: number;
-  weight: number;
+interface Plan {
+  id: string;
+  name: string;
+  exercises: {
+    exercise: {
+      name: string;
+    };
+  }[];
 }
 
 interface Exercise {
@@ -17,62 +23,111 @@ interface Exercise {
   exercise: {
     name: string;
   };
-  exercise_id: string;
-  sets: Set[];
+  sets: {
+    reps: number;
+    weight: number;
+  }[];
 }
 
-interface WorkoutData {
+interface WorkoutSession {
   id: string;
-  exercises: Exercise[];
   started_at: string;
   ended_at: string | null;
-  note: string | null;
+  exercises: Exercise[];
 }
 
 export default function WorkoutPlanScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const [hasActiveSession, setHasActiveSession] = useState(false);
-  const [workoutData, setWorkoutData] = useState<WorkoutData | null>(null);
   const { token } = useAuth();
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeSession, setActiveSession] = useState<WorkoutSession | null>(null);
 
   useEffect(() => {
     if (token) {
-      checkTodayWorkoutSession();
+      checkActiveSession();
+      fetchPlans();
     }
   }, [token]);
 
-  const checkTodayWorkoutSession = async () => {
+  const checkActiveSession = async () => {
     try {
       const response = await fetch(`${API_URL}/api/workout/latest`, {
-        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        credentials: 'include',
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data && !data.ended_at) {
-          setHasActiveSession(true);
-          setWorkoutData(data);
-        }
+      if (!response.ok) {
+        throw new Error('Failed to fetch active session');
+      }
+      const data = await response.json();
+      if (data && !data.ended_at) {
+        setActiveSession(data);
       }
     } catch (error) {
-      console.error('Error checking workout session:', error);
+      console.error('Error checking active session:', error);
     }
   };
 
-  // Get today's date in Japanese format
-  const today = new Date();
-  const dateString = today.toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long'
-  });
+  const fetchPlans = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/plan`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch plans');
+      }
+      const data = await response.json();
+      setPlans(data);
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartPlan = async (planId: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/plan/${planId}/start`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        if (response.status === 400 && data.ongoingSession) {
+          Alert.alert(
+            '進行中のトレーニング',
+            'まだ終了していないトレーニングがあります。\n先に進行中のトレーニングを終了してください。',
+            [
+              {
+                text: 'キャンセル',
+                style: 'cancel',
+              },
+            ],
+            { cancelable: true }
+          );
+          return;
+        }
+        throw new Error(data.message || 'Failed to start workout');
+      }
+
+      router.push('/workout/log');
+    } catch (error) {
+      console.error('Error starting workout:', error);
+      Alert.alert(
+        'エラー',
+        'トレーニングの開始に失敗しました。\nもう一度お試しください。',
+        [{ text: 'OK' }]
+      );
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -80,18 +135,27 @@ export default function WorkoutPlanScreen() {
         <TouchableOpacity onPress={() => router.replace("/calendar")}>
           <ThemedText style={styles.backButton}>← 戻る</ThemedText>
         </TouchableOpacity>
-        <ThemedText style={styles.dateText}>{dateString}</ThemedText>
+        <ThemedText style={styles.dateText}>{new Date().toLocaleDateString('ja-JP', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          weekday: 'long'
+        })}</ThemedText>
       </View>
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {hasActiveSession && workoutData ? (
+        {activeSession ? (
           <View style={styles.workoutCard}>
             <TouchableOpacity 
               style={styles.summaryHeader}
               onPress={() => router.push('/workout/log')}
             >
               <ThemedText style={styles.summaryTitle}>
-                {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} Summary
+                {new Date(activeSession.started_at).toLocaleDateString('en-US', { 
+                  weekday: 'short', 
+                  month: 'short', 
+                  day: 'numeric' 
+                })} Summary
               </ThemedText>
               <ThemedText style={styles.chevron}>›</ThemedText>
             </TouchableOpacity>
@@ -107,7 +171,7 @@ export default function WorkoutPlanScreen() {
 
             <View style={styles.workoutInfo}>
               <ThemedText style={styles.workoutInfoTitle}>Workout Info</ThemedText>
-              {workoutData.exercises?.map((exercise, index) => (
+              {activeSession.exercises?.map((exercise, index) => (
                 <View key={exercise.id} style={styles.exerciseItem}>
                   <View style={styles.exerciseHeader}>
                     <ThemedText style={styles.exerciseNumber}>{index + 1}</ThemedText>
@@ -116,44 +180,70 @@ export default function WorkoutPlanScreen() {
                     </ThemedText>
                     <View style={[styles.checkmark, exercise.sets?.length > 0 && styles.completedCheckmark]} />
                   </View>
-                  <View style={styles.setsContainer}>
-                    {exercise.sets?.map((set, setIndex) => (
-                      <ThemedText key={setIndex} style={styles.exerciseDetails}>
-                        Set {setIndex + 1}: {set.weight || 0}lbs × {set.reps || 0}reps
-                      </ThemedText>
-                    ))}
-                  </View>
                 </View>
               ))}
             </View>
           </View>
         ) : (
-          <View style={styles.workoutSection}>
-            <ThemedText style={styles.title}>Today's workout</ThemedText>
-            <ThemedText style={styles.subtitle}>Plan your own workout!</ThemedText>
-              
-            <TouchableOpacity 
-              style={[styles.button, { backgroundColor: '#007AFF' }]}
-              onPress={() => router.push('/workout/exercises')}
-            >
-              <ThemedText style={styles.buttonText}>Add exercises</ThemedText>
-            </TouchableOpacity>
-          </View>
-        )}
+          <>
+            <View style={styles.workoutSection}>
+              <ThemedText style={styles.title}>今日のワークアウト</ThemedText>
+              <ThemedText style={styles.subtitle}>プランを選択するか、新しいワークアウトを始めましょう！</ThemedText>
+                  
+              <TouchableOpacity 
+                style={[styles.button, { backgroundColor: '#007AFF' }]}
+                onPress={() => router.push('/workout/exercises')}
+              >
+                <ThemedText style={styles.buttonText}>新しいワークアウトを始める</ThemedText>
+              </TouchableOpacity>
+            </View>
 
-        {!hasActiveSession && !workoutData && (
-          <View>
-            <TouchableOpacity 
-              style={styles.routineSection}
-              onPress={() => {/* Handle routine selection */}}
-            >
-              <View>
-                <ThemedText style={styles.sectionTitle}>My Plans</ThemedText>
-                <ThemedText style={styles.routineText}>Select routine</ThemedText>
-              </View>
-              <ThemedText style={styles.arrow}>→</ThemedText>
-            </TouchableOpacity>
-          </View>
+            <View style={styles.plansSection}>
+              <ThemedText style={styles.sectionTitle}>マイプラン</ThemedText>
+              {loading ? (
+                <ThemedText>読み込み中...</ThemedText>
+              ) : plans.length > 0 ? (
+                <ScrollView style={styles.plansScrollContainer}>
+                  {plans.map((plan) => (
+                    <TouchableOpacity 
+                      key={plan.id} 
+                      style={styles.planCard}
+                      onPress={() => handleStartPlan(plan.id)}
+                    >
+                      <View style={styles.workoutInfo}>
+                        <ThemedText style={styles.workoutText}>{plan.name}</ThemedText>
+                        <ThemedText style={styles.exerciseCount}>
+                          {plan.exercises.length}種目
+                        </ThemedText>
+                        <ThemedText style={[styles.duration]} numberOfLines={1} ellipsizeMode="tail">
+                          {plan.exercises.map(e => e.exercise.name).join(', ')}
+                        </ThemedText>
+                      </View>
+                      <ThemedText style={styles.startButton}>開始</ThemedText>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              ) : (
+                <View style={styles.emptyPlansContainer}>
+                  <ThemedText style={styles.emptyPlansText}>
+                    プランが未設定です
+                  </ThemedText>
+                  <ThemedText style={styles.emptyPlansSubtext}>
+                    新しいトレーニングプランを作成して{'\n'}トレーニングを始めましょう
+                  </ThemedText>
+                </View>
+              )}
+
+              <TouchableOpacity 
+                style={styles.createPlanButton}
+                onPress={() => router.push('/plan/create')}
+              >
+                <ThemedText style={styles.createPlanButtonText}>
+                  新しいプランを作成
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+          </>
         )}
       </ScrollView>
     </View>
@@ -188,77 +278,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
-  },
-  workoutSection: {
-    backgroundColor: '#FFFFFF',
-    padding: 24,
-    borderRadius: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#1E293B',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#64748B',
-    marginBottom: 24,
-    lineHeight: 22,
-  },
-  button: {
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 8,
-    backgroundColor: '#3B82F6',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  routineSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1E293B',
-    marginBottom: 4,
-  },
-  routineText: {
-    color: '#64748B',
-    fontSize: 15,
-  },
-  arrow: {
-    fontSize: 20,
-    color: '#3B82F6',
-    fontWeight: '600',
-  },
-  restMessage: {
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  restText: {
-    fontSize: 16,
-    color: '#64748B',
-    fontWeight: '500',
   },
   workoutCard: {
     backgroundColor: '#FFFFFF',
@@ -304,7 +323,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   workoutInfo: {
-    padding: 20,
+    flex: 1,
+    marginRight: 12,
   },
   workoutInfoTitle: {
     fontSize: 20,
@@ -313,7 +333,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   exerciseItem: {
-    marginBottom: 20,
+    marginBottom: 16,
     backgroundColor: '#F8FAFC',
     padding: 16,
     borderRadius: 12,
@@ -323,7 +343,6 @@ const styles = StyleSheet.create({
   exerciseHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   exerciseNumber: {
     fontSize: 16,
@@ -343,17 +362,123 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#E2E8F0',
   },
-  exerciseDetails: {
-    fontSize: 14,
-    color: '#64748B',
-    marginLeft: 28,
-    marginTop: 2,
-  },
-  setsContainer: {
-    marginLeft: 28,
-    marginTop: 6,
-  },
   completedCheckmark: {
     backgroundColor: '#10B981',
+  },
+  workoutSection: {
+    backgroundColor: '#FFFFFF',
+    padding: 24,
+    borderRadius: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#1E293B',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#64748B',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  plansSection: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 16,
+  },
+  workoutText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  exerciseCount: {
+    fontSize: 13,
+    color: '#FFFFFF',
+    opacity: 0.9,
+    fontWeight: '500',
+  },
+  duration: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    opacity: 0.7,
+    maxWidth: '90%',
+    lineHeight: 16,
+  },
+  startButton: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    fontSize: 14,
+  },
+  plansScrollContainer: {
+    maxHeight: 400,
+  },
+  emptyPlansContainer: {
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  emptyPlansText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1E293B',
+    marginBottom: 8,
+  },
+  emptyPlansSubtext: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  createPlanButton: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#3B82F6',
+  },
+  createPlanButtonText: {
+    color: '#3B82F6',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  planCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#3B82F6',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
   },
 }); 
