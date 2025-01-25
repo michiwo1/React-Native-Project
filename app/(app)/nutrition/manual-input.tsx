@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { API_URL } from '@/constants/api';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ManualInputScreen() {
   const { token } = useAuth();
@@ -111,8 +112,13 @@ export default function ManualInputScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>栄養成分を手動入力</Text>
+      </View>
       <ScrollView style={styles.scrollView}>
-        <Text style={styles.title}>栄養成分を手動入力</Text>
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>食事の種類</Text>
           <View style={styles.mealTypeContainer}>
@@ -250,12 +256,24 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 24,
-    color: '#000',
-    textAlign: 'center',
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
+    flex: 1,
   },
   card: {
     backgroundColor: '#fff',
