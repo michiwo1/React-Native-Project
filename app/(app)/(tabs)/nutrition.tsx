@@ -279,13 +279,6 @@ export default function NutritionScreen() {
         <ScrollView style={styles.scrollView}>
           <Text style={styles.title}>栄養管理</Text>
           
-          <TouchableOpacity 
-            style={styles.aiAdviceButton}
-            onPress={() => router.push('/nutrition/ai-advice')}
-          >
-            <Text style={styles.aiAdviceButtonText}>AIに食事アドバイスを相談する</Text>
-          </TouchableOpacity>
-          
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>今日の摂取状況</Text>
             {userProfile && (
@@ -329,38 +322,56 @@ export default function NutritionScreen() {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>食事記録</Text>
-            {meals.map((meal) => (
-              <View key={meal.id} style={styles.mealCard}>
-                <View style={styles.mealHeader}>
-                  <Text style={styles.mealTitle}>{meal.meal_type.name}</Text>
-                  <Text style={styles.mealTime}>
-                    {new Date(meal.eaten_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
-                  </Text>
-                </View>
-                {meal.items.map((item) => (
-                  <View key={item.id} style={styles.foodItem}>
-                    <Text style={styles.foodName}>{item.food_item.name}</Text>
-                    <Text style={styles.foodQuantity}>{item.quantity}{item.unit}</Text>
-                  </View>
-                ))}
-                {meal.note && <Text style={styles.mealNote}>{meal.note}</Text>}
+            {meals.length === 0 ? (
+              <View style={styles.emptyStateContainer}>
+                <Text style={styles.emptyStateText}>今日の食事記録はまだありません</Text>
+                <Text style={styles.emptyStateSubText}>「食事を記録」から記録を始めましょう</Text>
               </View>
-            ))}
+            ) : (
+              meals.map((meal) => (
+                <View key={meal.id} style={styles.mealCard}>
+                  <View style={styles.mealHeader}>
+                    <Text style={styles.mealTitle}>{meal.meal_type.name}</Text>
+                    <Text style={styles.mealTime}>
+                      {new Date(meal.eaten_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                  </View>
+                  {meal.items.map((item) => (
+                    <View key={item.id} style={styles.foodItem}>
+                      <Text style={styles.foodName}>{item.food_item.name}</Text>
+                      <Text style={styles.foodQuantity}>{item.quantity}{item.unit}</Text>
+                    </View>
+                  ))}
+                  {meal.note && <Text style={styles.mealNote}>{meal.note}</Text>}
+                </View>
+              ))
+            )}
           </View>
 
-          <TouchableOpacity 
-            style={[styles.addButton, { marginBottom: 12 }]}
-            onPress={() => router.push('/nutrition/manual-input')}
-          >
-            <Text style={styles.addButtonText}>栄養成分を手動入力</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <View style={styles.secondaryButtonsRow}>
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.secondaryButton]}
+                onPress={() => router.push('/nutrition/manual-input')}
+              >
+                <Text style={[styles.actionButtonText, styles.secondaryButtonText]}>栄養成分を手動入力</Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={styles.addButton}
-            onPress={() => router.push('/nutrition/record-meal')}
-          >
-            <Text style={styles.addButtonText}>食事を記録</Text>
-          </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.aiButton]}
+                onPress={() => router.push('/nutrition/ai-advice')}
+              >
+                <Text style={[styles.actionButtonText, styles.aiButtonText]}>AIに食事アドバイスを相談する</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.primaryButton]}
+              onPress={() => router.push('/nutrition/record-meal')}
+            >
+              <Text style={[styles.actionButtonText, styles.primaryButtonText]}>食事を記録</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       )}
     </SafeAreaView>
@@ -374,51 +385,37 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    marginBottom: 24,
+    marginBottom: 28,
     color: '#000',
   },
-  aiAdviceButton: {
-    backgroundColor: Colors.light.tint,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  aiAdviceButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
   section: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-    marginBottom: 16,
+    marginBottom: 20,
     color: '#000',
   },
   nutrientRow: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
   nutrientLabel: {
     fontSize: 15,
     fontWeight: '500',
-    marginBottom: 4,
+    marginBottom: 6,
     color: '#333',
   },
   progressContainer: {
     height: 8,
     backgroundColor: '#F2F2F7',
     borderRadius: 4,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   progressBar: {
     height: '100%',
@@ -427,12 +424,13 @@ const styles = StyleSheet.create({
   nutrientValue: {
     fontSize: 13,
     color: '#666',
+    marginTop: 2,
   },
   mealCard: {
     backgroundColor: '#F8F8FA',
-    padding: 16,
+    padding: 20,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: '#E5E5EA',
   },
@@ -440,10 +438,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   mealTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
   },
@@ -454,7 +452,7 @@ const styles = StyleSheet.create({
   foodItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   foodName: {
     fontSize: 15,
@@ -467,27 +465,71 @@ const styles = StyleSheet.create({
   mealNote: {
     fontSize: 14,
     color: '#666',
-    marginTop: 8,
+    marginTop: 12,
     fontStyle: 'italic',
   },
-  addButton: {
-    backgroundColor: Colors.light.tint,
+  buttonContainer: {
+    marginTop: 20,
+    marginBottom: 32,
+    gap: 16,
+  },
+  secondaryButtonsRow: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  actionButton: {
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 12,
-    marginBottom: 24,
+    justifyContent: 'center',
   },
-  addButtonText: {
+  actionButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  primaryButtonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  primaryButton: {
+    backgroundColor: Colors.light.tint,
+    height: 56,
+  },
+  secondaryButton: {
+    backgroundColor: '#F8F8FA',
+    borderWidth: 1,
+    borderColor: Colors.light.tint,
+    flex: 1,
+    height: 80,
+  },
+  aiButton: {
+    backgroundColor: '#F8F8FA',
+    borderWidth: 1,
+    borderColor: Colors.light.tint,
+    flex: 1,
+    height: 80,
+  },
+  secondaryButtonText: {
+    color: Colors.light.tint,
+    fontSize: 15,
     fontWeight: '600',
+    textAlign: 'center',
+    paddingHorizontal: 12,
+    lineHeight: 20,
+  },
+  aiButtonText: {
+    color: Colors.light.tint,
+    fontSize: 15,
+    fontWeight: '600',
+    textAlign: 'center',
+    paddingHorizontal: 12,
+    lineHeight: 20,
   },
   goalTypeContainer: {
     backgroundColor: '#F8F8FA',
-    padding: 12,
+    padding: 16,
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: '#E5E5EA',
   },
@@ -495,12 +537,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: Colors.light.tint,
-    marginBottom: 6,
+    marginBottom: 8,
   },
   calculationText: {
     fontSize: 13,
     color: '#666',
-    marginBottom: 3,
+    marginBottom: 4,
   },
   loadingContainer: {
     flex: 1,
@@ -508,8 +550,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: 16,
+    fontSize: 15,
     color: '#666',
+  },
+  emptyStateContainer: {
+    backgroundColor: '#F8F8FA',
+    padding: 28,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  emptyStateText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 10,
+  },
+  emptyStateSubText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
   },
 }); 
