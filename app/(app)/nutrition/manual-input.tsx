@@ -11,6 +11,7 @@ export default function ManualInputScreen() {
   const { token } = useAuth();
   const [mealType, setMealType] = useState('');
   const [foodCategory, setFoodCategory] = useState('');
+  const [foodName, setFoodName] = useState('');
   const [calories, setCalories] = useState('');
   const [protein, setProtein] = useState('');
   const [carbs, setCarbs] = useState('');
@@ -76,6 +77,7 @@ export default function ManualInputScreen() {
       const requestData = {
         meal_type: mealType,
         food_category: foodCategory,
+        food_name: foodName || '手動入力',
         eaten_at: date.toISOString(),
         nutrients: {
           calories: parseFloat(calories) || 0,
@@ -161,6 +163,14 @@ export default function ManualInputScreen() {
               </TouchableOpacity>
             ))}
           </View>
+
+          <Text style={styles.sectionTitle}>食品名</Text>
+          <TextInput
+            style={styles.input}
+            value={foodName}
+            onChangeText={setFoodName}
+            placeholder="食品名を入力"
+          />
 
           <Text style={styles.sectionTitle}>日時</Text>
           <TextInput

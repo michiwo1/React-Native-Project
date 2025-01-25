@@ -14,6 +14,7 @@ export interface CreateMealDto {
 export interface CreateManualMealDto {
   meal_type: string;
   food_category: string;
+  food_name?: string;
   eaten_at: string;
   note?: string;
   nutrients: {

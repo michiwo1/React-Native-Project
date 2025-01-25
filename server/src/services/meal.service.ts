@@ -158,7 +158,7 @@ export class MealService {
       // 手動入力用の食品アイテムを作成
       const manualFoodItem = await prisma.foodItem.create({
         data: {
-          name: '手動入力',
+          name: createManualMealDto.food_name || '手動入力',
           base_quantity: 1,
           base_unit: 'serving',
           category_id: foodCategory.id,
