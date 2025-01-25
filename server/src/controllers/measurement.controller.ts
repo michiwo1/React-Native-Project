@@ -43,4 +43,19 @@ export class MeasurementController {
       return res.status(500).json({ message: 'Internal server error' });
     }
   };
+
+  async getWeightHistoryWithProfile(req: Request, res: Response) {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const weightHistory = await this.measurementService.getWeightHistoryWithProfile(userId);
+      return res.status(200).json(weightHistory);
+    } catch (error) {
+      console.error('Error fetching weight history:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
 } 

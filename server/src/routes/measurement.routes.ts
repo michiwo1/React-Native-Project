@@ -11,4 +11,7 @@ router.use(authenticate);
 router.post('/weight', measurementController.recordWeight);
 router.get('/weight/history', measurementController.getWeightHistory);
 
+// Weight history graph endpoint
+router.get('/weight/history/graph', (req, res) => measurementController.getWeightHistoryWithProfile(req, res));
+
 export default router; 
