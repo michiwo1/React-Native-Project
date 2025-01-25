@@ -62,6 +62,8 @@ export default function RecordMealScreen() {
   const [newFoodProtein, setNewFoodProtein] = useState('');
   const [newFoodFat, setNewFoodFat] = useState('');
   const [newFoodCarbs, setNewFoodCarbs] = useState('');
+  const [showUnitSelector, setShowUnitSelector] = useState(false);
+  const units = ['g', 'ml', '個', '枚', '杯', '切れ', '本'];
 
   useEffect(() => {
     const getToken = async () => {
@@ -258,6 +260,11 @@ export default function RecordMealScreen() {
       console.error('Error adding food:', error);
       Alert.alert('エラー', '食品の追加に失敗しました');
     }
+  };
+
+  const handleSelectUnit = (unit: string) => {
+    setNewFoodBaseUnit(unit);
+    setShowUnitSelector(false);
   };
 
   const totals = calculateTotalNutrients();
@@ -485,12 +492,15 @@ export default function RecordMealScreen() {
                       keyboardType="numeric"
                       placeholder="基準量を入力"
                     />
-                    <TextInput
-                      style={[styles.formInput, { flex: 1, marginLeft: 8 }]}
-                      value={newFoodBaseUnit}
-                      onChangeText={setNewFoodBaseUnit}
-                      placeholder="単位"
-                    />
+                    <TouchableOpacity
+                      style={styles.unitSelector}
+                      onPress={() => setShowUnitSelector(true)}
+                    >
+                      <Text style={styles.unitSelectorText}>
+                        {newFoodBaseUnit || '単位を選択'}
+                      </Text>
+                      <Ionicons name="chevron-down" size={20} color="#8E8E93" />
+                    </TouchableOpacity>
                   </View>
                 </View>
                 <View style={styles.formGroup}>
@@ -572,6 +582,38 @@ export default function RecordMealScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 単位選択モーダル */}
+      <Modal
+        visible={showUnitSelector}
+        animationType="slide"
+        transparent
+      >
+        <View style={styles.unitModalContainer}>
+          <View style={styles.unitModalContent}>
+            <View style={styles.unitModalHeader}>
+              <Text style={styles.unitModalTitle}>単位を選択</Text>
+              <TouchableOpacity
+                style={styles.unitModalCloseButton}
+                onPress={() => setShowUnitSelector(false)}
+              >
+                <Ionicons name="close" size={24} color="#8E8E93" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.unitList}>
+              {units.map((unit) => (
+                <TouchableOpacity
+                  key={unit}
+                  style={styles.unitItem}
+                  onPress={() => handleSelectUnit(unit)}
+                >
+                  <Text style={styles.unitItemText}>{unit}</Text>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
           </View>
         </View>
@@ -904,5 +946,60 @@ const styles = StyleSheet.create({
     width: 40,
     fontSize: 14,
     color: '#8E8E93',
+  },
+  unitSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 42,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    borderRadius: 12,
+    marginLeft: 8,
+    flex: 1,
+  },
+  unitSelectorText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#1C1C1E',
+  },
+  unitModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  unitModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    maxHeight: '50%',
+  },
+  unitModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  unitModalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1C1C1E',
+  },
+  unitModalCloseButton: {
+    padding: 4,
+  },
+  unitList: {
+    paddingHorizontal: 16,
+  },
+  unitItem: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  unitItemText: {
+    fontSize: 16,
+    color: '#1C1C1E',
   },
 }); 
