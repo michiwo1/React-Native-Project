@@ -184,38 +184,110 @@ export class WorkoutService {
     }
   }
 
-  async finishWorkoutSession(workoutSessionId: string, userId: string) {
+async finishWorkoutSession(workoutSessionId: string, userId: string) {
     try {
-      const workoutSession = await this.prisma.workoutSession.findFirst({
-        where: {
-          id: workoutSessionId,
-          user_id: userId,
-        },
-      });
-
-      if (!workoutSession) {
-        throw new Error('Workout session not found');
-      }
-
-      return await this.prisma.workoutSession.update({
-        where: { 
-          id: workoutSessionId,
-          user_id: userId // Add user_id to ensure ownership
-        },
-        data: { 
-          ended_at: new Date() 
-        },
-        include: { // Include related data for verification
-          exercises: {
-            include: {
-              sets: true
+      return await this.prisma.$transaction(async (tx) => {
+        // ワークアウトセッションの取得（エクササイズとセットを含む）
+        const workoutSession = await tx.workoutSession.findFirst({
+          where: {
+            id: workoutSessionId,
+            user_id: userId,
+          },
+          include: {
+            exercises: {
+              include: {
+                exercise: true,
+                sets: {
+                  where: {
+                    is_completed: true // 完了済みのセットのみを対象とする
+                  }
+                }
+              }
             }
           }
+        });
+
+        if (!workoutSession) {
+          throw new Error('ワークアウトセッションが見つかりません');
         }
+
+        // 各エクササイズのパーソナルレコードをチェック
+        for (const workoutExercise of workoutSession.exercises) {
+          if (workoutExercise.sets.length === 0) continue;
+
+          // 各セットの理論的な1RMをブルジッキー公式で計算
+          const oneRMs = workoutExercise.sets.map(set => {
+            // 精度を確保するため、1-10レップの範囲のみを考慮
+            if (set.reps < 1 || set.reps > 10) return 0;
+            // ブルジッキー公式：1RM = 重量 × (36 / (37 - レップ数))
+            return set.weight * (36 / (37 - set.reps));
+          });
+
+          // このワークアウトでの最高1RMを取得
+          const maxOneRM = Math.max(...oneRMs);
+          if (maxOneRM === 0) continue; // 有効なセットがない場合はスキップ
+
+          // 最高1RMを達成したセットを全て取得
+          const bestSets = workoutExercise.sets.filter((set, index) => 
+            oneRMs[index] === maxOneRM
+          );
+
+          // 最高1RMのセットの中から、最も少ないレップ数で達成したものを選択
+          const bestSet = bestSets.reduce((a, b) => 
+            a.reps < b.reps ? a : b
+          );
+
+          // この種目の現在のPRを取得
+          const currentPR = await tx.exercisePersonalRecord.findFirst({
+            where: {
+              user_id: userId,
+              exercise_id: workoutExercise.exercise_id
+            },
+            orderBy: {
+              recorded_at: 'desc'
+            }
+          });
+
+          // 現在のPRの1RMを計算（存在する場合）
+          const currentOneRM = currentPR 
+            ? currentPR.weight * (36 / (37 - currentPR.reps))
+            : 0;
+
+          // 現在のセットの1RMが高い場合、PRを更新
+          if (!currentPR || maxOneRM > currentOneRM) {
+            await tx.exercisePersonalRecord.create({
+              data: {
+                user_id: userId,
+                exercise_id: workoutExercise.exercise_id,
+                weight: bestSet.weight,
+                reps: bestSet.reps,
+                recorded_at: new Date()
+              }
+            });
+          }
+        }
+
+        // セッションを終了状態に更新
+        return await tx.workoutSession.update({
+          where: {
+            id: workoutSessionId,
+            user_id: userId
+          },
+          data: {
+            ended_at: new Date()
+          },
+          include: {
+            exercises: {
+              include: {
+                sets: true
+              }
+            }
+          }
+        });
       });
     } catch (error) {
-      console.error('Error finishing workout session:', error);
-      throw new Error('Failed to finish workout session');
+      console.error('ワークアウトセッションの終了中にエラーが発生しました:', error);
+      throw new Error('ワークアウトセッションの終了に失敗しました');
     }
   }
 
