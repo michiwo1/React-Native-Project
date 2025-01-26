@@ -4,9 +4,9 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 import { MetricCard } from '@/components/ui/MetricCard';
 import { Colors, BaseColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { API_URL } from '@/constants/api';
 
@@ -65,9 +65,16 @@ export default function HomeScreen() {
       fetchWeightData();
       fetchNutritionData();
       fetchUserProfile();
-      fetchSelectedExerciseRecord();
     }
   }, [token]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        fetchSelectedExerciseRecord();
+      }
+    }, [token])
+  );
 
   const fetchPlans = async () => {
     try {
