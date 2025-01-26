@@ -11,6 +11,7 @@ type Exercise = {
   id: string;
   name: string;
   category_id: string;
+  is_last_selected: boolean;
   category: {
     id: string;
     name: string;
@@ -78,10 +79,10 @@ const ExercisesScreen = () => {
       setExercises(exercisesRes);
       setCategories(categoriesRes);
 
-      // ベンチプレスを自動選択
-      const benchPress = exercisesRes.find((exercise: Exercise) => exercise.name === 'Bench Press');
-      if (benchPress) {
-        setSelectedExerciseId(benchPress.id);
+      // is_last_selectedがtrueの種目を自動選択
+      const lastSelectedExercise = exercisesRes.find((exercise: Exercise) => exercise.is_last_selected);
+      if (lastSelectedExercise) {
+        setSelectedExerciseId(lastSelectedExercise.id);
       }
     } catch (err) {
       console.error('Error details:', err);
@@ -144,6 +145,14 @@ const ExercisesScreen = () => {
       if (!response.ok) {
         throw new Error('種目の選択状態の更新に失敗しました');
       }
+
+      // 選択された種目のis_last_selectedを更新
+      setExercises(prevExercises => 
+        prevExercises.map(exercise => ({
+          ...exercise,
+          is_last_selected: exercise.id === exerciseId
+        }))
+      );
     } catch (err) {
       console.error('Error selecting exercise:', err);
       // エラーが発生しても、UIの選択状態は維持します
