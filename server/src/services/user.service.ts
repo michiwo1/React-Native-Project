@@ -22,6 +22,13 @@ interface UserProfileResponse {
   fat_target: number;
 }
 
+interface ExerciseRecordResponse {
+  name: string;
+  current: number;
+  change: number | null;
+  date: Date | null;
+}
+
 export class UserService {
   private prisma: PrismaClient;
 
@@ -266,13 +273,51 @@ export class UserService {
   }
 
   private calculateFatTarget(weight: number, goalType: string): number {
-    switch (goalType) {
-      case 'bulk':
-        return Math.round(weight * 1.5); // 筋肥大時は体重×1.5g
-      case 'cut':
-        return Math.round(weight * 1.0); // 減量時は体重×1.0g
-      default:
-        return Math.round(weight * 1.2); // 維持時は体重×1.2g
+    const baseCalories = this.calculateCalorieTarget(weight, goalType);
+    return Math.round((baseCalories * 0.25) / 9); // 総カロリーの25%を脂質から摂取（1g = 9kcal）
+  }
+
+  public async getSelectedExerciseRecord(userId: string): Promise<ExerciseRecordResponse | null> {
+    // 最後に選択された種目を取得
+    const selectedExercise = await this.prisma.exercise.findFirst({
+      where: {
+        is_last_selected: true
+      }
+    });
+
+    if (!selectedExercise) {
+      return null;
     }
+
+    // 該当種目の最新2件のパーソナルレコードを取得
+    const records = await this.prisma.exercisePersonalRecord.findMany({
+      where: {
+        user_id: userId,
+        exercise_id: selectedExercise.id
+      },
+      orderBy: {
+        recorded_at: 'desc'
+      },
+      take: 2
+    });
+
+    if (records.length === 0) {
+      return {
+        name: selectedExercise.name,
+        current: 0,
+        change: null,
+        date: null
+      };
+    }
+
+    const current = records[0].weight;
+    const change = records.length > 1 ? Number((records[0].weight - records[1].weight).toFixed(1)) : null;
+
+    return {
+      name: selectedExercise.name,
+      current,
+      change,
+      date: records[0].recorded_at
+    };
   }
 } 

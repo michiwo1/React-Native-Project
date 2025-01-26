@@ -11,5 +11,6 @@ router.use(authenticate);
 router.get('/profile', userController.getUserProfile);
 router.put('/profile', userController.updateProfile);
 router.get('/weight', userController.getLatestWeight);
+router.get('/selected-exercise-record', userController.getSelectedExerciseRecord);
 
 export default router; 

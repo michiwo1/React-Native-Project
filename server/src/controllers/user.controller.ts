@@ -82,4 +82,19 @@ export class UserController {
       return res.status(500).json({ message: 'Internal server error' });
     }
   };
+
+  public getSelectedExerciseRecord = async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const record = await this.userService.getSelectedExerciseRecord(userId);
+      return res.status(200).json(record);
+    } catch (error) {
+      console.error('Error fetching selected exercise record:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  };
 } 

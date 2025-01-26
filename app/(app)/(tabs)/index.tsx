@@ -51,6 +51,13 @@ export default function HomeScreen() {
   });
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [nutritionLoading, setNutritionLoading] = useState(true);
+  const [selectedExerciseRecord, setSelectedExerciseRecord] = useState<{
+    name: string;
+    current: number;
+    change: number | null;
+    date: string | null;
+  } | null>(null);
+  const [exerciseLoading, setExerciseLoading] = useState(true);
   
   useEffect(() => {
     if (token) {
@@ -58,6 +65,7 @@ export default function HomeScreen() {
       fetchWeightData();
       fetchNutritionData();
       fetchUserProfile();
+      fetchSelectedExerciseRecord();
     }
   }, [token]);
 
@@ -208,6 +216,25 @@ export default function HomeScreen() {
       setUserProfile(adjustedProfile);
     } catch (error) {
       console.error('Error fetching user profile:', error);
+    }
+  };
+
+  const fetchSelectedExerciseRecord = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/user/selected-exercise-record`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch selected exercise record');
+      }
+      const data = await response.json();
+      setSelectedExerciseRecord(data);
+    } catch (error) {
+      console.error('Error fetching selected exercise record:', error);
+    } finally {
+      setExerciseLoading(false);
     }
   };
 
@@ -569,12 +596,13 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <TouchableOpacity style={styles.metricCardWrapper} onPress={handleBenchPressCardPress}>
               <MetricCard
-                title="ベンチプレス"
-                value={`${dummyData.benchPress.current}kg`}
-                change={dummyData.benchPress.change}
+                title={selectedExerciseRecord?.name || "種目を選択"}
+                value={selectedExerciseRecord ? `${selectedExerciseRecord.current}kg` : '未設定'}
+                change={selectedExerciseRecord?.change}
                 changeUnit="kg"
-                date={new Date().toLocaleDateString('ja-JP')}
+                date={selectedExerciseRecord?.date ? new Date(selectedExerciseRecord.date).toLocaleDateString('ja-JP') : undefined}
                 hint="クリックで表示を変更"
+                isLoading={exerciseLoading}
               />
             </TouchableOpacity>
           </View>
