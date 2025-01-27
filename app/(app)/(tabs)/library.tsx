@@ -338,7 +338,7 @@ export default function LibraryScreen() {
       </View>
 
       <View style={styles.exerciseSection}>
-        <ThemedText style={styles.sectionTitle}>種目別の推移</ThemedText>
+        <ThemedText style={styles.sectionTitle}>種目別の最大重量の推移</ThemedText>
         <View style={styles.selectorContainer}>
           <ModalSelector
             data={[
