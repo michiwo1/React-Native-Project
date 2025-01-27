@@ -1,4 +1,4 @@
-import { View, StyleSheet, Dimensions, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Dimensions, ScrollView, TouchableOpacity, ActivityIndicator, Platform, ViewStyle, TextStyle } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { LineChart } from 'react-native-chart-kit';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -6,6 +6,7 @@ import { Colors } from '@/constants/Colors';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { API_URL } from '@/constants/api';
+import ModalSelector from 'react-native-modal-selector';
 
 // 種目データの型定義
 type Exercise = {
@@ -230,6 +231,83 @@ export default function LibraryScreen() {
     loader: {
       marginVertical: 32,
     },
+    selectorContainer: {
+      marginBottom: 16,
+      paddingHorizontal: 16,
+    },
+    selectorButton: {
+      paddingVertical: 8,
+      paddingHorizontal: 0,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      height: 36,
+    },
+    selectorButtonText: {
+      fontSize: 15,
+      color: '#64748B',
+      fontWeight: '500',
+    },
+    selectorIcon: {
+      marginLeft: 6,
+      fontSize: 12,
+      color: '#64748B',
+      marginTop: 1,
+    },
+    modalContent: {
+      backgroundColor: '#FFFFFF',
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingTop: 12,
+      paddingBottom: 20,
+      maxHeight: Dimensions.get('window').height * 0.7,
+    },
+    modalHeader: {
+      borderBottomWidth: 1,
+      borderBottomColor: '#E2E8F0',
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: '#1F2937',
+      textAlign: 'center',
+    },
+    optionContainer: {
+      paddingVertical: 16,
+      paddingHorizontal: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: '#E2E8F0',
+      flexDirection: 'row',
+      alignItems: 'center',
+      minHeight: 56,
+    },
+    selectedOption: {
+      backgroundColor: '#F0F9FF',
+    },
+    optionText: {
+      fontSize: 16,
+      color: '#1F2937',
+      flex: 1,
+    },
+    selectedOptionText: {
+      color: '#2563EB',
+      fontWeight: '500',
+    },
+    cancelButton: {
+      paddingVertical: 16,
+      backgroundColor: '#F8FAFC',
+    },
+    cancelText: {
+      fontSize: 16,
+      color: '#DC2626',
+      textAlign: 'center',
+      fontWeight: '500',
+    },
+    placeholderText: {
+      color: '#64748B',
+    },
   });
 
   return (
@@ -261,30 +339,48 @@ export default function LibraryScreen() {
 
       <View style={styles.exerciseSection}>
         <ThemedText style={styles.sectionTitle}>種目別の推移</ThemedText>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.exerciseScrollView}
-        >
-          {exercises.map((exercise) => (
-            <TouchableOpacity
-              key={exercise.id}
-              style={[
-                styles.exerciseButton,
-                selectedExercise?.id === exercise.id && styles.selectedExercise,
-                { borderColor: '#2563EB' }
-              ]}
-              onPress={() => setSelectedExercise(exercise)}
-            >
+        <View style={styles.selectorContainer}>
+          <ModalSelector
+            data={[
+              { key: '', label: '種目を選択' },
+              ...exercises.slice(0, 100).map(exercise => ({
+                key: exercise.id,
+                label: exercise.name
+              }))
+            ]}
+            onChange={(option) => {
+              const selected = exercises.find(ex => ex.id === option.key);
+              setSelectedExercise(selected || null);
+            }}
+            style={styles.selectorButton}
+            optionContainerStyle={styles.modalContent}
+            cancelContainerStyle={styles.cancelButton}
+            optionStyle={styles.optionContainer}
+            optionTextStyle={styles.optionText}
+            selectedItemTextStyle={styles.selectedOptionText}
+            cancelTextStyle={styles.cancelText}
+            cancelText="キャンセル"
+            overlayStyle={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+            touchableActiveOpacity={0.7}
+            listType="FLATLIST"
+            keyExtractor={(item) => item.key}
+            ListHeaderComponent={
+              <View style={styles.modalHeader}>
+                <ThemedText style={styles.modalTitle}>種目を選択</ThemedText>
+              </View>
+            }
+          >
+            <View style={styles.selectorButton}>
               <ThemedText style={[
-                styles.exerciseButtonText,
-                selectedExercise?.id === exercise.id && { color: '#2563EB' }
+                styles.selectorButtonText,
+                selectedExercise && { color: '#1F2937', fontWeight: '600' }
               ]}>
-                {exercise.name}
+                {selectedExercise ? selectedExercise.name : 'エクササイズを選択'}
               </ThemedText>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+              <ThemedText style={styles.selectorIcon}>▼</ThemedText>
+            </View>
+          </ModalSelector>
+        </View>
 
         {selectedExercise && (
           <View style={styles.exerciseChartContainer}>
