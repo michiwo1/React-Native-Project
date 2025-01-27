@@ -11,8 +11,11 @@ import { API_URL } from '@/constants/api';
 type Exercise = {
   id: string;
   name: string;
-  data: number[];
-  color: string;
+  personal_records: {
+    weight: number;
+    reps: number;
+    recorded_at: string;
+  }[];
 };
 
 type WeightHistory = {
@@ -24,6 +27,7 @@ export default function LibraryScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const { token } = useAuth();
   const [weightData, setWeightData] = useState<{
@@ -98,43 +102,50 @@ export default function LibraryScreen() {
     }
   };
 
+  const fetchExercises = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/exercise/with-records`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch exercises');
+      }
+      const data = await response.json();
+      setExercises(data);
+    } catch (error) {
+      console.error('Error fetching exercises:', error);
+      setExercises([]);
+    }
+  };
+
   useEffect(() => {
     if (token) {
       fetchWeightHistory();
+      fetchExercises();
     }
   }, [token]);
 
-  // 種目データ
-  const exercises: Exercise[] = [
-    {
-      id: '1',
-      name: 'ベンチプレス',
-      data: [80, 82.5, 85, 85, 87.5, 90],
-      color: '#2563EB',
-    },
-    {
-      id: '2',
-      name: 'スクワット',
-      data: [100, 105, 110, 112.5, 115, 120],
-      color: '#2563EB',
-    },
-    {
-      id: '3',
-      name: 'デッドリフト',
-      data: [120, 125, 130, 132.5, 135, 140],
-      color: '#2563EB',
-    },
-  ];
+  const getExerciseData = (exercise: Exercise) => {
+    const records = exercise.personal_records;
+    const sortedRecords = records
+      .sort((a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime())
+      .slice(-6);  // 最新の6件を取得
 
-  const getExerciseData = (exercise: Exercise) => ({
-    labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
-    datasets: [
-      {
-        data: exercise.data,
-        color: () => exercise.color,
-      },
-    ],
-  });
+    return {
+      labels: sortedRecords.map(record => {
+        const date = new Date(record.recorded_at);
+        return `${date.getMonth() + 1}/${date.getDate()}`;
+      }),
+      datasets: [
+        {
+          data: sortedRecords.map(record => record.weight),
+          color: () => '#2563EB',
+        },
+      ],
+    };
+  };
 
   const chartConfig = {
     backgroundColor: Colors[colorScheme].background,
@@ -277,7 +288,7 @@ export default function LibraryScreen() {
 
         {selectedExercise && (
           <View style={styles.exerciseChartContainer}>
-            <ThemedText style={[styles.chartTitle, { color: selectedExercise.color }]}>
+            <ThemedText style={[styles.chartTitle, { color: '#2563EB' }]}>
               {selectedExercise.name}の推移
             </ThemedText>
             <ThemedText style={styles.chartSubtitle}>過去6ヶ月</ThemedText>

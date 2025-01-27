@@ -5,15 +5,27 @@ const exerciseService = new ExerciseService();
 
 export class ExerciseController {
   async getAllExercises(req: Request, res: Response) {
-    console.log('1-------');
-    console.log('getAllExercises');
     try {
       const exercises = await exerciseService.getAllExercises();
-      console.log('2-------');
-      console.log(exercises);
-      res.json(exercises);
+      return res.status(200).json(exercises);
     } catch (error) {
-      res.status(500).json({ message: 'Error fetching exercises', error });
+      console.error('Error getting exercises:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  async getExercisesWithRecords(req: Request, res: Response) {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const exercises = await exerciseService.getExercisesWithRecords(userId);
+      return res.status(200).json(exercises);
+    } catch (error) {
+      console.error('Error getting exercises with records:', error);
+      return res.status(500).json({ message: 'Internal server error' });
     }
   }
 

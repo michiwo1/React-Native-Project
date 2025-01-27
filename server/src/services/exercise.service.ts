@@ -11,6 +11,33 @@ export class ExerciseService {
     });
   }
 
+  async getExercisesWithRecords(userId: string) {
+    return await prisma.exercise.findMany({
+      include: {
+        personal_records: {
+          where: {
+            user_id: userId
+          },
+          select: {
+            weight: true,
+            reps: true,
+            recorded_at: true
+          },
+          orderBy: {
+            recorded_at: 'desc'
+          }
+        }
+      },
+      where: {
+        personal_records: {
+          some: {
+            user_id: userId
+          }
+        }
+      }
+    });
+  }
+
   async getExercisesByCategory(categoryId: string) {
     return prisma.exercise.findMany({
       where: {
@@ -62,15 +89,15 @@ export class ExerciseService {
 
       // 指定された種目のis_last_selectedをtrueに設定
       return tx.exercise.update({
-        where: {
-          id: exerciseId,
-        },
-        data: {
-          is_last_selected: true,
-        },
-        include: {
-          category: true,
-        },
+      where: {
+        id: exerciseId,
+      },
+      data: {
+        is_last_selected: true,
+      },
+      include: {
+        category: true,
+      },
       });
     });
   }
