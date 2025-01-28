@@ -413,13 +413,13 @@ export default function WorkoutLogScreen() {
     },
     heading1: {
       fontSize: 24,
-      fontWeight: '700',
+      fontWeight: '700' as const,
       marginVertical: 12,
       color: '#0F172A',
     },
     heading2: {
       fontSize: 20,
-      fontWeight: '600',
+      fontWeight: '600' as const,
       marginVertical: 10,
       color: '#0F172A',
     },
@@ -436,10 +436,10 @@ export default function WorkoutLogScreen() {
       marginLeft: 20,
     },
     strong: {
-      fontWeight: '700',
+      fontWeight: '700' as const,
     },
     em: {
-      fontStyle: 'italic',
+      fontStyle: 'italic' as const,
     },
     link: {
       color: '#2563EB',
@@ -510,77 +510,77 @@ export default function WorkoutLogScreen() {
         </View>
       </View>
 
-      {isAiAdviceVisible && (
-        <View style={styles.aiAdviceCard}>
-          <TouchableOpacity 
-            style={styles.aiAdviceHeader}
-            onPress={toggleAiAdvice}
-            activeOpacity={0.7}
-          >
-            <View style={styles.aiAdviceTitleContainer}>
-              <ThemedText style={styles.aiAdviceTitle}>AIアドバイス</ThemedText>
-              <ThemedText style={styles.aiAdviceArrow}>
-                {isAiAdviceExpanded ? '▼' : '▶'}
-              </ThemedText>
-            </View>
-            <TouchableOpacity 
-              onPress={() => {
-                setIsAiAdviceVisible(false);
-                setAiQuestion('');
-                setAiResponse('');
-              }}
-            >
-              <ThemedText style={styles.aiAdviceCloseButton}>✕</ThemedText>
-            </TouchableOpacity>
-          </TouchableOpacity>
-
-          {isAiAdviceExpanded && (
-            <View style={styles.aiAdviceContent}>
-              <View style={styles.aiInputContainer}>
-                <TextInput
-                  style={styles.aiInput}
-                  placeholder="質問を入力してください"
-                  value={aiQuestion}
-                  onChangeText={setAiQuestion}
-                  multiline
-                  placeholderTextColor="#94A3B8"
-                />
-                <TouchableOpacity 
-                  style={[
-                    styles.aiSendButton,
-                    (isLoading || !aiQuestion.trim()) && styles.aiSendButtonDisabled
-                  ]}
-                  onPress={handleAskAi}
-                  disabled={isLoading || !aiQuestion.trim()}
-                >
-                  <ThemedText style={styles.aiSendButtonText}>
-                    {isLoading ? '送信中...' : '送信'}
+      <View style={styles.mainContent}>
+        <ScrollView style={styles.content}>
+          {isAiAdviceVisible && (
+            <View style={styles.aiAdviceCard}>
+              <TouchableOpacity 
+                style={styles.aiAdviceHeader}
+                onPress={toggleAiAdvice}
+                activeOpacity={0.7}
+              >
+                <View style={styles.aiAdviceTitleContainer}>
+                  <ThemedText style={styles.aiAdviceTitle}>AIアドバイス</ThemedText>
+                  <ThemedText style={styles.aiAdviceArrow}>
+                    {isAiAdviceExpanded ? '▼' : '▶'}
                   </ThemedText>
-                </TouchableOpacity>
-              </View>
-
-              {aiResponse && (
-                <View style={styles.aiResponseWrapper}>
-                  <ScrollView style={styles.aiResponseContainer}>
-                    <Markdown style={markdownStyles}>
-                      {aiResponse}
-                    </Markdown>
-                  </ScrollView>
                 </View>
-              )}
+                <TouchableOpacity 
+                  onPress={() => {
+                    setIsAiAdviceVisible(false);
+                    setAiQuestion('');
+                    setAiResponse('');
+                  }}
+                >
+                  <ThemedText style={styles.aiAdviceCloseButton}>✕</ThemedText>
+                </TouchableOpacity>
+              </TouchableOpacity>
 
-              {!aiResponse && (
-                <ThemedText style={styles.aiHintText}>
-                  トレーニングについて、AIに質問してください。
-                </ThemedText>
+              {isAiAdviceExpanded && (
+                <View style={styles.aiAdviceContent}>
+                  <View style={styles.aiInputContainer}>
+                    <TextInput
+                      style={styles.aiInput}
+                      placeholder="質問を入力してください"
+                      value={aiQuestion}
+                      onChangeText={setAiQuestion}
+                      multiline
+                      placeholderTextColor="#94A3B8"
+                    />
+                    <TouchableOpacity 
+                      style={[
+                        styles.aiSendButton,
+                        (isLoading || !aiQuestion.trim()) && styles.aiSendButtonDisabled
+                      ]}
+                      onPress={handleAskAi}
+                      disabled={isLoading || !aiQuestion.trim()}
+                    >
+                      <ThemedText style={styles.aiSendButtonText}>
+                        {isLoading ? '送信中...' : '送信'}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  </View>
+
+                  {aiResponse && (
+                    <View style={styles.aiResponseWrapper}>
+                      <ScrollView style={styles.aiResponseContainer}>
+                        <Markdown style={markdownStyles}>
+                          {aiResponse}
+                        </Markdown>
+                      </ScrollView>
+                    </View>
+                  )}
+
+                  {!aiResponse && (
+                    <ThemedText style={styles.aiHintText}>
+                      トレーニングについて、AIに質問してください。
+                    </ThemedText>
+                  )}
+                </View>
               )}
             </View>
           )}
-        </View>
-      )}
 
-      <View style={styles.mainContent}>
-        <ScrollView style={styles.content}>
           {workoutExercises.map((exercise, exerciseIndex) => (
             <View key={exercise.id} style={styles.exerciseCard}>
               <View style={styles.exerciseHeader}>
@@ -1188,7 +1188,7 @@ const styles = StyleSheet.create({
   },
   aiAdviceCard: {
     backgroundColor: '#FFFFFF',
-    margin: 16,
+    marginBottom: 16,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -1246,7 +1246,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   aiResponseContainer: {
-    maxHeight: 200,
+    width: '100%',
   },
   aiResponseText: {
     fontSize: 16,

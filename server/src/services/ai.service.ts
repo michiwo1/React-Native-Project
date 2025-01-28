@@ -1,5 +1,19 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+interface CurrentExercise {
+  name: string;
+  sets: {
+    weight: number;
+    reps: number;
+    is_completed: boolean;
+  }[];
+  personalRecord: {
+    weight: number;
+    reps: number;
+    recorded_at: Date;
+  } | null;
+}
+
 export class AIService {
   private genAI: GoogleGenerativeAI;
 
@@ -93,37 +107,65 @@ export class AIService {
 
   async generateWorkoutAdvice(question: string, userProfile: {
     workoutSessionId?: string;
-    age?: number;
-    height?: number;
-    weight?: number;
-    activityLevel?: string;
     goal?: string;
+    currentExercises?: CurrentExercise[];
   }): Promise<string> {
     try {
       console.log('Generating workout advice for question:', question);
       const model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
 
       const prompt = `
-あなたはパーソナルトレーナーです。以下のユーザープロフィールと質問に基づいて、具体的なトレーニングアドバイスを提供してください。
+あなたは経験豊富なストレングスコーチです。ユーザーの前回の記録（PR）を基に、プログレッシブオーバーロードの原則に従って最適なトレーニング負荷を提案してください。
 
 ユーザープロフィール:
-- 年齢: ${userProfile?.age || '未設定'}歳
-- 身長: ${userProfile?.height || '未設定'}cm
-- 体重: ${userProfile?.weight || '未設定'}kg
-- 活動レベル: ${userProfile?.activityLevel || '未設定'}
 - 目標: ${userProfile?.goal || '未設定'}
 ${userProfile.workoutSessionId ? '- 現在トレーニング中' : '- トレーニング前'}
 
+${userProfile.currentExercises && userProfile.currentExercises.length > 0 ? `
+現在のエクササイズ状況:
+${userProfile.currentExercises.map(exercise => `
+■ ${exercise.name}
+  - 本日の予定セット: ${exercise.sets.map(set => `${set.weight}kg × ${set.reps}回`).join(', ')}
+  - 前回のPR: ${exercise.personalRecord ? `${exercise.personalRecord.weight}kg × ${exercise.personalRecord.reps}回` : 'なし'}
+  
+  【負荷提案】
+  1. 前回のPRからの適切な重量増加量
+  2. 推奨セット数とレップ数の詳細
+  3. プログレッシブオーバーロードの具体的な進め方
+`).join('\n')}
+` : ''}
+
 回答は以下の形式で日本語で提供してください：
 
-1. 質問に対する直接的な回答
-2. フォームやテクニックに関するアドバイス
-3. 怪我の予防と安全性に関する注意点
-4. パフォーマンス向上のためのヒント
-5. 次のステップに向けた具体的な提案
+1. 各エクササイズの具体的なセット構成の提案
+   - ウォームアップセットの重量とレップ数
+   - ワーキングセットの重量とレップ数
+   - 前回のPRと比較した負荷の根拠説明
+
+2. フォームと実施テクニック
+   - 重量増加に伴う特に注意すべきフォームのポイント
+   - 負荷強度に応じたテンポとコントロールの指示
+
+3. 安全性とリスク管理
+   - ウォームアップの重要性
+   - フォームの崩れを防ぐためのチェックポイント
+   - 疲労管理と回復の考慮事項
+
+4. プログレッション戦略
+   - 短期的な重量増加の目標設定
+   - 長期的なプログレッションプラン
+   - デロード（負荷軽減期間）の提案
+
+5. 次回のトレーニングに向けた具体的な準備
+   - 回復に必要な期間
+   - 次回の目標重量の設定
+   - モチベーション維持のためのアドバイス
 
 ユーザーの質問: ${question}`;
 
+      console.log('1----------');
+      console.log(prompt);
+      
       console.log('Sending prompt to Gemini API');
       const result = await model.generateContent(prompt);
       console.log('Received response from Gemini API');

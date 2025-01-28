@@ -1,14 +1,20 @@
 import { Request, Response } from 'express';
 import { AIService } from '../services/ai.service';
 import { UserService } from '../services/user.service';
+import { WorkoutService } from '../services/workout.service';
+import { ExerciseService } from '../services/exercise.service';
 
 export class AIController {
   private aiService: AIService;
   private userService: UserService;
+  private workoutService: WorkoutService;
+  private exerciseService: ExerciseService;
 
   constructor() {
     this.aiService = new AIService();
     this.userService = new UserService();
+    this.workoutService = new WorkoutService();
+    this.exerciseService = new ExerciseService();
   }
 
   public getNutritionAdvice = async (req: Request, res: Response): Promise<Response> => {
@@ -84,14 +90,27 @@ export class AIController {
 
       // ユーザープロフィールを取得
       const userProfile = await this.userService.getUserProfile(userId);
+
+      // 進行中のワークアウトセッションを取得
+      const ongoingSession = await this.workoutService.getOngoingWorkoutSession(userId);
+      
+      // エクササイズのパーソナルレコードを取得
+      const exercisesWithRecords = await this.exerciseService.getExercisesWithRecords(userId);
+
+      // 現在のセッションのエクササイズに関連するパーソナルレコードをマッピング
+      const currentExercises = ongoingSession?.exercises.map(exercise => {
+        const exerciseWithRecord = exercisesWithRecords.find(e => e.id === exercise.exercise_id);
+        return {
+          name: exercise.exercise.name,
+          sets: exercise.sets,
+          personalRecord: exerciseWithRecord?.personal_records[0] || null
+        };
+      }) || [];
       
       const response = await this.aiService.generateWorkoutAdvice(question, {
         workoutSessionId,
-        weight: userProfile.weight,
-        height: userProfile.height || undefined,
-        age: userProfile.age || undefined,
         goal: userProfile.goal_type,
-        activityLevel: 'moderate'
+        currentExercises
       });
       
       console.log('Successfully generated workout advice');
