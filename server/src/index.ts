@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.routes'
 import planRoutes from './routes/plan.routes'
 import measurementRoutes from './routes/measurement.routes'
 import mealRoutes from './routes/meal.routes'
+import aiRoutes from './routes/ai.routes'
 
 dotenv.config()
 
@@ -60,6 +61,9 @@ app.use('/api/measurement', authenticate, measurementRoutes);
 
 // Meal routes (protected)
 app.use('/api/meal', authenticate, mealRoutes);
+
+// AI routes (protected)
+app.use('/api/ai', authenticate, aiRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

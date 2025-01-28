@@ -3,47 +3,48 @@ import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Activi
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { router } from 'expo-router';
+import { useAuth } from '@/hooks/useAuth';
+import { API_URL } from '@/constants/api';
 
 export default function AiAdviceScreen() {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [advice, setAdvice] = useState('');
+  const [error, setError] = useState('');
+  const { token } = useAuth();
 
   const handleSubmit = async () => {
-    if (!query.trim()) return;
+    if (!query.trim() || !token) return;
     
     setLoading(true);
-    // ここにAI APIの呼び出しを実装
-    // 仮のレスポンス
-    setTimeout(() => {
-      const demoAdvice = `以下の食事をお勧めします：
+    setError('');
+    
+    try {
+      const response = await fetch(`${API_URL}/api/ai/nutrition-advice`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ query }),
+      });
 
-1. 朝食 (600kcal)
-- 全粒粉トースト2枚
-- ゆで卵2個
-- グリーンサラダ
-- 無糖ヨーグルト
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || 'アドバイスの取得に失敗しました');
+      }
 
-2. 昼食 (700kcal)
-- 鶏胸肉のグリル120g
-- 玄米1膳
-- 季節の温野菜
-- みそ汁
-
-3. 夕食 (600kcal)
-- 白身魚の蒸し焼き
-- 雑穀ご飯
-- 豆腐サラダ
-- きのこスープ
-
-特記事項：
-- タンパク質が豊富な食材を各食事に取り入れています
-- 食物繊維の摂取を意識しています
-- 良質な炭水化物を選んでいます`;
-      
-      setAdvice(demoAdvice);
+      const data = await response.json();
+      if (!data.advice) {
+        throw new Error('アドバイスデータが空でした');
+      }
+      setAdvice(data.advice);
+    } catch (error) {
+      console.error('Error getting AI advice:', error);
+      setError(error instanceof Error ? error.message : 'アドバイスの取得中にエラーが発生しました。もう一度お試しください。');
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -81,6 +82,12 @@ export default function AiAdviceScreen() {
             )}
           </TouchableOpacity>
         </View>
+
+        {error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : null}
 
         {advice ? (
           <View style={styles.adviceSection}>
@@ -163,5 +170,15 @@ const styles = StyleSheet.create({
   adviceText: {
     fontSize: 16,
     lineHeight: 24,
+  },
+  errorContainer: {
+    backgroundColor: '#FFE5E5',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  errorText: {
+    color: '#D00',
+    fontSize: 14,
   },
 }); 

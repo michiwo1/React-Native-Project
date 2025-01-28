@@ -1,0 +1,49 @@
+import { Request, Response } from 'express';
+import { AIService } from '../services/ai.service';
+
+export class AIController {
+  private aiService: AIService;
+
+  constructor() {
+    this.aiService = new AIService();
+  }
+
+  getNutritionAdvice = async (req: Request, res: Response) => {
+    try {
+      console.log('Received nutrition advice request');
+      
+      const userId = req.user?.userId;
+      if (!userId) {
+        console.error('Unauthorized request: No userId found');
+        return res.status(401).json({ message: '認証が必要です' });
+      }
+
+      const { query } = req.body;
+      if (!query || typeof query !== 'string') {
+        console.error('Invalid request: Missing or invalid query', { query });
+        return res.status(400).json({ message: '質問が必要です' });
+      }
+
+      console.log('Processing request for userId:', userId);
+      const advice = await this.aiService.generateNutritionAdvice(query);
+      
+      console.log('Successfully generated advice');
+      return res.status(200).json({ advice });
+    } catch (error) {
+      console.error('Detailed error in getNutritionAdvice:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+
+      if (error instanceof Error) {
+        return res.status(500).json({ 
+          message: 'サーバーエラーが発生しました',
+          error: error.message,
+          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+      }
+      return res.status(500).json({ message: 'サーバーエラーが発生しました' });
+    }
+  };
+} 
