@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Modal, Pressable, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Modal, Pressable, Alert, LayoutAnimation } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications';
 import { API_URL } from '@/constants/api';
 import { useAuth } from '@/hooks/useAuth';
 import { useFocusEffect } from '@react-navigation/native';
+import Markdown from 'react-native-markdown-display';
 
 // Configure notifications
 Notifications.setNotificationHandler({
@@ -68,6 +69,7 @@ export default function WorkoutLogScreen() {
   const [aiQuestion, setAiQuestion] = useState('');
   const [aiResponse, setAiResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isAiAdviceExpanded, setIsAiAdviceExpanded] = useState(false);
 
   useEffect(() => {
     setupNotifications();
@@ -398,6 +400,66 @@ export default function WorkoutLogScreen() {
     }
   };
 
+  const toggleAiAdvice = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsAiAdviceExpanded(!isAiAdviceExpanded);
+  };
+
+  const markdownStyles = {
+    body: {
+      fontSize: 16,
+      lineHeight: 24,
+      color: '#64748B',
+    },
+    heading1: {
+      fontSize: 24,
+      fontWeight: '700',
+      marginVertical: 12,
+      color: '#0F172A',
+    },
+    heading2: {
+      fontSize: 20,
+      fontWeight: '600',
+      marginVertical: 10,
+      color: '#0F172A',
+    },
+    paragraph: {
+      marginVertical: 8,
+    },
+    listItem: {
+      marginVertical: 4,
+    },
+    bullet_list: {
+      marginLeft: 20,
+    },
+    ordered_list: {
+      marginLeft: 20,
+    },
+    strong: {
+      fontWeight: '700',
+    },
+    em: {
+      fontStyle: 'italic',
+    },
+    link: {
+      color: '#2563EB',
+    },
+    code_inline: {
+      fontFamily: 'monospace',
+      backgroundColor: '#F1F5F9',
+      paddingHorizontal: 4,
+      paddingVertical: 2,
+      borderRadius: 4,
+    },
+    code_block: {
+      fontFamily: 'monospace',
+      backgroundColor: '#F1F5F9',
+      padding: 12,
+      borderRadius: 8,
+      marginVertical: 8,
+    },
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -450,8 +512,17 @@ export default function WorkoutLogScreen() {
 
       {isAiAdviceVisible && (
         <View style={styles.aiAdviceCard}>
-          <View style={styles.aiAdviceHeader}>
-            <ThemedText style={styles.aiAdviceTitle}>AIアドバイス</ThemedText>
+          <TouchableOpacity 
+            style={styles.aiAdviceHeader}
+            onPress={toggleAiAdvice}
+            activeOpacity={0.7}
+          >
+            <View style={styles.aiAdviceTitleContainer}>
+              <ThemedText style={styles.aiAdviceTitle}>AIアドバイス</ThemedText>
+              <ThemedText style={styles.aiAdviceArrow}>
+                {isAiAdviceExpanded ? '▼' : '▶'}
+              </ThemedText>
+            </View>
             <TouchableOpacity 
               onPress={() => {
                 setIsAiAdviceVisible(false);
@@ -461,48 +532,50 @@ export default function WorkoutLogScreen() {
             >
               <ThemedText style={styles.aiAdviceCloseButton}>✕</ThemedText>
             </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.aiAdviceContent}>
-            <View style={styles.aiInputContainer}>
-              <TextInput
-                style={styles.aiInput}
-                placeholder="質問を入力してください"
-                value={aiQuestion}
-                onChangeText={setAiQuestion}
-                multiline
-                placeholderTextColor="#94A3B8"
-              />
-              <TouchableOpacity 
-                style={[
-                  styles.aiSendButton,
-                  (isLoading || !aiQuestion.trim()) && styles.aiSendButtonDisabled
-                ]}
-                onPress={handleAskAi}
-                disabled={isLoading || !aiQuestion.trim()}
-              >
-                <ThemedText style={styles.aiSendButtonText}>
-                  {isLoading ? '送信中...' : '送信'}
-                </ThemedText>
-              </TouchableOpacity>
-            </View>
-
-            {aiResponse && (
-              <View style={styles.aiResponseWrapper}>
-                <ScrollView style={styles.aiResponseContainer}>
-                  <ThemedText style={styles.aiAdviceText}>
-                    {aiResponse}
+          {isAiAdviceExpanded && (
+            <View style={styles.aiAdviceContent}>
+              <View style={styles.aiInputContainer}>
+                <TextInput
+                  style={styles.aiInput}
+                  placeholder="質問を入力してください"
+                  value={aiQuestion}
+                  onChangeText={setAiQuestion}
+                  multiline
+                  placeholderTextColor="#94A3B8"
+                />
+                <TouchableOpacity 
+                  style={[
+                    styles.aiSendButton,
+                    (isLoading || !aiQuestion.trim()) && styles.aiSendButtonDisabled
+                  ]}
+                  onPress={handleAskAi}
+                  disabled={isLoading || !aiQuestion.trim()}
+                >
+                  <ThemedText style={styles.aiSendButtonText}>
+                    {isLoading ? '送信中...' : '送信'}
                   </ThemedText>
-                </ScrollView>
+                </TouchableOpacity>
               </View>
-            )}
 
-            {!aiResponse && (
-              <ThemedText style={styles.aiAdviceText}>
-                トレーニングについて、AIに質問してください。
-              </ThemedText>
-            )}
-          </View>
+              {aiResponse && (
+                <View style={styles.aiResponseWrapper}>
+                  <ScrollView style={styles.aiResponseContainer}>
+                    <Markdown style={markdownStyles}>
+                      {aiResponse}
+                    </Markdown>
+                  </ScrollView>
+                </View>
+              )}
+
+              {!aiResponse && (
+                <ThemedText style={styles.aiHintText}>
+                  トレーニングについて、AIに質問してください。
+                </ThemedText>
+              )}
+            </View>
+          )}
         </View>
       )}
 
@@ -1119,6 +1192,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    overflow: 'hidden',
   },
   aiAdviceHeader: {
     padding: 16,
@@ -1128,10 +1202,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  aiAdviceTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   aiAdviceTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: '#0F172A',
+  },
+  aiAdviceArrow: {
+    fontSize: 14,
+    color: '#64748B',
   },
   aiAdviceCloseButton: {
     fontSize: 20,
@@ -1165,10 +1248,16 @@ const styles = StyleSheet.create({
   aiResponseContainer: {
     maxHeight: 200,
   },
-  aiAdviceText: {
+  aiResponseText: {
     fontSize: 16,
     color: '#64748B',
     lineHeight: 24,
+  },
+  aiHintText: {
+    fontSize: 16,
+    color: '#64748B',
+    lineHeight: 24,
+    textAlign: 'center',
   },
   aiSendButton: {
     backgroundColor: '#2563EB',
