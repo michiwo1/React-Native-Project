@@ -234,13 +234,13 @@ export default function ManualInputScreen() {
         <Text style={styles.headerTitle}>栄養成分を入力</Text>
       </View>
 
-      <TouchableOpacity style={styles.imagePickerButton} onPress={showImageSourceOptions}>
-        <Ionicons name="camera" size={24} color="#fff" />
-        <Text style={styles.imagePickerButtonText}>写真で自動入力</Text>
-      </TouchableOpacity>
-
       <ScrollView style={styles.scrollView}>
         <View style={styles.card}>
+          <TouchableOpacity style={styles.imagePickerButton} onPress={showImageSourceOptions}>
+            <Ionicons name="camera" size={24} color="#fff" />
+            <Text style={styles.imagePickerButtonText}>写真で自動入力</Text>
+          </TouchableOpacity>
+
           <Text style={styles.sectionTitle}>食事の種類</Text>
           <View style={styles.mealTypeContainer}>
             {mealTypes.map((type) => (
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
@@ -398,37 +398,40 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
     marginRight: 8,
+    borderRadius: 8,
+    backgroundColor: '#F8F8FA',
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#333',
     flex: 1,
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontWeight: '700',
+    marginBottom: 16,
     color: '#000',
-    marginTop: 16,
+    marginTop: 0,
   },
   mealTypeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 20,
+    gap: 8,
   },
   mealTypeButton: {
     flex: 1,
-    marginHorizontal: 4,
-    paddingVertical: 12,
+    marginHorizontal: 0,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 14,
+    borderWidth: 1.5,
     borderColor: '#E5E5EA',
     backgroundColor: '#F8F8FA',
     alignItems: 'center',
@@ -440,13 +443,13 @@ const styles = StyleSheet.create({
   mealTypeButtonText: {
     fontSize: 15,
     color: '#333',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   mealTypeButtonTextSelected: {
     color: '#fff',
   },
   nutrientInputContainer: {
-    gap: 16,
+    gap: 20,
   },
   nutrientInput: {
     flexDirection: 'row',
@@ -457,14 +460,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     width: 100,
+    fontWeight: '500',
   },
   input: {
     flex: 1,
     backgroundColor: '#F8F8FA',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E5E5EA',
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 14,
+    padding: 14,
     fontSize: 16,
     color: '#000',
   },
@@ -472,15 +476,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     width: 40,
+    fontWeight: '500',
   },
   textArea: {
-    height: 100,
+    height: 120,
     textAlignVertical: 'top',
   },
   submitButton: {
     backgroundColor: Colors.light.tint,
-    padding: 16,
-    borderRadius: 12,
+    padding: 18,
+    borderRadius: 16,
     alignItems: 'center',
     marginTop: 32,
   },
@@ -490,24 +495,24 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   foodCategoryContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 16,
+    gap: 12,
+    marginBottom: 20,
   },
   foodCategoryButton: {
     width: '48%',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 14,
+    borderWidth: 1.5,
     borderColor: '#E5E5EA',
     backgroundColor: '#F8F8FA',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 0,
   },
   foodCategoryButtonSelected: {
     backgroundColor: Colors.light.tint,
@@ -516,7 +521,7 @@ const styles = StyleSheet.create({
   foodCategoryButtonText: {
     fontSize: 15,
     color: '#333',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   foodCategoryButtonTextSelected: {
     color: '#fff',
@@ -524,14 +529,16 @@ const styles = StyleSheet.create({
   imagePickerButton: {
     backgroundColor: Colors.light.tint,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 32,
   },
   imagePickerButtonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 }); 
