@@ -64,6 +64,10 @@ export default function WorkoutLogScreen() {
   const [isRestSettingModalVisible, setIsRestSettingModalVisible] = useState(false);
   const [tempMinutes, setTempMinutes] = useState(Math.floor(targetRestTime / 60));
   const [tempSeconds, setTempSeconds] = useState(targetRestTime % 60);
+  const [isAiAdviceVisible, setIsAiAdviceVisible] = useState(false);
+  const [aiQuestion, setAiQuestion] = useState('');
+  const [aiResponse, setAiResponse] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setupNotifications();
@@ -363,6 +367,37 @@ export default function WorkoutLogScreen() {
     await loadLatestWorkoutSession();
   };
 
+  const handleAskAi = async () => {
+    if (!aiQuestion.trim() || !token) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/ai/workout-advice`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: aiQuestion,
+          workoutSessionId: latestWorkoutSessionId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('AIアドバイスの取得に失敗しました');
+      }
+
+      const data = await response.json();
+      setAiResponse(data.response);
+    } catch (error) {
+      console.error('Error getting AI advice:', error);
+      Alert.alert('エラー', 'AIアドバイスの取得に失敗しました');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -412,6 +447,64 @@ export default function WorkoutLogScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {isAiAdviceVisible && (
+        <View style={styles.aiAdviceCard}>
+          <View style={styles.aiAdviceHeader}>
+            <ThemedText style={styles.aiAdviceTitle}>AIアドバイス</ThemedText>
+            <TouchableOpacity 
+              onPress={() => {
+                setIsAiAdviceVisible(false);
+                setAiQuestion('');
+                setAiResponse('');
+              }}
+            >
+              <ThemedText style={styles.aiAdviceCloseButton}>✕</ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.aiAdviceContent}>
+            <View style={styles.aiInputContainer}>
+              <TextInput
+                style={styles.aiInput}
+                placeholder="質問を入力してください"
+                value={aiQuestion}
+                onChangeText={setAiQuestion}
+                multiline
+                placeholderTextColor="#94A3B8"
+              />
+              <TouchableOpacity 
+                style={[
+                  styles.aiSendButton,
+                  (isLoading || !aiQuestion.trim()) && styles.aiSendButtonDisabled
+                ]}
+                onPress={handleAskAi}
+                disabled={isLoading || !aiQuestion.trim()}
+              >
+                <ThemedText style={styles.aiSendButtonText}>
+                  {isLoading ? '送信中...' : '送信'}
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+
+            {aiResponse && (
+              <View style={styles.aiResponseWrapper}>
+                <ScrollView style={styles.aiResponseContainer}>
+                  <ThemedText style={styles.aiAdviceText}>
+                    {aiResponse}
+                  </ThemedText>
+                </ScrollView>
+              </View>
+            )}
+
+            {!aiResponse && (
+              <ThemedText style={styles.aiAdviceText}>
+                トレーニングについて、AIに質問してください。
+              </ThemedText>
+            )}
+          </View>
+        </View>
+      )}
 
       <View style={styles.mainContent}>
         <ScrollView style={styles.content}>
@@ -519,7 +612,7 @@ export default function WorkoutLogScreen() {
 
             <TouchableOpacity 
               style={styles.aiAdviceButton}
-              onPress={() => router.push('/workout/ai-advice')}
+              onPress={() => setIsAiAdviceVisible(true)}
             >
               <ThemedText style={styles.aiAdviceText}>AIアドバイス</ThemedText>
             </TouchableOpacity>
@@ -619,51 +712,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#0F172A',
-  },
-  aiConsultSection: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  aiConsultContent: {
-    flex: 1,
-  },
-  aiConsultTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#2563EB',
-    marginBottom: 4,
-  },
-  aiConsultDescription: {
-    fontSize: 14,
-    color: '#64748B',
-    lineHeight: 20,
-  },
-  aiConsultIconContainer: {
-    marginLeft: 16,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#EFF6FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  aiConsultIcon: {
-    fontSize: 18,
-    color: '#2563EB',
-    fontWeight: '600',
   },
   mainContent: {
     flex: 1,
@@ -883,6 +931,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   addExerciseText: {
     fontSize: 16,
@@ -895,6 +945,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
   },
   aiAdviceText: {
     fontSize: 16,
@@ -1060,5 +1112,78 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#0F172A',
     textAlignVertical: 'top',
+  },
+  aiAdviceCard: {
+    backgroundColor: '#FFFFFF',
+    margin: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  aiAdviceHeader: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  aiAdviceTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  aiAdviceCloseButton: {
+    fontSize: 20,
+    color: '#64748B',
+    padding: 4,
+  },
+  aiAdviceContent: {
+    padding: 16,
+  },
+  aiInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  aiInput: {
+    flex: 1,
+    height: 44,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    padding: 12,
+    marginRight: 8,
+    fontSize: 14,
+    color: '#0F172A',
+  },
+  aiResponseWrapper: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+  },
+  aiResponseContainer: {
+    maxHeight: 200,
+  },
+  aiAdviceText: {
+    fontSize: 16,
+    color: '#64748B',
+    lineHeight: 24,
+  },
+  aiSendButton: {
+    backgroundColor: '#2563EB',
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 80,
+  },
+  aiSendButtonDisabled: {
+    backgroundColor: '#E2E8F0',
+  },
+  aiSendButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
 }); 
