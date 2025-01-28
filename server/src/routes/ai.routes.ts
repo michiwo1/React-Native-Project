@@ -11,4 +11,7 @@ router.use(authenticate);
 // AI nutrition advice endpoint
 router.post('/nutrition-advice', aiController.getNutritionAdvice);
 
+// AI workout advice endpoint
+router.post('/workout-advice', aiController.getWorkoutAdvice);
+
 export default router; 

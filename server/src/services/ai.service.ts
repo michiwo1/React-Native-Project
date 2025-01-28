@@ -90,4 +90,70 @@ export class AIService {
       throw new Error('AIアドバイスの生成中に予期せぬエラーが発生しました');
     }
   }
+
+  async generateWorkoutAdvice(question: string, userProfile: {
+    workoutSessionId?: string;
+    age?: number;
+    height?: number;
+    weight?: number;
+    activityLevel?: string;
+    goal?: string;
+  }): Promise<string> {
+    try {
+      console.log('Generating workout advice for question:', question);
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+      const prompt = `
+あなたはパーソナルトレーナーです。以下のユーザープロフィールと質問に基づいて、具体的なトレーニングアドバイスを提供してください。
+
+ユーザープロフィール:
+- 年齢: ${userProfile?.age || '未設定'}歳
+- 身長: ${userProfile?.height || '未設定'}cm
+- 体重: ${userProfile?.weight || '未設定'}kg
+- 活動レベル: ${userProfile?.activityLevel || '未設定'}
+- 目標: ${userProfile?.goal || '未設定'}
+${userProfile.workoutSessionId ? '- 現在トレーニング中' : '- トレーニング前'}
+
+回答は以下の形式で日本語で提供してください：
+
+1. 質問に対する直接的な回答
+2. フォームやテクニックに関するアドバイス
+3. 怪我の予防と安全性に関する注意点
+4. パフォーマンス向上のためのヒント
+5. 次のステップに向けた具体的な提案
+
+ユーザーの質問: ${question}`;
+
+      console.log('Sending prompt to Gemini API');
+      const result = await model.generateContent(prompt);
+      console.log('Received response from Gemini API');
+
+      if (!result || !result.response) {
+        console.error('Empty response from Gemini API');
+        throw new Error('AIからの応答が空でした');
+      }
+
+      const response = await result.response;
+      const text = response.text();
+
+      if (!text) {
+        console.error('Empty text in Gemini API response');
+        throw new Error('AIからの応答テキストが空でした');
+      }
+
+      console.log('Successfully generated advice with length:', text.length);
+      return text;
+    } catch (error) {
+      console.error('Detailed error in generateWorkoutAdvice:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
+      if (error instanceof Error) {
+        throw new Error(`AIアドバイスの生成中にエラーが発生しました: ${error.message}`);
+      }
+      throw new Error('AIアドバイスの生成中に予期せぬエラーが発生しました');
+    }
+  }
 } 
