@@ -370,7 +370,7 @@ export default function WorkoutLogScreen() {
           <ThemedText style={styles.backButton}>← Back</ThemedText>
         </TouchableOpacity>
         <ThemedText style={styles.headerTitle}>Workout Log</ThemedText>
-        <View style={styles.headerRight} />
+        <View style={{ width: 40 }} />
       </View>
 
       <View style={styles.timerSection}>
@@ -497,24 +497,33 @@ export default function WorkoutLogScreen() {
         </ScrollView>
 
         <View style={styles.addExerciseContainer}>
-          <TouchableOpacity
-            style={styles.addExerciseButton}
-            onPress={() => {
-              if (latestWorkoutSessionId) {
-                router.push({
-                  pathname: '/workout/exercises',
-                  params: { 
-                    workoutSessionId: latestWorkoutSessionId,
-                    onExercisesAdded: 'true'
-                  }
-                });
-              } else {
-                router.push('/workout/exercises');
-              }
-            }}
-          >
-            <ThemedText style={styles.addExerciseText}>+ Add Exercise</ThemedText>
-          </TouchableOpacity>
+          <View style={styles.buttonGroup}>
+            <TouchableOpacity
+              style={styles.addExerciseButton}
+              onPress={() => {
+                if (latestWorkoutSessionId) {
+                  router.push({
+                    pathname: '/workout/exercises',
+                    params: { 
+                      workoutSessionId: latestWorkoutSessionId,
+                      onExercisesAdded: 'true'
+                    }
+                  });
+                } else {
+                  router.push('/workout/exercises');
+                }
+              }}
+            >
+              <ThemedText style={styles.addExerciseText}>+ エクササイズを追加</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.aiAdviceButton}
+              onPress={() => router.push('/workout/ai-advice')}
+            >
+              <ThemedText style={styles.aiAdviceText}>AIアドバイス</ThemedText>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -611,8 +620,50 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#0F172A',
   },
-  headerRight: {
-    width: 40,
+  aiConsultSection: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  aiConsultContent: {
+    flex: 1,
+  },
+  aiConsultTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2563EB',
+    marginBottom: 4,
+  },
+  aiConsultDescription: {
+    fontSize: 14,
+    color: '#64748B',
+    lineHeight: 20,
+  },
+  aiConsultIconContainer: {
+    marginLeft: 16,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aiConsultIcon: {
+    fontSize: 18,
+    color: '#2563EB',
+    fontWeight: '600',
   },
   mainContent: {
     flex: 1,
@@ -822,13 +873,30 @@ const styles = StyleSheet.create({
     borderTopColor: '#E2E8F0',
     backgroundColor: '#FFFFFF',
   },
+  buttonGroup: {
+    flexDirection: 'row',
+    gap: 12,
+  },
   addExerciseButton: {
+    flex: 1,
     backgroundColor: '#F8FAFC',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
   },
   addExerciseText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#2563EB',
+  },
+  aiAdviceButton: {
+    flex: 1,
+    backgroundColor: '#EFF6FF',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  aiAdviceText: {
     fontSize: 16,
     fontWeight: '700',
     color: '#2563EB',
