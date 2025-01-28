@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
 import { AIService } from '../services/ai.service';
+import { UserService } from '../services/user.service';
 
 export class AIController {
   private aiService: AIService;
+  private userService: UserService;
 
   constructor() {
     this.aiService = new AIService();
+    this.userService = new UserService();
   }
 
   getNutritionAdvice = async (req: Request, res: Response) => {
@@ -25,7 +28,21 @@ export class AIController {
       }
 
       console.log('Processing request for userId:', userId);
-      const advice = await this.aiService.generateNutritionAdvice(query);
+
+      // ユーザープロフィールを取得
+      const userProfile = await this.userService.getUserProfile(userId);
+      
+      const advice = await this.aiService.generateNutritionAdvice(query, {
+        weight: userProfile.weight,
+        height: userProfile.height || undefined,
+        age: userProfile.age || undefined,
+        goal: userProfile.goal_type,
+        activityLevel: 'moderate',
+        calorieTarget: userProfile.calorie_target,
+        proteinTarget: userProfile.protein_target,
+        carbTarget: userProfile.carb_target,
+        fatTarget: userProfile.fat_target
+      });
       
       console.log('Successfully generated advice');
       return res.status(200).json({ advice });

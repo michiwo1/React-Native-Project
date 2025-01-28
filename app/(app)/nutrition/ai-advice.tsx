@@ -5,6 +5,7 @@ import { Colors } from '@/constants/Colors';
 import { router } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { API_URL } from '@/constants/api';
+import Markdown from 'react-native-markdown-display';
 
 export default function AiAdviceScreen() {
   const [query, setQuery] = useState('');
@@ -93,7 +94,9 @@ export default function AiAdviceScreen() {
           <View style={styles.adviceSection}>
             <Text style={styles.adviceTitle}>AIからのアドバイス</Text>
             <View style={styles.adviceCard}>
-              <Text style={styles.adviceText}>{advice}</Text>
+              <Markdown style={markdownStyles}>
+                {advice}
+              </Markdown>
             </View>
           </View>
         ) : null}
@@ -101,6 +104,44 @@ export default function AiAdviceScreen() {
     </SafeAreaView>
   );
 }
+
+const markdownStyles = {
+  body: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#333',
+  },
+  heading1: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    marginVertical: 12,
+    color: '#000',
+  },
+  heading2: {
+    fontSize: 20,
+    fontWeight: '600' as const,
+    marginVertical: 10,
+    color: '#000',
+  },
+  paragraph: {
+    marginVertical: 8,
+  },
+  listItem: {
+    marginVertical: 4,
+  },
+  bullet_list: {
+    marginLeft: 20,
+  },
+  ordered_list: {
+    marginLeft: 20,
+  },
+  strong: {
+    fontWeight: '700' as const,
+  },
+  em: {
+    fontStyle: 'italic' as const,
+  },
+};
 
 const styles = StyleSheet.create({
   container: {

@@ -15,6 +15,8 @@ interface UpdateUserData {
 
 interface UserProfileResponse {
   weight: number;
+  height: number | null;
+  age: number | null;
   goal_type: string;
   calorie_target: number;
   protein_target: number;
@@ -207,6 +209,8 @@ export class UserService {
         },
         select: {
           weight: true,
+          height: true,
+          age: true,
           goal_type_id: true,
           goal_type: {
             select: {
@@ -226,6 +230,8 @@ export class UserService {
 
       return {
         weight,
+        height: userProfile.height,
+        age: userProfile.age,
         goal_type: goalType,
         calorie_target: this.calculateCalorieTarget(weight, goalType),
         protein_target: this.calculateProteinTarget(weight, goalType),
