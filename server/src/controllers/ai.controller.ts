@@ -132,4 +132,43 @@ export class AIController {
       return res.status(500).json({ message: 'サーバーエラーが発生しました' });
     }
   };
+
+  analyzeMealImage = async (req: Request, res: Response) => {
+    console.log('1----------');
+    console.log('analyzeMealImage called');
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: '認証が必要です' });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: '画像ファイルが提供されていません' });
+      }
+
+      const imageBuffer = req.file.buffer;
+      const result = await this.aiService.analyzeMealImage(imageBuffer);
+
+      if (!result) {
+        return res.status(400).json({ message: '画像の解析に失敗しました' });
+      }
+
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error('画像解析中のエラー:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+
+      if (error instanceof Error) {
+        return res.status(500).json({ 
+          message: '画像の解析中にエラーが発生しました',
+          error: error.message,
+          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+      }
+      return res.status(500).json({ message: 'サーバーエラーが発生しました' });
+    }
+  };
 } 

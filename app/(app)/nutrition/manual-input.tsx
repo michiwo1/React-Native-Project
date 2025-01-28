@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { router } from 'expo-router';
@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { API_URL } from '@/constants/api';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function ManualInputScreen() {
   const { token } = useAuth();
@@ -112,14 +113,132 @@ export default function ManualInputScreen() {
     }
   };
 
+  const handleImagePicker = async (sourceType: 'camera' | 'library') => {
+    try {
+      let permissionResult;
+      
+      if (sourceType === 'camera') {
+        permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+        if (!permissionResult.granted) {
+          alert('カメラへのアクセス許可が必要です');
+          return;
+        }
+      } else {
+        permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+          alert('写真へのアクセス許可が必要です');
+          return;
+        }
+      }
+
+      const result = await (sourceType === 'camera' 
+        ? ImagePicker.launchCameraAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+          })
+        : ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+          }));
+
+      if (!result.canceled) {
+        const formData = new FormData();
+        const imageUri = result.assets[0].uri;
+        const filename = imageUri.split('/').pop();
+        
+        formData.append('image', {
+          uri: imageUri,
+          type: 'image/jpeg',
+          name: filename,
+        } as any);
+
+
+        // リクエストの詳細をログ出力
+        console.log('Request URL:', `${API_URL}/api/meal/analyze-image`);
+        console.log('Token:', token);
+        
+        try {
+          console.log('Sending request...');
+          const response = await fetch(`${API_URL}/api/ai/meal-analyze-image`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
+            body: formData,
+          });
+
+          console.log('Response status:', response.status);
+          console.log('Response headers:', response.headers);
+
+          const responseText = await response.text();
+          console.log('Raw response:', responseText);
+
+          if (!response.ok) {
+            console.error('Error response:', responseText);
+            throw new Error(`Failed to analyze image: ${response.status} ${responseText}`);
+          }
+
+
+          const data = JSON.parse(responseText);
+          console.log('Parsed response data:', data);
+          
+          setFoodName(data.foodName || '');
+          setCalories(data.nutrients?.calories?.toString() || '');
+          setProtein(data.nutrients?.protein?.toString() || '');
+          setCarbs(data.nutrients?.carbs?.toString() || '');
+          setFat(data.nutrients?.fat?.toString() || '');
+        } catch (error) {
+          console.error('Error analyzing image:', error);
+          alert('画像の解析に失敗しました。もう一度お試しください。');
+        }
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      alert('画像の解析に失敗しました。もう一度お試しください。');
+    }
+  };
+
+  const showImageSourceOptions = () => {
+    Alert.alert(
+      '画像を選択',
+      '画像の取得方法を選択してください',
+      [
+        {
+          text: 'カメラで撮影',
+          onPress: () => handleImagePicker('camera'),
+        },
+        {
+          text: '写真から選択',
+          onPress: () => handleImagePicker('library'),
+        },
+        {
+          text: 'キャンセル',
+          style: 'cancel',
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>栄養成分を手動入力</Text>
+        <Text style={styles.headerTitle}>栄養成分を入力</Text>
       </View>
+
+      <TouchableOpacity style={styles.imagePickerButton} onPress={showImageSourceOptions}>
+        <Ionicons name="camera" size={24} color="#fff" />
+        <Text style={styles.imagePickerButtonText}>写真で自動入力</Text>
+      </TouchableOpacity>
+
       <ScrollView style={styles.scrollView}>
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>食事の種類</Text>
@@ -401,5 +520,18 @@ const styles = StyleSheet.create({
   },
   foodCategoryButtonTextSelected: {
     color: '#fff',
+  },
+  imagePickerButton: {
+    backgroundColor: Colors.light.tint,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  imagePickerButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
   },
 }); 

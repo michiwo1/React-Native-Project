@@ -41,7 +41,7 @@ export class AIService {
   }): Promise<string> {
     try {
       console.log('Generating nutrition advice for query:', query);
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
       const prompt = `
 あなたは栄養アドバイザーです。以下のユーザープロフィールと質問に基づいて、具体的な食事プランとアドバイスを提供してください。
@@ -112,7 +112,7 @@ export class AIService {
   }): Promise<string> {
     try {
       console.log('Generating workout advice for question:', question);
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
       const prompt = `
 あなたは経験豊富なストレングスコーチです。ユーザーの前回の記録（PR）を基に、プログレッシブオーバーロードの原則に従って最適なトレーニング負荷を提案してください。
@@ -196,6 +196,100 @@ ${userProfile.currentExercises.map(exercise => `
         throw new Error(`AIアドバイスの生成中にエラーが発生しました: ${error.message}`);
       }
       throw new Error('AIアドバイスの生成中に予期せぬエラーが発生しました');
+    }
+  }
+
+  async analyzeMealImage(imageBuffer: Buffer) {
+    try {
+      if (!imageBuffer || imageBuffer.length === 0) {
+        throw new Error('画像データが空です');
+      }
+
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+
+      // MIMEタイプの判定
+      const imageSignature = imageBuffer.toString('hex', 0, 4);
+      let mimeType = 'image/jpeg'; // デフォルト
+      
+      if (imageSignature.startsWith('89504e47')) {
+        mimeType = 'image/png';
+      } else if (imageSignature.startsWith('ffd8')) {
+        mimeType = 'image/jpeg';
+      } else {
+        throw new Error('サポートされていない画像形式です。JPEGまたはPNG形式の画像を使用してください。');
+      }
+
+      const prompt = `
+この食事の写真を分析して、以下の情報を日本語で提供してください：
+1. 食品名
+2. おおよその栄養成分（以下の形式で）：
+   - カロリー（kcal）
+   - タンパク質（g）
+   - 炭水化物（g）
+   - 脂質（g）
+
+以下のJSON形式で返答してください：
+{
+  "foodName": "食品名",
+  "nutrients": {
+    "calories": 数値,
+    "protein": 数値,
+    "carbs": 数値,
+    "fat": 数値
+  }
+}
+`;
+
+      console.log('画像解析を開始します...');
+      
+      const imageParts = [{
+        inlineData: {
+          data: imageBuffer.toString('base64'),
+          mimeType: mimeType
+        }
+      }];
+
+      const result = await model.generateContent([prompt, ...imageParts]);
+      if (!result || !result.response) {
+        throw new Error('AIからの応答が空でした');
+      }
+
+      const response = await result.response;
+      const text = response.text();
+      
+      if (!text) {
+        throw new Error('AIからの応答テキストが空でした');
+      }
+
+      console.log('AI応答テキスト:', text);
+      
+      try {
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error('JSON形式のデータが見つかりませんでした');
+        }
+        
+        const jsonData = JSON.parse(jsonMatch[0]);
+        if (!jsonData.foodName || !jsonData.nutrients) {
+          throw new Error('必要なデータフィールドが不足しています');
+        }
+        
+        return jsonData;
+      } catch (error) {
+        console.error('AI応答の解析エラー:', error);
+        throw new Error('画像解析結果の処理中にエラーが発生しました');
+      }
+    } catch (error) {
+      console.error('画像解析中のエラー:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
+      if (error instanceof Error) {
+        throw new Error(`画像解析中にエラーが発生しました: ${error.message}`);
+      }
+      throw new Error('画像解析中に予期せぬエラーが発生しました');
     }
   }
 } 
