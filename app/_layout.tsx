@@ -13,8 +13,8 @@ import { useAuth } from '../hooks/useAuth';
 SplashScreen.preventAutoHideAsync();
 
 // 認証が必要なグループと不要なグループを定義
-const PROTECTED_GROUPS = ['(app)'];
-const AUTH_GROUPS = ['auth'];
+// const PROTECTED_GROUPS = ['(app)'];
+// const AUTH_GROUPS = ['auth'];
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -22,30 +22,34 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  const { token, isLoading, isAuthenticated } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
+  // const { token, isLoading, isAuthenticated } = useAuth();
+  // const segments = useSegments();
+  // const router = useRouter();
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+  // useEffect(() => {
+  //   if (loaded) {
+  //     SplashScreen.hideAsync();
+  //   }
+  // }, [loaded]);
 
-  useEffect(() => {
-    if (isLoading) return;
+  // useEffect(() => {
+  //   if (isLoading) return;
 
-    const inAuthGroup = segments[0] === 'auth';
-    const inProtectedGroup = PROTECTED_GROUPS.includes(segments[0]);
+  //   const inAuthGroup = segments[0] === 'auth';
+  //   const inProtectedGroup = PROTECTED_GROUPS.includes(segments[0]);
 
-    if (isAuthenticated && inAuthGroup) {
-      // ログイン済みユーザーが認証画面にアクセスした場合
-      router.replace('/(app)/(tabs)');
-    } else if (!isAuthenticated && inProtectedGroup) {
-      // 未認証ユーザーが保護されたルートにアクセスした場合
-      router.replace('/auth/sign-in');
-    }
-  }, [isAuthenticated, segments, isLoading]);
+  //   if (isAuthenticated && inAuthGroup) {
+  //     console.log('1----------');
+  //     console.log('ログイン済みユーザーが認証画面にアクセスした場合');
+  //     // ログイン済みユーザーが認証画面にアクセスした場合
+  //     router.replace('/(app)/(tabs)');
+  //   } else if (!isAuthenticated && inProtectedGroup) {
+  //     console.log('2----------');
+  //     console.log('未認証ユーザーが保護されたルートにアクセスした場合');
+  //     // 未認証ユーザーが保護されたルートにアクセスした場合
+  //     router.replace('/auth/sign-in');
+  //   }
+  // }, [isAuthenticated, segments, isLoading]);
 
   if (!loaded) {
     return null;
