@@ -13,6 +13,7 @@ import planRoutes from './routes/plan.routes'
 import measurementRoutes from './routes/measurement.routes'
 import mealRoutes from './routes/meal.routes'
 import aiRoutes from './routes/ai.routes'
+import { AppError } from './utils/appError'
 
 dotenv.config()
 
@@ -69,7 +70,20 @@ app.use('/api/ai', authenticate, aiRoutes);
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(`Error: ${err.message}`);
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+
+  // AppErrorの場合はステータスコードとメッセージを使用
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      status: 'error',
+      message: err.message
+    });
+  }
+
+  // その他のエラーの場合は500エラーを返す
+  return res.status(500).json({
+    status: 'error',
+    message: 'サーバーでエラーが発生しました'
+  });
 });
 
 // Initialize Prisma client and start server

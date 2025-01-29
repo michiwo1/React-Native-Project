@@ -15,10 +15,59 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const validateInputs = () => {
+    // エラーメッセージをリセット
+    setErrorMessage('');
+
+    // メールアドレスの形式チェック
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setErrorMessage('メールアドレスを入力してください');
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      setErrorMessage('有効なメールアドレスを入力してください');
+      return false;
+    }
+
+    // 表示名のチェック
+    if (!displayName) {
+      setErrorMessage('表示名を入力してください');
+      return false;
+    }
+    if (displayName.length < 2) {
+      setErrorMessage('表示名は2文字以上で入力してください');
+      return false;
+    }
+
+    // パスワードのチェック
+    if (!password) {
+      setErrorMessage('パスワードを入力してください');
+      return false;
+    }
+    if (password.length < 8) {
+      setErrorMessage('パスワードは8文字以上で入力してください');
+      return false;
+    }
+    if (!/(?=.*[A-Za-z])(?=.*\d)/.test(password)) {
+      setErrorMessage('パスワードは英字と数字を含める必要があります');
+      return false;
+    }
+
+    // パスワード確認のチェック
+    if (password !== confirmPassword) {
+      setErrorMessage('パスワードが一致しません');
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSignUp = async () => {
-    if (password !== confirmPassword) {
-      alert('パスワードが一致しません');
+    // 入力値のバリデーション
+    if (!validateInputs()) {
       return;
     }
 
@@ -35,37 +84,59 @@ export default function SignUpScreen() {
         }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        const textResponse = await response.text(); // レスポンスをテキストとして取得
+        
+        try {
+          data = JSON.parse(textResponse); // JSONとしてパース
+          console.log("Parsed data:", data);
 
-      if (!response.ok) {
-        throw new Error(data.error || 'サインアップに失敗しました');
+          if (!response.ok) {
+            if (data.message === 'Email already exists') {
+              setErrorMessage('このメールアドレスは既に登録されています');
+              return;
+            }
+            setErrorMessage(data.message || 'サインアップに失敗しました');
+            return;
+          }
+
+          // データの存在確認を追加
+          if (!data?.data?.token || !data?.data?.user) {
+            setErrorMessage('サーバーからの応答が不正です');
+            return;
+          }
+
+          // セッショントークンを保存
+          await AsyncStorage.setItem('userToken', data.data.token);
+
+          // ユーザー情報全体を文字列として保存
+          await AsyncStorage.setItem('userData', JSON.stringify(data.data.user));
+
+          // サインアップ成功後の処理
+          router.push("/onboarding/1");
+        } catch (parseError) {
+          console.error('Parse error:', parseError);
+          setErrorMessage('サーバーとの通信に失敗しました。しばらく時間をおいて再度お試しください。');
+          return;
+        }
+      } catch (error) {
+        console.error('Error reading response:', error);
+        setErrorMessage('サーバーとの通信に失敗しました。ネットワーク接続を確認してください。');
       }
-
-      // レスポンスデータをコンソールに出力（デバッグ用）
-      console.log('サインアップレスポンス:', data);
-
-      // セッショントークンを保存
-      if (data.data.token) {
-        await AsyncStorage.setItem('userToken', data.data.token);
-      }
-
-      // ユーザー情報全体を文字列として保存
-      await AsyncStorage.setItem('userData', JSON.stringify(data.data.user));
-
-      // 保存されたセッション情報をコンソールに表示（デバッグ用）
-      const savedToken = await AsyncStorage.getItem('userToken');
-      const savedUserData = await AsyncStorage.getItem('userData');
-
-      // サインアップ成功後の処理
-      router.push("/onboarding/1");
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'サインアップに失敗しました');
+      console.error('Signup error:', error);
+      setErrorMessage('サーバーとの通信に失敗しました。ネットワーク接続を確認してください。');
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>アカウント作成</Text>
+      
+      {errorMessage ? (
+        <Text style={styles.errorMessage}>{errorMessage}</Text>
+      ) : null}
       
       <TextInput
         style={styles.input}
@@ -155,5 +226,14 @@ const styles = StyleSheet.create({
   },
   link: {
     color: '#007AFF',
+  },
+  errorMessage: {
+    color: '#FF3B30',
+    fontSize: 14,
+    marginBottom: 15,
+    textAlign: 'center',
+    backgroundColor: '#FFE5E5',
+    padding: 10,
+    borderRadius: 8,
   },
 }); 
