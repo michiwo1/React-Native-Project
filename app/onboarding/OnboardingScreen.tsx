@@ -11,8 +11,61 @@ export function OnboardingScreen({ step }: { step: number }) {
   const [weight, setWeight] = useState('');
   const [age, setAge] = useState('');
   const [goal, setGoal] = useState('');
+  const [errors, setErrors] = useState({
+    height: '',
+    weight: '',
+    age: '',
+  });
+
+  const validateNumber = (value: string, min: number, max: number, field: string) => {
+    if (value === '') return '';
+    const num = Number(value);
+    if (isNaN(num)) return `数字を入力してください`;
+    if (num < min) return `${min}以上を入力してください`;
+    if (num > max) return `${max}以下を入力してください`;
+    return '';
+  };
+
+  const handleInputChange = (value: string, setter: (value: string) => void, field: string) => {
+    // 数字とバックスペースのみを許可
+    if (value !== '' && !/^\d+$/.test(value)) {
+      return;
+    }
+
+    setter(value);
+    
+    let error = '';
+    switch (field) {
+      case 'height':
+        error = validateNumber(value, 100, 250, '身長');
+        break;
+      case 'weight':
+        error = validateNumber(value, 30, 200, '体重');
+        break;
+      case 'age':
+        error = validateNumber(value, 13, 100, '年齢');
+        break;
+    }
+    
+    setErrors(prev => ({
+      ...prev,
+      [field]: error
+    }));
+  };
 
   const handleUpdateProfile = async () => {
+    // 全てのフィールドが入力されているか確認
+    if (!height || !weight || !age) {
+      alert('全ての項目を入力してください');
+      return;
+    }
+
+    // エラーがないか確認
+    if (errors.height || errors.weight || errors.age) {
+      alert('入力内容を確認してください');
+      return;
+    }
+
     try {
       console.log('Updating profile with:', {
         height: parseFloat(height),
@@ -65,9 +118,24 @@ export function OnboardingScreen({ step }: { step: number }) {
     {
       title: '基本情報',
       inputs: [
-        { placeholder: '身長 (cm)', value: height, onChangeText: setHeight },
-        { placeholder: '体重 (kg)', value: weight, onChangeText: setWeight },
-        { placeholder: '年齢', value: age, onChangeText: setAge },
+        { 
+          placeholder: '身長 (cm)', 
+          value: height, 
+          onChangeText: (value: string) => handleInputChange(value, setHeight, 'height'),
+          error: errors.height
+        },
+        { 
+          placeholder: '体重 (kg)', 
+          value: weight, 
+          onChangeText: (value: string) => handleInputChange(value, setWeight, 'weight'),
+          error: errors.weight
+        },
+        { 
+          placeholder: '年齢', 
+          value: age, 
+          onChangeText: (value: string) => handleInputChange(value, setAge, 'age'),
+          error: errors.age
+        },
       ],
       button: '次へ',
       onNext: handleUpdateProfile,
@@ -119,14 +187,18 @@ export function OnboardingScreen({ step }: { step: number }) {
       {step === 1 && (
         <View style={styles.inputContainer}>
           {currentScreen.inputs?.map((input, index) => (
-            <TextInput
-              key={index}
-              style={styles.input}
-              placeholder={input.placeholder}
-              value={input.value}
-              onChangeText={input.onChangeText}
-              keyboardType={index < 2 ? 'numeric' : 'default'}
-            />
+            <View key={index} style={styles.inputWrapper}>
+              <TextInput
+                style={[styles.input, input.error && styles.inputError]}
+                placeholder={input.placeholder}
+                value={input.value}
+                onChangeText={input.onChangeText}
+                keyboardType="numeric"
+              />
+              {input.error ? (
+                <Text style={styles.errorText}>{input.error}</Text>
+              ) : null}
+            </View>
           ))}
         </View>
       )}
@@ -181,12 +253,23 @@ const styles = StyleSheet.create({
     marginTop: 32,
     gap: 16,
   },
+  inputWrapper: {
+    marginBottom: 8,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#BDBDBD',
     borderRadius: 8,
     padding: 16,
     fontSize: 16,
+  },
+  inputError: {
+    borderColor: '#FF0000',
+  },
+  errorText: {
+    color: '#FF0000',
+    fontSize: 12,
+    marginTop: 4,
   },
   goalsContainer: {
     marginTop: 32,
