@@ -1,13 +1,74 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Link, router } from 'expo-router';
+import { API_URL } from '@/constants/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// セッション情報の型定義
+type UserSession = {
+  token: string;
+  user: {
+    id: string;
+    email: string;
+    displayName?: string;
+  };
+};
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSignIn = () => {
-    // TODO: Implement sign in logic
+  const saveUserSession = async (sessionData: UserSession) => {
+    try {
+      await Promise.all([
+        AsyncStorage.setItem('userToken', sessionData.token),
+        AsyncStorage.setItem('user', JSON.stringify(sessionData.user)),
+      ]);
+    } catch (error) {
+      console.error('Error saving session:', error);
+      throw new Error('セッション情報の保存に失敗しました');
+    }
+  };
+
+  const handleSignIn = async () => {
+    if (!email || !password) {
+      Alert.alert('エラー', 'メールアドレスとパスワードを入力してください');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'ログインに失敗しました');
+      }
+
+      // セッション情報を保存
+      await saveUserSession({
+        token: data.data.token,
+        user: data.data.user,
+      });
+
+      router.replace('/(app)/(tabs)');
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('エラー', error instanceof Error ? error.message : 'ログインに失敗しました');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -31,8 +92,12 @@ export default function SignInScreen() {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-        <Text style={styles.buttonText}>ログイン</Text>
+      <TouchableOpacity 
+        style={[styles.button, loading && styles.buttonDisabled]} 
+        onPress={handleSignIn}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>{loading ? 'ログイン中...' : 'ログイン'}</Text>
       </TouchableOpacity>
 
       <View style={styles.linkContainer}>
@@ -87,5 +152,8 @@ const styles = StyleSheet.create({
   },
   link: {
     color: '#007AFF',
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
   },
 }); 

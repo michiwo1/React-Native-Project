@@ -1,66 +1,59 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 
-interface AuthState {
-  token: string | null;
-  isLoading: boolean;
-}
+export type User = {
+  id: string;
+  email: string;
+  displayName?: string;
+};
 
-export function useAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
-    token: null,
-    isLoading: true,
-  });
+export const useAuth = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadToken();
+    loadUserSession();
   }, []);
 
-  const loadToken = async () => {
+  const loadUserSession = async () => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
-      setAuthState({
-        token,
-        isLoading: false,
-      });
+      const [storedToken, storedUser] = await Promise.all([
+        AsyncStorage.getItem('token'),
+        AsyncStorage.getItem('user'),
+      ]);
+
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      }
     } catch (error) {
-      console.error('Error loading token:', error);
-      setAuthState({
-        token: null,
-        isLoading: false,
-      });
+      console.error('Error loading session:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const signIn = async (token: string) => {
+  const logout = async () => {
     try {
-      await AsyncStorage.setItem('userToken', token);
-      setAuthState({
-        token,
-        isLoading: false,
-      });
+      await Promise.all([
+        AsyncStorage.removeItem('token'),
+        AsyncStorage.removeItem('user'),
+      ]);
+      setToken(null);
+      setUser(null);
+      router.replace('/auth/sign-in');
     } catch (error) {
-      console.error('Error saving token:', error);
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      await AsyncStorage.removeItem('userToken');
-      setAuthState({
-        token: null,
-        isLoading: false,
-      });
-    } catch (error) {
-      console.error('Error removing token:', error);
+      console.error('Error during logout:', error);
     }
   };
 
   return {
-    token: authState.token,
-    isLoading: authState.isLoading,
-    isAuthenticated: !!authState.token,
-    signIn,
-    signOut,
+    user,
+    token,
+    loading,
+    logout,
+    isAuthenticated: !!token,
   };
-} 
+}; 

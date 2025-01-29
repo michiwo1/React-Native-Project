@@ -471,7 +471,6 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <ThemedText style={styles.greeting}>こんにちは、ユーザーさん</ThemedText>
         
         <View style={styles.todayWorkout}>
           <TouchableOpacity style={styles.accordionHeader} onPress={toggleAccordion}>
