@@ -8,6 +8,32 @@ import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/hooks/useAuth';
 import { API_URL } from '@/constants/api';
+import { useEffect, useState } from 'react';
+
+type GoalType = {
+  id: string;
+  name: string;
+  created_at: Date;
+  updated_at: Date;
+};
+
+type UserProfile = {
+  id: string;
+  height: number | null;
+  weight: number | null;
+  age: number | null;
+  goal_type: GoalType | null;
+  training_level: string | null;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  calorie_target: number;
+  protein_target: number;
+  carb_target: number;
+  fat_target: number;
+};
 
 type SettingItem = {
   label: string;
@@ -26,6 +52,8 @@ export default function MyPageScreen() {
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
   const { token, signOut } = useAuth();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const badges = [
     { color: '#FFD700', icon: '🏆' }, // Gold
@@ -111,6 +139,32 @@ export default function MyPageScreen() {
     }
   ];
 
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/user/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch user profile');
+      }
+      const data = await response.json();
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      Alert.alert('エラー', 'プロフィールの取得に失敗しました');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchUserProfile();
+    }
+  }, [token]);
+
   return (
     <ScrollView 
       style={[styles.container, { paddingTop: insets.top }]}
@@ -122,7 +176,9 @@ export default function MyPageScreen() {
           <View style={styles.profileHeader}>
             <View style={styles.avatarContainer}>
               <View style={styles.avatar}>
-                <ThemedText style={styles.avatarText}>山</ThemedText>
+                <ThemedText style={styles.avatarText}>
+                  {profile?.user?.name ? profile.user.name.charAt(0) : '?'}
+                </ThemedText>
               </View>
               <TouchableOpacity style={styles.editButton}>
                 <ThemedText style={styles.editButtonText}>編集</ThemedText>
@@ -130,19 +186,21 @@ export default function MyPageScreen() {
             </View>
             
             <View style={styles.profileInfo}>
-              <ThemedText style={styles.userName}>山田太郎</ThemedText>
+              <ThemedText style={styles.userName}>{profile?.user?.name || 'ユーザー名未設定'}</ThemedText>
               <View style={styles.trainingBadge}>
                 <Ionicons name="time-outline" size={14} color="#666666" />
-                <ThemedText style={styles.trainingPeriod}>トレーニング歴: 6ヶ月</ThemedText>
+                <ThemedText style={styles.trainingPeriod}>
+                  トレーニング歴: {profile?.training_level || '未設定'}
+                </ThemedText>
               </View>
             </View>
           </View>
 
           <View style={styles.statsContainer}>
             {[
-              { label: '身長', value: '175cm' },
-              { label: '体重', value: '75.5kg' },
-              { label: '目標', value: '筋肥大' }
+              { label: '身長', value: profile?.height ? `${profile.height}cm` : '未設定' },
+              { label: '体重', value: profile?.weight ? `${profile.weight}kg` : '未設定' },
+              { label: '目標', value: profile?.goal_type?.name || '未設定' }
             ].map((stat, index) => (
               <View key={index} style={styles.statItem}>
                 <ThemedText style={styles.statLabel}>{stat.label}</ThemedText>

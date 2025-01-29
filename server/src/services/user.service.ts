@@ -14,14 +14,26 @@ interface UpdateUserData {
 }
 
 interface UserProfileResponse {
-  weight: number;
+  id: string;
+  weight: number | null;
   height: number | null;
   age: number | null;
-  goal_type: string;
+  goal_type: {
+    id: string;
+    name: string;
+    created_at: Date;
+    updated_at: Date;
+  } | null;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
   calorie_target: number;
   protein_target: number;
   carb_target: number;
   fat_target: number;
+  training_level: string | null;
 }
 
 interface ExerciseRecordResponse {
@@ -207,16 +219,15 @@ export class UserService {
         where: {
           user_id: userId,
         },
-        select: {
-          weight: true,
-          height: true,
-          age: true,
-          goal_type_id: true,
-          goal_type: {
+        include: {
+          user: {
             select: {
-              name: true,
+              id: true,
+              display_name: true,
+              email: true,
             },
           },
+          goal_type: true,
         },
       });
 
@@ -224,19 +235,25 @@ export class UserService {
         throw new Error('User profile not found');
       }
 
-      // 目標タイプに基づいて栄養目標を計算
-      const goalType = userProfile.goal_type?.name || 'maintain';
       const weight = userProfile.weight || 70; // デフォルト値として70kgを設定
+      const goalType = userProfile.goal_type?.name || 'maintain';
 
       return {
-        weight,
+        id: userProfile.id,
+        weight: userProfile.weight,
         height: userProfile.height,
         age: userProfile.age,
-        goal_type: goalType,
+        goal_type: userProfile.goal_type,
+        user: {
+          id: userProfile.user.id,
+          name: userProfile.user.display_name || '',
+          email: userProfile.user.email,
+        },
         calorie_target: this.calculateCalorieTarget(weight, goalType),
         protein_target: this.calculateProteinTarget(weight, goalType),
         carb_target: this.calculateCarbTarget(weight, goalType),
         fat_target: this.calculateFatTarget(weight, goalType),
+        training_level: userProfile.training_level,
       };
     } catch (error) {
       console.error('Error in getUserProfile:', error);
