@@ -15,25 +15,19 @@ interface UpdateUserData {
 
 interface UserProfileResponse {
   id: string;
-  weight: number | null;
+  display_name: string;
+  weight: number;
   height: number | null;
   age: number | null;
-  goal_type: {
-    id: string;
-    name: string;
-    created_at: Date;
-    updated_at: Date;
-  } | null;
-  user: {
-    id: string;
-    name: string;
-    email: string;
+  goal_type: string;
+  latest_weight?: {
+    value: number;
+    measured_at: string;
   };
   calorie_target: number;
   protein_target: number;
   carb_target: number;
   fat_target: number;
-  training_level: string | null;
 }
 
 interface ExerciseRecordResponse {
@@ -116,17 +110,21 @@ export class UserService {
     }
   }
 
-  public async updateProfile(userId: string, profileData: { height?: number; weight?: number; age?: number; goal?: string }) {
+  public async updateProfile(userId: string, profileData: { height?: number; weight?: number; age?: number; goal_type?: string }) {
     try {
       let goalTypeId: string | undefined;
       
-      if (profileData.goal) {
-        const goalMap: { [key: string]: string } = {
-          '筋肥大': 'goal_muscle_gain',
-          '減量': 'goal_weight_loss',
-          '維持': 'goal_maintenance'
-        };
-        goalTypeId = goalMap[profileData.goal];
+      if (profileData.goal_type) {
+        // まず、goal_typesテーブルから該当する目標タイプを検索
+        const goalType = await this.prisma.goalType.findFirst({
+          where: {
+            name: profileData.goal_type
+          }
+        });
+
+        if (goalType) {
+          goalTypeId = goalType.id;
+        }
       }
 
       const profile = await this.prisma.userProfile.upsert({
@@ -215,46 +213,76 @@ export class UserService {
 
   public async getUserProfile(userId: string): Promise<UserProfileResponse> {
     try {
-      const userProfile = await this.prisma.userProfile.findUnique({
-        where: {
-          user_id: userId,
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              display_name: true,
-              email: true,
+      const [userProfile, user, latestWeight] = await Promise.all([
+        this.prisma.userProfile.findUnique({
+          where: {
+            user_id: userId,
+          },
+          select: {
+            weight: true,
+            height: true,
+            age: true,
+            goal_type_id: true,
+            goal_type: {
+              select: {
+                name: true,
+              },
             },
           },
-          goal_type: true,
-        },
-      });
+        }),
+        this.prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            display_name: true,
+          },
+        }),
+        this.prisma.measurement.findFirst({
+          where: {
+            user_id: userId,
+            metric_type: {
+              name: 'weight'
+            }
+          },
+          orderBy: {
+            measured_at: 'desc'
+          },
+          select: {
+            value: true,
+            measured_at: true
+          }
+        })
+      ]);
 
-      if (!userProfile) {
+      if (!userProfile || !user) {
         throw new Error('User profile not found');
       }
 
-      const weight = userProfile.weight || 70; // デフォルト値として70kgを設定
+      // 目標タイプに基づいて栄養目標を計算
       const goalType = userProfile.goal_type?.name || 'maintain';
+      const weight = latestWeight?.value || userProfile.weight || 70; // 最新の測定値、プロフィールの体重、デフォルト値の順で使用
 
-      return {
-        id: userProfile.id,
-        weight: userProfile.weight,
+      const response: UserProfileResponse = {
+        id: user.id,
+        display_name: user.display_name || '',
+        weight: userProfile.weight || 0,
         height: userProfile.height,
         age: userProfile.age,
-        goal_type: userProfile.goal_type,
-        user: {
-          id: userProfile.user.id,
-          name: userProfile.user.display_name || '',
-          email: userProfile.user.email,
-        },
+        goal_type: goalType,
         calorie_target: this.calculateCalorieTarget(weight, goalType),
         protein_target: this.calculateProteinTarget(weight, goalType),
         carb_target: this.calculateCarbTarget(weight, goalType),
         fat_target: this.calculateFatTarget(weight, goalType),
-        training_level: userProfile.training_level,
       };
+
+      if (latestWeight) {
+        response.latest_weight = {
+          value: latestWeight.value,
+          measured_at: latestWeight.measured_at.toISOString(),
+        };
+      }
+
+      return response;
     } catch (error) {
       console.error('Error in getUserProfile:', error);
       throw error;
