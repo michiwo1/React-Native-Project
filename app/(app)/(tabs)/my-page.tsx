@@ -25,7 +25,7 @@ export default function MyPageScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
-  const { token } = useAuth();
+  const { token, signOut } = useAuth();
 
   const badges = [
     { color: '#FFD700', icon: '🏆' }, // Gold
@@ -61,7 +61,7 @@ export default function MyPageScreen() {
         { 
           label: 'ログアウト', 
           icon: 'log-out-outline', 
-          action: async () => {
+          action: () => {
             Alert.alert(
               'ログアウト',
               'ログアウトしますか？',
@@ -75,23 +75,23 @@ export default function MyPageScreen() {
                   style: 'destructive',
                   onPress: async () => {
                     try {
-                      // サーバーにログアウトリクエストを送信
-                      const response = await fetch(`${API_URL}/api/auth/logout`, {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          'Authorization': `Bearer ${token}`,
-                        },
-                        credentials: 'include'
-                      });
-
-                      if (!response.ok) {
-                        console.error('Logout failed:', await response.text());
-                        throw new Error('ログアウトに失敗しました');
-                      }
-
-                      // ローカルのトークンを削除
+                      // まずローカルのトークンを削除
                       await AsyncStorage.removeItem('userToken');
+                      await signOut();
+
+                      // サーバーにログアウトリクエストを送信（エラーが発生しても続行）
+                      try {
+                        await fetch(`${API_URL}/api/auth/logout`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`,
+                          },
+                          credentials: 'include'
+                        });
+                      } catch (serverError) {
+                        console.error('サーバーログアウトエラー:', serverError);
+                      }
                       
                       // ログインページに遷移
                       router.replace('/auth/sign-in');

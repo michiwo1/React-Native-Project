@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '../hooks/useAuth';
@@ -12,44 +13,37 @@ import { useAuth } from '../hooks/useAuth';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-// 認証が必要なグループと不要なグループを定義
-// const PROTECTED_GROUPS = ['(app)'];
-// const AUTH_GROUPS = ['auth'];
-
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  // const { token, isLoading, isAuthenticated } = useAuth();
-  // const segments = useSegments();
-  // const router = useRouter();
+  const { token, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
-  // useEffect(() => {
-  //   if (loaded) {
-  //     SplashScreen.hideAsync();
-  //   }
-  // }, [loaded]);
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
 
-  // useEffect(() => {
-  //   if (isLoading) return;
+  useEffect(() => {
+    if (isLoading) return;
 
-  //   const inAuthGroup = segments[0] === 'auth';
-  //   const inProtectedGroup = PROTECTED_GROUPS.includes(segments[0]);
+    const checkAuth = async () => {
+      const storedToken = await AsyncStorage.getItem('userToken');
+      
+      if (!storedToken && segments[0] === '(app)') {
+        router.replace('/auth/sign-in');
+      } else if (storedToken && segments[0] === 'auth') {
+        router.replace('/(app)/(tabs)');
+      }
+    };
 
-  //   if (isAuthenticated && inAuthGroup) {
-  //     console.log('1----------');
-  //     console.log('ログイン済みユーザーが認証画面にアクセスした場合');
-  //     // ログイン済みユーザーが認証画面にアクセスした場合
-  //     router.replace('/(app)/(tabs)');
-  //   } else if (!isAuthenticated && inProtectedGroup) {
-  //     console.log('2----------');
-  //     console.log('未認証ユーザーが保護されたルートにアクセスした場合');
-  //     // 未認証ユーザーが保護されたルートにアクセスした場合
-  //     router.replace('/auth/sign-in');
-  //   }
-  // }, [isAuthenticated, segments, isLoading]);
+    checkAuth();
+  }, [segments, isLoading, token]);
 
   if (!loaded) {
     return null;
