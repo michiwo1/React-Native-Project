@@ -1,4 +1,5 @@
-import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
@@ -15,6 +16,7 @@ type GoalType = {
   name: string;
   created_at: Date;
   updated_at: Date;
+  toString: () => string;
 };
 
 type UserProfile = {
@@ -22,8 +24,9 @@ type UserProfile = {
   height: number | null;
   weight: number | null;
   age: number | null;
-  goal_type: GoalType | null;
+  goal_type: string | null;
   training_level: string | null;
+  display_name: string | null;
   user: {
     id: string;
     name: string;
@@ -170,94 +173,103 @@ export default function MyPageScreen() {
       style={[styles.container, { paddingTop: insets.top }]}
       showsVerticalScrollIndicator={false}
     >
-      {/* プロフィールセクション */}
-      <View style={styles.profileSection}>
-        <View style={styles.profileCard}>
-          <View style={styles.profileHeader}>
-            <View style={styles.avatarContainer}>
-              <View style={styles.avatar}>
-                <ThemedText style={styles.avatarText}>
-                  {profile?.user?.name ? profile.user.name.charAt(0) : '?'}
-                </ThemedText>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.light.primary} />
+          <ThemedText style={styles.loadingText}>読み込み中...</ThemedText>
+        </View>
+      ) : (
+        <>
+          {/* プロフィールセクション */}
+          <View style={styles.profileSection}>
+            <View style={styles.profileCard}>
+              <View style={styles.profileHeader}>
+                <View style={styles.avatarContainer}>
+                  <View style={styles.avatar}>
+                    <ThemedText style={styles.avatarText}>
+                      {profile?.user?.name ? profile.user.name.charAt(0) : '?'}
+                    </ThemedText>
+                  </View>
+                  <TouchableOpacity style={styles.editButton}>
+                    <ThemedText style={styles.editButtonText}>編集</ThemedText>
+                  </TouchableOpacity>
+                </View>
+                
+                <View style={styles.profileInfo}>
+                  <ThemedText style={styles.userName}>{profile?.display_name || 'ユーザー名未設定'}</ThemedText>
+                  <View style={styles.trainingBadge}>
+                    <Ionicons name="time-outline" size={14} color="#666666" />
+                    <ThemedText style={styles.trainingPeriod}>
+                      トレーニング歴: {profile?.training_level || '未設定'}
+                    </ThemedText>
+                  </View>
+                </View>
               </View>
-              <TouchableOpacity style={styles.editButton}>
-                <ThemedText style={styles.editButtonText}>編集</ThemedText>
-              </TouchableOpacity>
-            </View>
-            
-            <View style={styles.profileInfo}>
-              <ThemedText style={styles.userName}>{profile?.user?.name || 'ユーザー名未設定'}</ThemedText>
-              <View style={styles.trainingBadge}>
-                <Ionicons name="time-outline" size={14} color="#666666" />
-                <ThemedText style={styles.trainingPeriod}>
-                  トレーニング歴: {profile?.training_level || '未設定'}
-                </ThemedText>
+
+              <View style={styles.statsContainer}>
+                {[
+                  { label: '身長', value: profile?.height ? `${profile.height}cm` : '未設定' },
+                  { label: '体重', value: profile?.weight ? `${profile.weight}kg` : '未設定' },
+                  { label: '目標', value: profile?.goal_type || '未設定' }
+                ].map((stat, index) => (
+                  <View key={index} style={styles.statItem}>
+                    <ThemedText style={styles.statLabel}>{stat.label}</ThemedText>
+                    <ThemedText style={styles.statValue}>{stat.value}</ThemedText>
+                  </View>
+                ))}
+              </View>
+
+              <View style={styles.badgesSection}>
+                <View style={styles.sectionHeader}>
+                  <ThemedText style={styles.badgesTitle}>獲得バッジ</ThemedText>
+                  <TouchableOpacity style={styles.showAllButton}>
+                    <ThemedText style={styles.showAllText}>すべて表示</ThemedText>
+                    <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.badgesContainer}>
+                  {badges.map((badge, index) => (
+                    <View key={index} style={styles.badgeWrapper}>
+                      <View style={[styles.badge, { backgroundColor: badge.color }]}>
+                        <ThemedText style={styles.badgeIcon}>{badge.icon}</ThemedText>
+                      </View>
+                    </View>
+                  ))}
+                </View>
               </View>
             </View>
           </View>
 
-          <View style={styles.statsContainer}>
-            {[
-              { label: '身長', value: profile?.height ? `${profile.height}cm` : '未設定' },
-              { label: '体重', value: profile?.weight ? `${profile.weight}kg` : '未設定' },
-              { label: '目標', value: profile?.goal_type?.name || '未設定' }
-            ].map((stat, index) => (
-              <View key={index} style={styles.statItem}>
-                <ThemedText style={styles.statLabel}>{stat.label}</ThemedText>
-                <ThemedText style={styles.statValue}>{stat.value}</ThemedText>
+          {/* 設定セクション */}
+          <View style={styles.settingsSection}>
+            {settingItems.map((section, sectionIndex) => (
+              <View key={sectionIndex} style={styles.settingsGroup}>
+                <ThemedText style={styles.settingsGroupTitle}>{section.title}</ThemedText>
+                <View style={styles.settingsCard}>
+                  {section.items.map((item, itemIndex) => (
+                    <TouchableOpacity 
+                      key={itemIndex} 
+                      style={[
+                        styles.settingItem,
+                        itemIndex === section.items.length - 1 && styles.settingItemLast
+                      ]}
+                      onPress={item.action}
+                    >
+                      <View style={styles.settingItemLeft}>
+                        <View style={styles.iconContainer}>
+                          <Ionicons name={item.icon as any} size={22} color={colors.text} />
+                        </View>
+                        <ThemedText style={[styles.settingItemText, item.textColor && styles.settingItemTextRed]}>{item.label}</ThemedText>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color={colors.text} />
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
             ))}
           </View>
-
-          <View style={styles.badgesSection}>
-            <View style={styles.sectionHeader}>
-              <ThemedText style={styles.badgesTitle}>獲得バッジ</ThemedText>
-              <TouchableOpacity style={styles.showAllButton}>
-                <ThemedText style={styles.showAllText}>すべて表示</ThemedText>
-                <Ionicons name="chevron-forward" size={16} color={colors.primary} />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.badgesContainer}>
-              {badges.map((badge, index) => (
-                <View key={index} style={styles.badgeWrapper}>
-                  <View style={[styles.badge, { backgroundColor: badge.color }]}>
-                    <ThemedText style={styles.badgeIcon}>{badge.icon}</ThemedText>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        </View>
-      </View>
-
-      {/* 設定セクション */}
-      <View style={styles.settingsSection}>
-        {settingItems.map((section, sectionIndex) => (
-          <View key={sectionIndex} style={styles.settingsGroup}>
-            <ThemedText style={styles.settingsGroupTitle}>{section.title}</ThemedText>
-            <View style={styles.settingsCard}>
-              {section.items.map((item, itemIndex) => (
-                <TouchableOpacity 
-                  key={itemIndex} 
-                  style={[
-                    styles.settingItem,
-                    itemIndex === section.items.length - 1 && styles.settingItemLast
-                  ]}
-                  onPress={item.action}
-                >
-                  <View style={styles.settingItemLeft}>
-                    <View style={styles.iconContainer}>
-                      <Ionicons name={item.icon as any} size={22} color={colors.text} />
-                    </View>
-                    <ThemedText style={[styles.settingItemText, item.textColor && styles.settingItemTextRed]}>{item.label}</ThemedText>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.text} />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        ))}
-      </View>
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -446,5 +458,16 @@ const styles = StyleSheet.create({
   },
   settingItemTextRed: {
     color: '#FF3B30',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 400,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: Colors.light.text,
   },
 }); 
