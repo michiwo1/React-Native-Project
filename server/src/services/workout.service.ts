@@ -184,7 +184,7 @@ export class WorkoutService {
     }
   }
 
-async finishWorkoutSession(workoutSessionId: string, userId: string) {
+  async finishWorkoutSession(workoutSessionId: string, userId: string) {
     try {
       return await this.prisma.$transaction(async (tx) => {
         // ワークアウトセッションの取得（エクササイズとセットを含む）
@@ -279,6 +279,7 @@ async finishWorkoutSession(workoutSessionId: string, userId: string) {
           include: {
             exercises: {
               include: {
+                exercise: true,
                 sets: true
               }
             }
@@ -287,7 +288,7 @@ async finishWorkoutSession(workoutSessionId: string, userId: string) {
       });
     } catch (error) {
       console.error('ワークアウトセッションの終了中にエラーが発生しました:', error);
-      throw new Error('ワークアウトセッションの終了に失敗しました');
+      throw new Error('ワークアウトセッションが見つかりません');
     }
   }
 
