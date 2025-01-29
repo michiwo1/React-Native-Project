@@ -171,6 +171,7 @@ export default function LibraryScreen() {
     container: {
       flex: 1,
       padding: 16,
+      paddingTop: Platform.OS === 'ios' ? 100 : 80,
     },
     title: {
       fontSize: 24,

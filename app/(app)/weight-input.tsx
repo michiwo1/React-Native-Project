@@ -109,40 +109,41 @@ export default function WeightInputScreen() {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      padding: 16,
       backgroundColor: colors.background,
-      paddingTop: 16,
+      paddingTop: 60,
+    },
+    headerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 32,
+      marginTop: 24,
     },
     header: {
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: 'bold',
-      marginTop: 48,
-      marginBottom: 24,
+      marginLeft: 24,
     },
     input: {
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: 8,
+      borderRadius: 12,
       padding: 16,
       fontSize: 18,
       color: colors.text,
       marginBottom: 24,
+      marginHorizontal: 16,
+      backgroundColor: colors.background,
+      height: 56,
     },
     saveButton: {
       backgroundColor: colors.tint,
       padding: 16,
-      borderRadius: 8,
+      borderRadius: 12,
       alignItems: 'center',
-      marginBottom: 16,
-    },
-    scanButton: {
-      backgroundColor: colors.tint,
-      padding: 16,
-      borderRadius: 8,
-      alignItems: 'center',
-      flexDirection: 'row',
+      marginHorizontal: 16,
+      marginBottom: 32,
+      height: 56,
       justifyContent: 'center',
-      marginBottom: 24,
     },
     saveButtonText: {
       color: '#FFFFFF',
@@ -150,33 +151,25 @@ export default function WeightInputScreen() {
       fontWeight: 'bold',
     },
     backButton: {
-      position: 'absolute',
-      top: 16,
-      left: 16,
       padding: 8,
-      zIndex: 1,
     },
     backIcon: {
       color: colors.text,
     },
-    scanButtonText: {
-      color: '#FFFFFF',
-      fontSize: 16,
-      fontWeight: 'bold',
-      marginLeft: 8,
-    },
     historyContainer: {
       flex: 1,
+      paddingHorizontal: 16,
     },
     historyHeader: {
       fontSize: 18,
       fontWeight: 'bold',
       marginBottom: 16,
+      color: colors.text,
     },
     historyItem: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      paddingVertical: 12,
+      paddingVertical: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
@@ -193,14 +186,17 @@ export default function WeightInputScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <MaterialIcons 
-          name="arrow-back" 
-          size={24} 
-          style={styles.backIcon}
-        />
-      </TouchableOpacity>
-      <ThemedText style={styles.header}>体重を入力</ThemedText>
+      <View style={styles.headerContainer}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <MaterialIcons 
+            name="arrow-back" 
+            size={24} 
+            style={styles.backIcon}
+          />
+        </TouchableOpacity>
+        <ThemedText style={styles.header}>体重を入力</ThemedText>
+      </View>
+
       <TextInput
         style={styles.input}
         value={weight}

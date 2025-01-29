@@ -471,6 +471,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={{ height: 40 }} />
         
         <View style={styles.todayWorkout}>
           <TouchableOpacity style={styles.accordionHeader} onPress={toggleAccordion}>
