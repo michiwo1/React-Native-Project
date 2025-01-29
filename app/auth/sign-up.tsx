@@ -21,8 +21,8 @@ export default function SignUpScreen() {
     // エラーメッセージをリセット
     setErrorMessage('');
 
-    // メールアドレスの形式チェック
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // メールアドレスの形式チェック（より厳密な正規表現）
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!email) {
       setErrorMessage('メールアドレスを入力してください');
       return false;
@@ -39,6 +39,10 @@ export default function SignUpScreen() {
     }
     if (displayName.length < 2) {
       setErrorMessage('表示名は2文字以上で入力してください');
+      return false;
+    }
+    if (displayName.length > 20) {
+      setErrorMessage('表示名は20文字以下で入力してください');
       return false;
     }
 
