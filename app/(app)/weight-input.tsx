@@ -212,10 +212,6 @@ export default function WeightInputScreen() {
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <ThemedText style={styles.saveButtonText}>保存</ThemedText>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.scanButton} onPress={takePicture}>
-        <MaterialIcons name="camera-alt" size={24} color="#FFFFFF" />
-        <ThemedText style={styles.scanButtonText}>カメラでスキャン</ThemedText>
-      </TouchableOpacity>
 
       <View style={styles.historyContainer}>
         <ThemedText style={styles.historyHeader}>履歴</ThemedText>
