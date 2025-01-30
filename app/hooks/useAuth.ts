@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { getToken, removeToken } from '../utils/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -11,29 +11,39 @@ export const useAuth = () => {
 
   const checkAuth = async () => {
     try {
-      const token = await getToken();
-      setIsAuthenticated(!!token);
+      const storedToken = await AsyncStorage.getItem('token');
+      setToken(storedToken);
     } catch (error) {
-      console.error('Auth check error:', error);
-      setIsAuthenticated(false);
+      console.error('Error checking auth:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const signIn = async (newToken: string) => {
+    try {
+      await AsyncStorage.setItem('token', newToken);
+      setToken(newToken);
+    } catch (error) {
+      console.error('Error signing in:', error);
+      throw error;
+    }
+  };
+
   const signOut = async () => {
     try {
-      await removeToken();
-      setIsAuthenticated(false);
+      await AsyncStorage.removeItem('token');
+      setToken(null);
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error('Error signing out:', error);
     }
   };
 
   return {
-    isAuthenticated,
+    token,
     isLoading,
-    checkAuth,
-    signOut
+    isAuthenticated: !!token,
+    signIn,
+    signOut,
   };
 };
