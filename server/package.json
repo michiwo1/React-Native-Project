@@ -7,10 +7,11 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "scripts": {
-    "build": "prisma generate && prisma migrate deploy && tsc",
-    "vercel-build": "prisma generate && prisma migrate deploy",
+    "dev": "ts-node src/index.ts",
+    "build": "prisma generate && tsc",
+    "vercel-build": "prisma generate && tsc",
     "start": "node dist/index.js",
-    "dev": "ts-node-dev src/index.ts",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
@@ -25,7 +26,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "@neondatabase/serverless": "^0.7.2",
-    "@prisma/client": "^6.2.1",
+    "@prisma/client": "^5.8.1",
     "@react-native-async-storage/async-storage": "^2.1.0",
     "@types/nodemailer": "^6.4.17",
     "bcrypt": "^5.1.1",
@@ -43,7 +44,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/multer": "^1.4.12",
     "@types/node": "^20.11.16",
-    "prisma": "^6.2.1",
+    "prisma": "^5.8.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3",
     "@types/jest": "^29.5.12",

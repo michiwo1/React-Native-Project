@@ -1,11 +1,15 @@
 {
   "version": 2,
+  "buildCommand": "npm run build",
   "builds": [
     {
       "src": "src/index.ts",
       "use": "@vercel/node",
       "config": {
-        "buildCommand": "prisma generate"
+        "includeFiles": [
+          "prisma/schema.prisma",
+          "node_modules/.prisma/client/**"
+        ]
       }
     }
   ],
@@ -14,8 +18,5 @@
       "src": "/(.*)",
       "dest": "src/index.ts"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
-} 
+  ]
+}
