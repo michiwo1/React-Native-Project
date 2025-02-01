@@ -46,3 +46,7 @@ ios/
 .cursorrules
 
 coverage/
+
+# Expo config files
+app.json
+eas.json
