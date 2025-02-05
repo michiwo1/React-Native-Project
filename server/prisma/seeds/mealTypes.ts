@@ -2,10 +2,10 @@ import { PrismaClient } from '@prisma/client';
 
 export async function seedMealTypes(prisma: PrismaClient) {
   const mealTypes = [
-    { name: '朝食' },
-    { name: '昼食' },
-    { name: '夕食' },
-    { name: '間食' },
+    { name: 'Breakfast' },
+    { name: 'Lunch' },
+    { name: 'Dinner' },
+    { name: 'Snack' },
   ];
 
   for (const mealType of mealTypes) {

@@ -2,9 +2,9 @@ import { PrismaClient } from '@prisma/client';
 
 export async function seedGoalTypes(prisma: PrismaClient) {
   const goalTypes = [
-    { name: '筋肥大' },
-    { name: '減量' },
-    { name: '維持' },
+    { name: 'Muscle Gain' },
+    { name: 'Weight Loss' },
+    { name: 'Maintenance' },
   ];
 
   for (const goalType of goalTypes) {
