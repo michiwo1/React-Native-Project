@@ -103,11 +103,11 @@ export default function WorkoutPlanScreen() {
       if (!response.ok) {
         if (response.status === 400 && data.ongoingSession) {
           Alert.alert(
-            '進行中のトレーニング',
-            'まだ終了していないトレーニングがあります。\n先に進行中のトレーニングを終了してください。',
+            'Ongoing Workout',
+            'You have an unfinished workout.\nPlease complete it first.',
             [
               {
-                text: 'キャンセル',
+                text: 'Cancel',
                 style: 'cancel',
               },
             ],
@@ -122,8 +122,8 @@ export default function WorkoutPlanScreen() {
     } catch (error) {
       console.error('Error starting workout:', error);
       Alert.alert(
-        'エラー',
-        'トレーニングの開始に失敗しました。\nもう一度お試しください。',
+        'Error',
+        'Failed to start workout.\nPlease try again.',
         [{ text: 'OK' }]
       );
     }
@@ -133,7 +133,7 @@ export default function WorkoutPlanScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.replace("/calendar")}>
-          <ThemedText style={styles.backButton}>← 戻る</ThemedText>
+          <ThemedText style={styles.backButton}>← Back</ThemedText>
         </TouchableOpacity>
         <ThemedText style={styles.dateText}>{new Date().toLocaleDateString('ja-JP', {
           year: 'numeric',
@@ -187,21 +187,21 @@ export default function WorkoutPlanScreen() {
         ) : (
           <>
             <View style={styles.workoutSection}>
-              <ThemedText style={styles.title}>今日のワークアウト</ThemedText>
-              <ThemedText style={styles.subtitle}>プランを選択するか、新しいワークアウトを始めましょう！</ThemedText>
+              <ThemedText style={styles.title}>Today's Workout</ThemedText>
+              <ThemedText style={styles.subtitle}>Select a plan or start a new workout!</ThemedText>
                   
               <TouchableOpacity 
                 style={[styles.button, { backgroundColor: '#007AFF' }]}
                 onPress={() => router.push('/workout/exercises')}
               >
-                <ThemedText style={styles.buttonText}>新しいワークアウトを始める</ThemedText>
+                <ThemedText style={styles.buttonText}>Start New Workout</ThemedText>
               </TouchableOpacity>
             </View>
 
             <View style={styles.plansSection}>
-              <ThemedText style={styles.sectionTitle}>マイプラン</ThemedText>
+              <ThemedText style={styles.sectionTitle}>My Plans</ThemedText>
               {loading ? (
-                <ThemedText>読み込み中...</ThemedText>
+                <ThemedText>Loading...</ThemedText>
               ) : plans.length > 0 ? (
                 <ScrollView style={styles.plansScrollContainer}>
                   {plans.map((plan) => (
@@ -213,23 +213,23 @@ export default function WorkoutPlanScreen() {
                       <View style={styles.workoutInfo}>
                         <ThemedText style={styles.workoutText}>{plan.name}</ThemedText>
                         <ThemedText style={styles.exerciseCount}>
-                          {plan.exercises.length}種目
+                          {plan.exercises.length} exercises
                         </ThemedText>
                         <ThemedText style={[styles.duration]} numberOfLines={1} ellipsizeMode="tail">
                           {plan.exercises.map(e => e.exercise.name).join(', ')}
                         </ThemedText>
                       </View>
-                      <ThemedText style={styles.startButton}>開始</ThemedText>
+                      <ThemedText style={styles.startButton}>Start</ThemedText>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
               ) : (
                 <View style={styles.emptyPlansContainer}>
                   <ThemedText style={styles.emptyPlansText}>
-                    プランが未設定です
+                    No Plans Created
                   </ThemedText>
                   <ThemedText style={styles.emptyPlansSubtext}>
-                    新しいトレーニングプランを作成して{'\n'}トレーニングを始めましょう
+                    Create a new training plan{'\n'}to start your workout
                   </ThemedText>
                 </View>
               )}
@@ -239,7 +239,7 @@ export default function WorkoutPlanScreen() {
                 onPress={() => router.push('/plan/create')}
               >
                 <ThemedText style={styles.createPlanButtonText}>
-                  新しいプランを作成
+                  Create New Plan
                 </ThemedText>
               </TouchableOpacity>
             </View>

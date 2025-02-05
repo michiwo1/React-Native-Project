@@ -32,17 +32,17 @@ export default function AiAdviceScreen() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || errorData.error || 'アドバイスの取得に失敗しました');
+        throw new Error(errorData.message || errorData.error || 'Failed to get advice');
       }
 
       const data = await response.json();
       if (!data.advice) {
-        throw new Error('アドバイスデータが空でした');
+        throw new Error('Advice data was empty');
       }
       setAdvice(data.advice);
     } catch (error) {
       console.error('Error getting AI advice:', error);
-      setError(error instanceof Error ? error.message : 'アドバイスの取得中にエラーが発生しました。もう一度お試しください。');
+      setError(error instanceof Error ? error.message : 'An error occurred while getting advice. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -54,21 +54,21 @@ export default function AiAdviceScreen() {
         style={styles.backButton}
         onPress={() => router.back()}
       >
-        <Text style={styles.backButtonText}>← 戻る</Text>
+        <Text style={styles.backButtonText}>← Back</Text>
       </TouchableOpacity>
 
       <ScrollView style={styles.scrollView}>
-        <Text style={styles.title}>AIアドバイス</Text>
+        <Text style={styles.title}>AI Advice</Text>
         
         <View style={styles.formSection}>
-          <Text style={styles.label}>あなたの目標や状況を教えてください</Text>
+          <Text style={styles.label}>Tell us about your goals and situation</Text>
           <TextInput
             style={styles.input}
             multiline
             numberOfLines={4}
             value={query}
             onChangeText={setQuery}
-            placeholder="例：筋肉をつけたいです。1日の目標カロリーは2500kcalで、タンパク質を多めに取りたいです。"
+            placeholder="Example: I want to build muscle. My daily calorie target is 2500kcal, and I want to increase my protein intake."
             placeholderTextColor="#666"
           />
           <TouchableOpacity 
@@ -79,7 +79,7 @@ export default function AiAdviceScreen() {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.submitButtonText}>アドバイスを受ける</Text>
+              <Text style={styles.submitButtonText}>Get Advice</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -92,7 +92,7 @@ export default function AiAdviceScreen() {
 
         {advice ? (
           <View style={styles.adviceSection}>
-            <Text style={styles.adviceTitle}>AIからのアドバイス</Text>
+            <Text style={styles.adviceTitle}>AI Advice</Text>
             <View style={styles.adviceCard}>
               <Markdown style={markdownStyles}>
                 {advice}

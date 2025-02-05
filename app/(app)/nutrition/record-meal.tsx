@@ -65,7 +65,7 @@ export default function RecordMealScreen() {
   const [newFoodCarbs, setNewFoodCarbs] = useState('');
   const [showUnitSelector, setShowUnitSelector] = useState(false);
   const [loading, setLoading] = useState(true);
-  const units = ['g', 'ml', '個', '枚', '杯', '切れ', '本'];
+  const units = ['g', 'ml', 'piece', 'slice', 'cup', 'serving', 'unit'];
 
   useEffect(() => {
     const getToken = async () => {
@@ -96,7 +96,7 @@ export default function RecordMealScreen() {
       }
     } catch (error) {
       console.error('Error fetching meal types:', error);
-      Alert.alert('エラー', '食事の種類の取得に失敗しました');
+      Alert.alert('Error', 'Failed to get meal types');
     } finally {
       setLoading(false);
     }
@@ -113,7 +113,7 @@ export default function RecordMealScreen() {
         setImage(result.assets[0].uri);
       }
     } catch (error) {
-      Alert.alert('エラー', 'カメラの起動に失敗しました');
+      Alert.alert('Error', 'Failed to start camera');
     }
   };
 
@@ -143,10 +143,10 @@ export default function RecordMealScreen() {
 
   const calculateTotalNutrients = () => {
     const totals: { [key: string]: number } = {
-      'カロリー': 0,
-      'タンパク質': 0,
-      '脂質': 0,
-      '炭水化物': 0,
+      'Calories': 0,
+      'Protein': 0,
+      'Fat': 0,
+      'Carbs': 0,
     };
 
     selectedFoods.forEach(({ item, quantity }) => {
@@ -163,17 +163,17 @@ export default function RecordMealScreen() {
 
   const handleSubmit = async () => {
     if (!selectedMealType) {
-      Alert.alert('エラー', '食事の種類（朝食・昼食・夕食など）を選択してください');
+      Alert.alert('Error', 'Please select a meal type');
       return;
     }
 
     if (selectedFoods.length === 0) {
-      Alert.alert('エラー', '食品を選択してください');
+      Alert.alert('Error', 'Please select food items');
       return;
     }
 
     if (!token) {
-      Alert.alert('エラー', '認証エラーが発生しました');
+      Alert.alert('Error', 'Authentication error occurred');
       return;
     }
 
@@ -197,19 +197,19 @@ export default function RecordMealScreen() {
       });
 
       if (!response.ok) {
-        throw new Error('食事の記録に失敗しました');
+        throw new Error('Failed to save meal');
       }
 
       router.back();
     } catch (error) {
       console.error('Error saving meal:', error);
-      Alert.alert('エラー', '食事の記録に失敗しました');
+      Alert.alert('Error', 'Failed to save meal');
     }
   };
 
   const handleAddNewFood = async () => {
     if (!token || !newFoodName || !newFoodBaseQuantity || !newFoodBaseUnit) {
-      Alert.alert('エラー', '食品名、基準量、単位は必須項目です');
+      Alert.alert('Error', 'Food name, base quantity, and unit are required');
       return;
     }
 
@@ -226,22 +226,22 @@ export default function RecordMealScreen() {
           base_unit: newFoodBaseUnit,
           nutrients: [
             {
-              nutrient_type_name: 'カロリー',
+              nutrient_type_name: 'Calories',
               amount_per_unit: parseFloat(newFoodCalories) || 0,
               unit: 'kcal'
             },
             {
-              nutrient_type_name: 'タンパク質',
+              nutrient_type_name: 'Protein',
               amount_per_unit: parseFloat(newFoodProtein) || 0,
               unit: 'g'
             },
             {
-              nutrient_type_name: '脂質',
+              nutrient_type_name: 'Fat',
               amount_per_unit: parseFloat(newFoodFat) || 0,
               unit: 'g'
             },
             {
-              nutrient_type_name: '炭水化物',
+              nutrient_type_name: 'Carbs',
               amount_per_unit: parseFloat(newFoodCarbs) || 0,
               unit: 'g'
             }
@@ -250,10 +250,10 @@ export default function RecordMealScreen() {
       });
 
       if (!response.ok) {
-        throw new Error('食品の追加に失敗しました');
+        throw new Error('Failed to add food');
       }
 
-      Alert.alert('成功', '食品を追加しました');
+      Alert.alert('Success', 'Food added successfully');
       setShowAddFoodModal(false);
       setNewFoodName('');
       setNewFoodBaseQuantity('');
@@ -264,7 +264,7 @@ export default function RecordMealScreen() {
       setNewFoodCarbs('');
     } catch (error) {
       console.error('Error adding food:', error);
-      Alert.alert('エラー', '食品の追加に失敗しました');
+      Alert.alert('Error', 'Failed to add food');
     }
   };
 
@@ -282,40 +282,26 @@ export default function RecordMealScreen() {
           style={styles.headerButton}
           onPress={() => router.back()}
         >
-          <Text style={styles.cancelButtonText}>キャンセル</Text>
+          <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>食事を記録</Text>
+        <Text style={styles.title}>Record Meal</Text>
         <TouchableOpacity 
           style={[styles.headerButton, styles.saveButton]}
           onPress={handleSubmit}
         >
-          <Text style={styles.saveButtonText}>保存</Text>
+          <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
       </View>
 
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>読み込み中...</Text>
+          <Text style={styles.loadingText}>Loading...</Text>
         </View>
       ) : (
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          {/* <TouchableOpacity 
-            style={styles.cameraButton} 
-            onPress={handleTakePhoto}
-          >
-            {image ? (
-              <Image source={{ uri: image }} style={styles.previewImage} />
-            ) : (
-              <>
-                <Ionicons name="camera" size={32} color="#007AFF" />
-                <Text style={styles.cameraButtonText}>写真を撮影</Text>
-              </>
-            )}
-          </TouchableOpacity> */}
-
           <View style={styles.formSection}>
-            <Text style={styles.label}>食事の種類</Text>
+            <Text style={styles.label}>Meal Type</Text>
             <View style={styles.mealTypeContainer}>
               {mealTypes.map((type) => (
                 <TouchableOpacity
@@ -338,32 +324,32 @@ export default function RecordMealScreen() {
               ))}
             </View>
             {!selectedMealType && (
-              <Text style={styles.warningText}>※ 食事の種類を選択してください</Text>
+              <Text style={styles.warningText}>* Please select a meal type</Text>
             )}
           </View>
 
           <View style={styles.formSection}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.label}>食品</Text>
+              <Text style={styles.label}>Food Items</Text>
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => {
                   if (!selectedMealType) {
-                    Alert.alert('エラー', '先に食事の種類を選択してください');
+                    Alert.alert('Error', 'Please select a meal type first');
                     return;
                   }
                   setShowFoodSelector(true);
                 }}
               >
                 <Ionicons name="add-circle" size={20} color="#FFFFFF" style={styles.addButtonIcon} />
-                <Text style={styles.addButtonText}>食品を追加</Text>
+                <Text style={styles.addButtonText}>Add Food</Text>
               </TouchableOpacity>
             </View>
 
             {!selectedMealType ? (
-              <Text style={styles.warningText}>※ 上の食事の種類を選択してから食品を追加してください</Text>
+              <Text style={styles.warningText}>* Select meal type above before adding food items</Text>
             ) : selectedFoods.length === 0 ? (
-              <Text style={[styles.warningText, { color: '#8E8E93' }]}>食品を追加してください</Text>
+              <Text style={[styles.warningText, { color: '#8E8E93' }]}>Please add food items</Text>
             ) : (
               selectedFoods.map((food, index) => (
                 <View key={index} style={styles.selectedFood}>
@@ -385,29 +371,29 @@ export default function RecordMealScreen() {
           </View>
 
           <View style={styles.formSection}>
-            <Text style={styles.label}>栄養成分</Text>
+            <Text style={styles.label}>Nutrition Facts</Text>
             <View style={styles.nutrientsGrid}>
               <View style={styles.nutrientItem}>
-                <Text style={styles.nutrientLabel}>カロリー</Text>
-                <Text style={styles.nutrientValue}>{Math.round(totals['カロリー'])} kcal</Text>
+                <Text style={styles.nutrientLabel}>Calories</Text>
+                <Text style={styles.nutrientValue}>{Math.round(totals['Calories'])} kcal</Text>
               </View>
               <View style={styles.nutrientItem}>
-                <Text style={styles.nutrientLabel}>タンパク質</Text>
-                <Text style={styles.nutrientValue}>{totals['タンパク質'].toFixed(1)} g</Text>
+                <Text style={styles.nutrientLabel}>Protein</Text>
+                <Text style={styles.nutrientValue}>{totals['Protein'].toFixed(1)} g</Text>
               </View>
               <View style={styles.nutrientItem}>
-                <Text style={styles.nutrientLabel}>脂質</Text>
-                <Text style={styles.nutrientValue}>{totals['脂質'].toFixed(1)} g</Text>
+                <Text style={styles.nutrientLabel}>Fat</Text>
+                <Text style={styles.nutrientValue}>{totals['Fat'].toFixed(1)} g</Text>
               </View>
               <View style={styles.nutrientItem}>
-                <Text style={styles.nutrientLabel}>炭水化物</Text>
-                <Text style={styles.nutrientValue}>{totals['炭水化物'].toFixed(1)} g</Text>
+                <Text style={styles.nutrientLabel}>Carbs</Text>
+                <Text style={styles.nutrientValue}>{totals['Carbs'].toFixed(1)} g</Text>
               </View>
             </View>
           </View>
 
           <View style={styles.formSection}>
-            <Text style={styles.label}>メモ</Text>
+            <Text style={styles.label}>Notes</Text>
             <View style={[styles.inputWrapper, styles.textAreaWrapper]}>
               <TextInput
                 style={[styles.input, styles.textArea]}
@@ -415,7 +401,7 @@ export default function RecordMealScreen() {
                 onChangeText={setMealDetails}
                 multiline
                 numberOfLines={4}
-                placeholder="メモを入力"
+                placeholder="Enter notes"
                 placeholderTextColor="#A1A1A6"
                 textAlignVertical="top"
               />
@@ -435,9 +421,9 @@ export default function RecordMealScreen() {
               style={styles.modalHeaderButton}
               onPress={() => setShowFoodSelector(false)}
             >
-              <Text style={styles.modalCancelButton}>キャンセル</Text>
+              <Text style={styles.modalCancelButton}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>食品を選択</Text>
+            <Text style={styles.modalTitle}>Select Food</Text>
             <View style={styles.modalHeaderButton} />
           </View>
           <FoodItemSelector onSelect={handleAddFood} />
@@ -452,7 +438,7 @@ export default function RecordMealScreen() {
         <View style={styles.quantityModalContainer}>
           <View style={styles.quantityModalContent}>
             <Text style={styles.quantityModalTitle}>
-              {tempSelectedFood?.name}の量を入力
+              Enter the quantity of {tempSelectedFood?.name}
             </Text>
             <View style={styles.quantityInputContainer}>
               <View style={styles.quantityInputWrapper}>
@@ -461,7 +447,7 @@ export default function RecordMealScreen() {
                   value={selectedQuantity}
                   onChangeText={setSelectedQuantity}
                   keyboardType="numeric"
-                  placeholder="数量を入力"
+                  placeholder="Quantity"
                   autoFocus
                 />
                 <Text style={styles.quantityUnit}>
@@ -477,13 +463,13 @@ export default function RecordMealScreen() {
                   setSelectedQuantity('');
                 }}
               >
-                <Text style={styles.quantityModalButtonTextCancel}>キャンセル</Text>
+                <Text style={styles.quantityModalButtonTextCancel}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.quantityModalButton, styles.quantityModalButtonConfirm]}
                 onPress={handleConfirmQuantity}
               >
-                <Text style={styles.quantityModalButtonTextConfirm}>確定</Text>
+                <Text style={styles.quantityModalButtonTextConfirm}>Confirm</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -500,41 +486,41 @@ export default function RecordMealScreen() {
           <View style={styles.addFoodModalContent}>
             <ScrollView>
               <View style={styles.modalInnerContent}>
-                <Text style={styles.modalTitle}>新しい食品を追加</Text>
+                <Text style={styles.modalTitle}>Add New Food</Text>
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>食品名</Text>
+                  <Text style={styles.formLabel}>Food Name</Text>
                   <TextInput
                     style={styles.formInput}
                     value={newFoodName}
                     onChangeText={setNewFoodName}
-                    placeholder="食品名を入力"
+                    placeholder="Enter food name"
                   />
                 </View>
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>基準量</Text>
+                  <Text style={styles.formLabel}>Base Quantity</Text>
                   <View style={styles.quantityInputContainer}>
                     <TextInput
                       style={[styles.formInput, { flex: 2 }]}
                       value={newFoodBaseQuantity}
                       onChangeText={setNewFoodBaseQuantity}
                       keyboardType="numeric"
-                      placeholder="基準量を入力"
+                      placeholder="Enter base quantity"
                     />
                     <TouchableOpacity
                       style={styles.unitSelector}
                       onPress={() => setShowUnitSelector(true)}
                     >
                       <Text style={styles.unitSelectorText}>
-                        {newFoodBaseUnit || '単位を選択'}
+                        {newFoodBaseUnit || 'Select Unit'}
                       </Text>
                       <Ionicons name="chevron-down" size={20} color="#8E8E93" />
                     </TouchableOpacity>
                   </View>
                 </View>
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>栄養成分（基準量あたり）</Text>
+                  <Text style={styles.formLabel}>Nutrition Facts (per base quantity)</Text>
                   <View style={styles.nutrientInputGroup}>
-                    <Text style={styles.nutrientInputLabel}>カロリー</Text>
+                    <Text style={styles.nutrientInputLabel}>Calories</Text>
                     <View style={styles.nutrientInputContainer}>
                       <TextInput
                         style={styles.nutrientInput}
@@ -547,7 +533,7 @@ export default function RecordMealScreen() {
                     </View>
                   </View>
                   <View style={styles.nutrientInputGroup}>
-                    <Text style={styles.nutrientInputLabel}>タンパク質</Text>
+                    <Text style={styles.nutrientInputLabel}>Protein</Text>
                     <View style={styles.nutrientInputContainer}>
                       <TextInput
                         style={styles.nutrientInput}
@@ -560,7 +546,7 @@ export default function RecordMealScreen() {
                     </View>
                   </View>
                   <View style={styles.nutrientInputGroup}>
-                    <Text style={styles.nutrientInputLabel}>脂質</Text>
+                    <Text style={styles.nutrientInputLabel}>Fat</Text>
                     <View style={styles.nutrientInputContainer}>
                       <TextInput
                         style={styles.nutrientInput}
@@ -573,7 +559,7 @@ export default function RecordMealScreen() {
                     </View>
                   </View>
                   <View style={styles.nutrientInputGroup}>
-                    <Text style={styles.nutrientInputLabel}>炭水化物</Text>
+                    <Text style={styles.nutrientInputLabel}>Carbs</Text>
                     <View style={styles.nutrientInputContainer}>
                       <TextInput
                         style={styles.nutrientInput}
@@ -600,13 +586,13 @@ export default function RecordMealScreen() {
                       setNewFoodCarbs('');
                     }}
                   >
-                    <Text style={styles.quantityModalButtonTextCancel}>キャンセル</Text>
+                    <Text style={styles.quantityModalButtonTextCancel}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.quantityModalButton, styles.quantityModalButtonConfirm]}
                     onPress={handleAddNewFood}
                   >
-                    <Text style={styles.quantityModalButtonTextConfirm}>追加</Text>
+                    <Text style={styles.quantityModalButtonTextConfirm}>Add</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -624,7 +610,7 @@ export default function RecordMealScreen() {
         <View style={styles.unitModalContainer}>
           <View style={styles.unitModalContent}>
             <View style={styles.unitModalHeader}>
-              <Text style={styles.unitModalTitle}>単位を選択</Text>
+              <Text style={styles.unitModalTitle}>Select Unit</Text>
               <TouchableOpacity
                 style={styles.unitModalCloseButton}
                 onPress={() => setShowUnitSelector(false)}

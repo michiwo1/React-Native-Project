@@ -44,7 +44,7 @@ const ExercisesScreen = () => {
     setError(null);
     try {
       if (!token) {
-        setError('認証エラー');
+        setError('Authentication error');
         return;
       }
 
@@ -60,7 +60,7 @@ const ExercisesScreen = () => {
         }).then(async res => {
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
-            throw new Error(errorData.message || 'APIエラー');
+            throw new Error(errorData.message || 'API Error');
           }
           return res.json();
         }),
@@ -70,7 +70,7 @@ const ExercisesScreen = () => {
         }).then(async res => {
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
-            throw new Error(errorData.message || 'APIエラー');
+            throw new Error(errorData.message || 'API Error');
           }
           return res.json();
         })
@@ -86,7 +86,7 @@ const ExercisesScreen = () => {
       }
     } catch (err) {
       console.error('Error details:', err);
-      setError(err instanceof Error ? err.message : 'データの取得に失敗しました');
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
       setLoading(false);
     }
@@ -117,7 +117,7 @@ const ExercisesScreen = () => {
       });
 
       if (!response.ok) {
-        throw new Error('種目の追加に失敗しました');
+        throw new Error('Failed to add exercise');
       }
 
       // 新しい種目を追加した後、リストを更新
@@ -127,7 +127,7 @@ const ExercisesScreen = () => {
       setSelectedCategoryId('');
     } catch (err) {
       console.error('Error adding exercise:', err);
-      setError(err instanceof Error ? err.message : '種目の追加に失敗しました');
+      setError(err instanceof Error ? err.message : 'Failed to add exercise');
     }
   };
 
@@ -143,7 +143,7 @@ const ExercisesScreen = () => {
       });
 
       if (!response.ok) {
-        throw new Error('種目の選択状態の更新に失敗しました');
+        throw new Error('Failed to update exercise selection status');
       }
 
       // 選択された種目のis_last_selectedを更新
@@ -164,7 +164,7 @@ const ExercisesScreen = () => {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0000ff" />
-          <Text style={styles.loadingText}>読み込み中...</Text>
+          <Text style={styles.loadingText}>Loading...</Text>
         </View>
       </SafeAreaView>
     );
@@ -179,7 +179,7 @@ const ExercisesScreen = () => {
             style={styles.retryButton}
             onPress={fetchData}
           >
-            <Text style={styles.retryButtonText}>再試行</Text>
+            <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -198,7 +198,7 @@ const ExercisesScreen = () => {
             >
               <MaterialIcons name="arrow-back" size={24} color="black" />
             </TouchableOpacity>
-            <Text style={styles.headerText}>種目一覧</Text>
+            <Text style={styles.headerText}>Exercises</Text>
           </View>
           {categories.map((category) => (
             <View key={category.id} style={styles.categorySection}>
@@ -218,7 +218,7 @@ const ExercisesScreen = () => {
                     >
                       <Text style={styles.exerciseName}>{exercise.name}</Text>
                       {selectedExerciseId === exercise.id && (
-                        <Text style={styles.selectedExerciseText}>このカードの最大重量を表示中</Text>
+                        <Text style={styles.selectedExerciseText}>Showing max weight for this card</Text>
                       )}
                     </TouchableOpacity>
                   ))}
@@ -231,7 +231,7 @@ const ExercisesScreen = () => {
           style={styles.addButton}
           onPress={() => setIsModalVisible(true)}
         >
-          <Text style={styles.addButtonText}>種目を追加</Text>
+          <Text style={styles.addButtonText}>Add Exercise</Text>
         </TouchableOpacity>
 
         <Modal
@@ -242,9 +242,9 @@ const ExercisesScreen = () => {
         >
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>新しい種目を追加</Text>
+              <Text style={styles.modalTitle}>Add New Exercise</Text>
               
-              <Text style={styles.inputLabel}>カテゴリー</Text>
+              <Text style={styles.inputLabel}>Category</Text>
               <ScrollView style={styles.categoryList}>
                 {categories.map((category) => (
                   <TouchableOpacity
@@ -265,12 +265,12 @@ const ExercisesScreen = () => {
                 ))}
               </ScrollView>
 
-              <Text style={styles.inputLabel}>種目名</Text>
+              <Text style={styles.inputLabel}>Exercise Name</Text>
               <TextInput
                 style={styles.input}
                 value={newExerciseName}
                 onChangeText={setNewExerciseName}
-                placeholder="種目名を入力"
+                placeholder="Enter exercise name"
                 placeholderTextColor="#999"
               />
 
@@ -283,13 +283,13 @@ const ExercisesScreen = () => {
                     setSelectedCategoryId('');
                   }}
                 >
-                  <Text style={styles.cancelButtonText}>キャンセル</Text>
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.modalButton, styles.submitButton]}
                   onPress={handleAddExercise}
                 >
-                  <Text style={styles.submitButtonText}>追加</Text>
+                  <Text style={styles.submitButtonText}>Add</Text>
                 </TouchableOpacity>
               </View>
             </View>

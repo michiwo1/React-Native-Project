@@ -66,51 +66,51 @@ export default function MyPageScreen() {
 
   const settingItems: SettingSection[] = [
     {
-      title: 'アカウント設定',
+      title: 'Account Settings',
       items: [
-        { label: 'プロフィール編集', icon: 'person-outline', action: () => {} },
+        { label: 'Edit Profile', icon: 'person-outline', action: () => {} },
       ]
     },
     {
-      title: 'アプリ設定',
+      title: 'App Settings',
       items: [
-        { label: '通知設定', icon: 'notifications-outline', action: () => {} },
-        { label: '単位設定', icon: 'scale-outline', action: () => {} },
-        { label: 'プライバシー', icon: 'shield-outline', action: () => {} },
+        { label: 'Notifications', icon: 'notifications-outline', action: () => {} },
+        { label: 'Units', icon: 'scale-outline', action: () => {} },
+        { label: 'Privacy', icon: 'shield-outline', action: () => {} },
       ]
     },
     {
-      title: 'サポート',
+      title: 'Support',
       items: [
-        { label: 'ヘルプ', icon: 'help-circle-outline', action: () => {} },
-        { label: 'アプリについて', icon: 'information-circle-outline', action: () => {} },
+        { label: 'Help', icon: 'help-circle-outline', action: () => {} },
+        { label: 'About', icon: 'information-circle-outline', action: () => {} },
       ]
     },
     {
-      title: 'その他',
+      title: 'Other',
       items: [
         { 
-          label: 'ログアウト', 
+          label: 'Logout', 
           icon: 'log-out-outline', 
           action: () => {
             Alert.alert(
-              'ログアウト',
-              'ログアウトしますか？',
+              'Logout',
+              'Are you sure you want to logout?',
               [
                 {
-                  text: 'キャンセル',
+                  text: 'Cancel',
                   style: 'cancel',
                 },
                 {
-                  text: 'ログアウト',
+                  text: 'Logout',
                   style: 'destructive',
                   onPress: async () => {
                     try {
-                      // まずローカルのトークンを削除
+                      // First remove local token
                       await AsyncStorage.removeItem('userToken');
                       await signOut();
 
-                      // サーバーにログアウトリクエストを送信（エラーが発生しても続行）
+                      // Send logout request to server (continue even if error occurs)
                       try {
                         await fetch(`${API_URL}/api/auth/logout`, {
                           method: 'POST',
@@ -121,14 +121,14 @@ export default function MyPageScreen() {
                           credentials: 'include'
                         });
                       } catch (serverError) {
-                        console.error('サーバーログアウトエラー:', serverError);
+                        console.error('Server logout error:', serverError);
                       }
                       
-                      // ログインページに遷移
+                      // Navigate to login page
                       router.replace('/auth/sign-in');
                     } catch (error) {
-                      console.error('ログアウトエラー:', error);
-                      Alert.alert('エラー', 'ログアウトに失敗しました');
+                      console.error('Logout error:', error);
+                      Alert.alert('Error', 'Failed to logout');
                     }
                   },
                 },
@@ -156,7 +156,7 @@ export default function MyPageScreen() {
       setProfile(data);
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      Alert.alert('エラー', 'プロフィールの取得に失敗しました');
+      Alert.alert('Error', 'Failed to fetch profile');
     } finally {
       setLoading(false);
     }
@@ -176,7 +176,7 @@ export default function MyPageScreen() {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.light.primary} />
-          <ThemedText style={styles.loadingText}>読み込み中...</ThemedText>
+          <ThemedText style={styles.loadingText}>Loading...</ThemedText>
         </View>
       ) : (
         <>
@@ -191,16 +191,16 @@ export default function MyPageScreen() {
                     </ThemedText>
                   </View>
                   <TouchableOpacity style={styles.editButton}>
-                    <ThemedText style={styles.editButtonText}>編集</ThemedText>
+                    <ThemedText style={styles.editButtonText}>Edit</ThemedText>
                   </TouchableOpacity>
                 </View>
                 
                 <View style={styles.profileInfo}>
-                  <ThemedText style={styles.userName}>{profile?.display_name || 'ユーザー名未設定'}</ThemedText>
+                  <ThemedText style={styles.userName}>{profile?.display_name || 'Username not set'}</ThemedText>
                   <View style={styles.trainingBadge}>
                     <Ionicons name="time-outline" size={14} color="#666666" />
                     <ThemedText style={styles.trainingPeriod}>
-                      トレーニング歴: {profile?.training_level || '未設定'}
+                      Training Level: {profile?.training_level || 'Not set'}
                     </ThemedText>
                   </View>
                 </View>
@@ -208,9 +208,9 @@ export default function MyPageScreen() {
 
               <View style={styles.statsContainer}>
                 {[
-                  { label: '身長', value: profile?.height ? `${profile.height}cm` : '未設定' },
-                  { label: '体重', value: profile?.weight ? `${profile.weight}kg` : '未設定' },
-                  { label: '目標', value: profile?.goal_type || '未設定' }
+                  { label: 'Height', value: profile?.height ? `${profile.height}cm` : 'Not set' },
+                  { label: 'Weight', value: profile?.weight ? `${profile.weight}kg` : 'Not set' },
+                  { label: 'Goal', value: profile?.goal_type || 'Not set' }
                 ].map((stat, index) => (
                   <View key={index} style={styles.statItem}>
                     <ThemedText style={styles.statLabel}>{stat.label}</ThemedText>
@@ -221,9 +221,9 @@ export default function MyPageScreen() {
 
               <View style={styles.badgesSection}>
                 <View style={styles.sectionHeader}>
-                  <ThemedText style={styles.badgesTitle}>獲得バッジ</ThemedText>
+                  <ThemedText style={styles.badgesTitle}>Badges</ThemedText>
                   <TouchableOpacity style={styles.showAllButton}>
-                    <ThemedText style={styles.showAllText}>すべて表示</ThemedText>
+                    <ThemedText style={styles.showAllText}>Show All</ThemedText>
                     <Ionicons name="chevron-forward" size={16} color={colors.primary} />
                   </TouchableOpacity>
                 </View>
@@ -240,7 +240,6 @@ export default function MyPageScreen() {
             </View>
           </View>
 
-          {/* 設定セクション */}
           <View style={styles.settingsSection}>
             {settingItems.map((section, sectionIndex) => (
               <View key={sectionIndex} style={styles.settingsGroup}>

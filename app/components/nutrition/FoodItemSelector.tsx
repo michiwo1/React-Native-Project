@@ -99,7 +99,7 @@ export default function FoodItemSelector({ onSelect }: Props) {
         <Ionicons name="search" size={20} color="#8E8E93" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="食品を検索"
+          placeholder="Search food"
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholderTextColor="#8E8E93"
@@ -134,7 +134,7 @@ export default function FoodItemSelector({ onSelect }: Props) {
         </View>
       ) : !selectedCategory ? (
         <View style={styles.noSelectionContainer}>
-          <Text style={styles.noSelectionText}>カテゴリーを選択してください</Text>
+          <Text style={styles.noSelectionText}>Please select a category</Text>
         </View>
       ) : (
         <FlatList
@@ -148,11 +148,11 @@ export default function FoodItemSelector({ onSelect }: Props) {
               <View style={styles.foodItemContent}>
                 <Text style={styles.foodItemName}>{item.name}</Text>
                 <Text style={styles.foodItemQuantity}>
-                  {item.base_quantity}{item.base_unit}あたり
+                  per {item.base_quantity}{item.base_unit}
                 </Text>
                 <View style={styles.nutrientsContainer}>
                   {item.nutrients
-                    .filter(n => ['カロリー', 'タンパク質', '脂質', '炭水化物'].includes(n.nutrient_type.name))
+                    .filter(n => ['Calories', 'Protein', 'Fat', 'Carbs'].includes(n.nutrient_type.name))
                     .map((n, index) => (
                       <View key={index} style={styles.nutrientItem}>
                         <Text style={styles.nutrientLabel}>{n.nutrient_type.name}</Text>

@@ -11,7 +11,7 @@ type UserProfile = {
   protein_target: number;
   carb_target: number;
   fat_target: number;
-  goal_type: string; // 文字列型に変更
+  goal_type: string;
   weight: number;
 };
 
@@ -101,13 +101,13 @@ export default function NutritionScreen() {
           const nutrientValue = nutrient.amount_per_unit || 0;
           console.log('Processing nutrient:', nutrientName, 'with value:', nutrientValue);
           
-          if (nutrientName.includes('calor') || nutrientName.includes('カロリー')) {
+          if (nutrientName.includes('calor') || nutrientName.includes('calories')) {
             totals.calories += nutrientValue * ratio;
-          } else if (nutrientName.includes('protein') || nutrientName.includes('タンパク')) {
+          } else if (nutrientName.includes('protein') || nutrientName.includes('proteins')) {
             totals.protein += nutrientValue * ratio;
-          } else if (nutrientName.includes('carb') || nutrientName.includes('炭水')) {
+          } else if (nutrientName.includes('carb') || nutrientName.includes('carbohydrates')) {
             totals.carbs += nutrientValue * ratio;
-          } else if (nutrientName.includes('fat') || nutrientName.includes('脂')) {
+          } else if (nutrientName.includes('fat') || nutrientName.includes('fats')) {
             totals.fat += nutrientValue * ratio;
           }
         });
@@ -137,7 +137,7 @@ export default function NutritionScreen() {
       const data = await response.json();
       console.log('Received meals data:', data);
       
-      // 今日の食事のみをフィルタリング
+      // Filter only today's meals
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
@@ -171,7 +171,7 @@ export default function NutritionScreen() {
       }
       const data = await response.json();
       
-      // 目標タイプに基づいて栄養目標値を調整
+      // Adjust nutrition targets based on goal type
       const adjustedProfile = {
         ...data,
         calorie_target: calculateCalorieTarget(data.weight, data.goal_type),
@@ -186,49 +186,49 @@ export default function NutritionScreen() {
     }
   };
 
-  // 体重と目標タイプに基づいて各栄養素の目標値を計算する関数
+  // Calculate nutrient targets based on weight and goal type
   const calculateCalorieTarget = (weight: number, goalType: string) => {
-    const baseCalories = weight * 30; // 基礎代謝を体重×30で概算
+    const baseCalories = weight * 30; // Estimate BMR as weight × 30
     switch (goalType) {
-      case '筋肥大':
-        return Math.round(baseCalories * 1.2); // 筋肥大時は20%増
-      case '減量':
-        return Math.round(baseCalories * 0.8); // 減量時は20%減
+      case 'Muscle Gain':
+        return Math.round(baseCalories * 1.2); // Increase by 20% for muscle gain
+      case 'Weight Loss':
+        return Math.round(baseCalories * 0.8); // Decrease by 20% for weight loss
       default:
-        return Math.round(baseCalories); // 維持
+        return Math.round(baseCalories); // Maintain current level
     }
   };
 
   const calculateProteinTarget = (weight: number, goalType: string) => {
     switch (goalType) {
-      case '筋肥大':
-        return Math.round(weight * 2.2); // 筋肥大時は体重×2.2g
-      case '減量':
-        return Math.round(weight * 2.4); // 減量時は体重×2.4g
+      case 'Muscle Gain':
+        return Math.round(weight * 2.2); // 2.2g per kg for muscle gain
+      case 'Weight Loss':
+        return Math.round(weight * 2.4); // 2.4g per kg for weight loss
       default:
-        return Math.round(weight * 2.0); // 維持時は体重×2.0g
+        return Math.round(weight * 2.0); // 2.0g per kg for maintenance
     }
   };
 
   const calculateCarbTarget = (weight: number, goalType: string) => {
     switch (goalType) {
-      case '筋肥大':
-        return Math.round(weight * 6); // 筋肥大時は体重×6g
-      case '減量':
-        return Math.round(weight * 3); // 減量時は体重×3g
+      case 'Muscle Gain':
+        return Math.round(weight * 6); // 6g per kg for muscle gain
+      case 'Weight Loss':
+        return Math.round(weight * 3); // 3g per kg for weight loss
       default:
-        return Math.round(weight * 4); // 維持時は体重×4g
+        return Math.round(weight * 4); // 4g per kg for maintenance
     }
   };
 
   const calculateFatTarget = (weight: number, goalType: string) => {
     switch (goalType) {
-      case '筋肥大':
-        return Math.round(weight * 1.5); // 筋肥大時は体重×1.5g
-      case '減量':
-        return Math.round(weight * 1.0); // 減量時は体重×1.0g
+      case 'Muscle Gain':
+        return Math.round(weight * 1.5); // 1.5g per kg for muscle gain
+      case 'Weight Loss':
+        return Math.round(weight * 1.0); // 1.0g per kg for weight loss
       default:
-        return Math.round(weight * 1.2); // 維持時は体重×1.2g
+        return Math.round(weight * 1.2); // 1.2g per kg for maintenance
     }
   };
 
@@ -241,27 +241,39 @@ export default function NutritionScreen() {
     }, [token])
   );
 
+  // Add translation for goal types
+  const translateGoalType = (goalType: string) => {
+    switch (goalType) {
+      case 'Muscle Gain':
+        return 'Muscle Gain';
+      case 'Weight Loss':
+        return 'Weight Loss';
+      default:
+        return 'Maintenance';
+    }
+  };
+
   const nutrients: NutrientProgress[] = [
     { 
-      label: 'カロリー', 
+      label: 'Calories', 
       current: totalNutrients.calories, 
       target: userProfile?.calorie_target || 2500, 
       color: '#007AFF' 
     },
     { 
-      label: 'タンパク質', 
+      label: 'Protein', 
       current: totalNutrients.protein, 
       target: userProfile?.protein_target || 150, 
       color: '#34C759' 
     },
     { 
-      label: '炭水化物', 
+      label: 'Carbs', 
       current: totalNutrients.carbs, 
       target: userProfile?.carb_target || 300, 
       color: '#FF9500' 
     },
     { 
-      label: '脂質', 
+      label: 'Fat', 
       current: totalNutrients.fat, 
       target: userProfile?.fat_target || 80, 
       color: '#FF3B30' 
@@ -273,26 +285,26 @@ export default function NutritionScreen() {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.light.tint} />
-          <Text style={styles.loadingText}>データを読み込み中...</Text>
+          <Text style={styles.loadingText}>Loading data...</Text>
         </View>
       ) : (
         <ScrollView style={styles.scrollView}>
-          <Text style={styles.title}>栄養管理</Text>
+          <Text style={styles.title}>Nutrition Management</Text>
           
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>今日の摂取状況</Text>
+            <Text style={styles.sectionTitle}>Today's Intake</Text>
             {userProfile && (
               <View style={styles.goalTypeContainer}>
                 <Text style={styles.goalTypeText}>
-                  目標タイプ: {userProfile.goal_type}
+                  Goal Type: {translateGoalType(userProfile.goal_type)}
                 </Text>
                 <Text style={styles.calculationText}>
-                  現在の体重: {userProfile.weight}kg
+                  Current Weight: {userProfile.weight}kg
                 </Text>
                 <Text style={styles.calculationText}>
-                  {userProfile.goal_type === '減量' ? '減量モード - 基礎代謝×0.8倍' :
-                   userProfile.goal_type === '筋肥大' ? '筋肥大モード - 基礎代謝×1.2倍' :
-                   '維持モード - 基礎代謝を維持'}
+                  {userProfile.goal_type === 'Weight Loss' ? 'Weight Loss Mode - BMR ×0.8' :
+                   userProfile.goal_type === 'Muscle Gain' ? 'Muscle Gain Mode - BMR ×1.2' :
+                   'Maintenance Mode - Maintaining BMR'}
                 </Text>
               </View>
             )}
@@ -314,18 +326,18 @@ export default function NutritionScreen() {
                   styles.nutrientValue,
                   nutrient.current > nutrient.target && { color: '#FF3B30' }
                 ]}>
-                  {nutrient.current.toLocaleString()}/{nutrient.target.toLocaleString()} {nutrient.label === 'カロリー' ? 'kcal' : 'g'}
+                  {nutrient.current.toLocaleString()}/{nutrient.target.toLocaleString()} {nutrient.label === 'Calories' ? 'kcal' : 'g'}
                 </Text>
               </View>
             ))}
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>食事記録</Text>
+            <Text style={styles.sectionTitle}>Meal Records</Text>
             {meals.length === 0 ? (
               <View style={styles.emptyStateContainer}>
-                <Text style={styles.emptyStateText}>今日の食事記録はまだありません</Text>
-                <Text style={styles.emptyStateSubText}>「食事を記録」から記録を始めましょう</Text>
+                <Text style={styles.emptyStateText}>No meal records for today</Text>
+                <Text style={styles.emptyStateSubText}>Start recording from "Record Meal"</Text>
               </View>
             ) : (
               meals.map((meal) => (
@@ -333,7 +345,11 @@ export default function NutritionScreen() {
                   <View style={styles.mealHeader}>
                     <Text style={styles.mealTitle}>{meal.meal_type.name}</Text>
                     <Text style={styles.mealTime}>
-                      {new Date(meal.eaten_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(meal.eaten_at).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: true 
+                      })}
                     </Text>
                   </View>
                   {meal.items.map((item) => (
@@ -354,14 +370,14 @@ export default function NutritionScreen() {
                 style={[styles.actionButton, styles.secondaryButton]}
                 onPress={() => router.push('/nutrition/manual-input')}
               >
-                <Text style={[styles.actionButtonText, styles.secondaryButtonText]}>栄養成分を手動入力</Text>
+                <Text style={[styles.actionButtonText, styles.secondaryButtonText]}>Manual Input</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
                 style={[styles.actionButton, styles.aiButton]}
                 onPress={() => router.push('/nutrition/ai-advice')}
               >
-                <Text style={[styles.actionButtonText, styles.aiButtonText]}>AIに食事アドバイスを相談する</Text>
+                <Text style={[styles.actionButtonText, styles.aiButtonText]}>Get AI Advice</Text>
               </TouchableOpacity>
             </View>
 
@@ -369,7 +385,7 @@ export default function NutritionScreen() {
               style={[styles.actionButton, styles.primaryButton]}
               onPress={() => router.push('/nutrition/record-meal')}
             >
-              <Text style={[styles.actionButtonText, styles.primaryButtonText]}>食事を記録</Text>
+              <Text style={[styles.actionButtonText, styles.primaryButtonText]}>Record Meal</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

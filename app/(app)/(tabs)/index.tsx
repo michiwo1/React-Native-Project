@@ -127,7 +127,7 @@ export default function HomeScreen() {
       }
       const data = await response.json();
       
-      // 今日の食事のみをフィルタリング
+      // Filter today's meals only
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
@@ -137,7 +137,7 @@ export default function HomeScreen() {
         return mealDate.getTime() === today.getTime();
       });
 
-      // 栄養価を計算
+      // Calculate nutrients
       const totals = {
         calories: 0,
         protein: 0,
@@ -157,9 +157,9 @@ export default function HomeScreen() {
             const nutrientName = nutrient.nutrient_type.name.toLowerCase();
             const nutrientValue = nutrient.amount_per_unit || 0;
             
-            if (nutrientName.includes('calor') || nutrientName.includes('カロリー')) {
+            if (nutrientName.includes('calor') || nutrientName.includes('calories')) {
               totals.calories += nutrientValue * ratio;
-            } else if (nutrientName.includes('protein') || nutrientName.includes('タンパク')) {
+            } else if (nutrientName.includes('protein') || nutrientName.includes('protein')) {
               totals.protein += nutrientValue * ratio;
             }
           });
@@ -179,25 +179,25 @@ export default function HomeScreen() {
   };
 
   const calculateCalorieTarget = (weight: number, goalType: string) => {
-    const baseCalories = weight * 30; // 基礎代謝を体重×30で概算
+    const baseCalories = weight * 30; // Estimate BMR as weight × 30
     switch (goalType) {
-      case '筋肥大':
-        return Math.round(baseCalories * 1.2); // 筋肥大時は20%増
-      case '減量':
-        return Math.round(baseCalories * 0.8); // 減量時は20%減
+      case 'Muscle Gain':
+        return Math.round(baseCalories * 1.2); // 20% increase for muscle gain
+      case 'Weight Loss':
+        return Math.round(baseCalories * 0.8); // 20% decrease for weight loss
       default:
-        return Math.round(baseCalories); // 維持
+        return Math.round(baseCalories); // Maintenance
     }
   };
 
   const calculateProteinTarget = (weight: number, goalType: string) => {
     switch (goalType) {
-      case '筋肥大':
-        return Math.round(weight * 2.2); // 筋肥大時は体重×2.2g
-      case '減量':
-        return Math.round(weight * 2.4); // 減量時は体重×2.4g
+      case 'Muscle Gain':
+        return Math.round(weight * 2.2); // Muscle gain time is weight × 2.2g
+      case 'Weight Loss':
+        return Math.round(weight * 2.4); // Weight loss time is weight × 2.4g
       default:
-        return Math.round(weight * 2.0); // 維持時は体重×2.0g
+        return Math.round(weight * 2.0); // Maintenance time is weight × 2.0g
     }
   };
 
@@ -213,7 +213,7 @@ export default function HomeScreen() {
       }
       const data = await response.json();
       
-      // 目標タイプに基づいて栄養目標値を調整
+      // Adjust nutrient targets based on goal type
       const adjustedProfile = {
         ...data,
         calorie_target: calculateCalorieTarget(data.weight, data.goal_type),
@@ -440,13 +440,13 @@ export default function HomeScreen() {
       
       if (!response.ok) {
         if (response.status === 400 && data.ongoingSession) {
-          // 進行中のセッションがある場合
+          // When there's an ongoing session
           Alert.alert(
-            '進行中のトレーニング',
-            'まだ終了していないトレーニングがあります。\n先に進行中のトレーニングを終了してください。',
+            'Ongoing Training',
+            'You have an unfinished training session.\nPlease complete your ongoing training first.',
             [
               {
-                text: 'キャンセル',
+                text: 'Cancel',
                 style: 'cancel',
               },
             ],
@@ -461,8 +461,8 @@ export default function HomeScreen() {
     } catch (error) {
       console.error('Error starting workout:', error);
       Alert.alert(
-        'エラー',
-        'トレーニングの開始に失敗しました。\nもう一度お試しください。',
+        'Error',
+        'Failed to start training.\nPlease try again.',
         [{ text: 'OK' }]
       );
     }
@@ -475,7 +475,7 @@ export default function HomeScreen() {
         
         <View style={styles.todayWorkout}>
           <TouchableOpacity style={styles.accordionHeader} onPress={toggleAccordion}>
-            <ThemedText style={styles.sectionTitle}>今日のトレーニング</ThemedText>
+            <ThemedText style={styles.sectionTitle}>Today's Training</ThemedText>
             <Ionicons 
               name="chevron-down" 
               size={24} 
@@ -496,7 +496,7 @@ export default function HomeScreen() {
             ]}
           >
             {loading ? (
-              <ThemedText>読み込み中...</ThemedText>
+              <ThemedText>Loading...</ThemedText>
             ) : plans.length > 0 ? (
               <ScrollView style={styles.plansScrollContainer}>
                 {plans.map((plan) => (
@@ -508,13 +508,13 @@ export default function HomeScreen() {
                     <View style={styles.workoutInfo}>
                       <ThemedText style={styles.workoutText}>{plan.name}</ThemedText>
                       <ThemedText style={styles.exerciseCount}>
-                        {plan.exercises.length}種目
+                        {plan.exercises.length} exercises
                       </ThemedText>
                       <ThemedText style={[styles.duration]} numberOfLines={1} ellipsizeMode="tail">
                         {plan.exercises.map(e => e.exercise.name).join(', ')}
                       </ThemedText>
                     </View>
-                    <ThemedText style={styles.startButton}>開始</ThemedText>
+                    <ThemedText style={styles.startButton}>Start</ThemedText>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -539,7 +539,7 @@ export default function HomeScreen() {
                   fontWeight: '600',
                   marginBottom: 4,
                 }}>
-                  プランが未設定です
+                  No Plans Set
                 </ThemedText>
                 <ThemedText style={{ 
                   fontSize: 14,
@@ -547,7 +547,7 @@ export default function HomeScreen() {
                   textAlign: 'center',
                   marginBottom: 8,
                 }}>
-                  新しいトレーニングプランを作成して{'\n'}トレーニングを始めましょう
+                  Create a new training plan{'\n'}to start your workout
                 </ThemedText>
               </View>
             )}
@@ -565,7 +565,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/workout/exercises')}
           >
             <ThemedText style={{ color: '#FFFFFF', fontWeight: '600' }}>
-              今日のトレーニング始める
+              Start Today's Training
             </ThemedText>
           </TouchableOpacity>
 
@@ -582,72 +582,74 @@ export default function HomeScreen() {
             onPress={() => router.push('/plan/create')}
           >
             <ThemedText style={{ color: colors.tint, fontWeight: '600' }}>
-              新しいプランを作成
+              Create New Plan
             </ThemedText>
           </TouchableOpacity>
         </View>
 
         <View style={styles.progressSection}>
-          <ThemedText style={styles.sectionTitle}>進捗状況</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Progress</ThemedText>
           <View style={styles.metricsContainer}>
             <TouchableOpacity style={styles.metricCardWrapper} onPress={handleWeightCardPress}>
               <MetricCard
-                title="体重"
-                value={weightData ? `${weightData.weight}kg` : '未設定'}
+                title="Weight"
+                value={weightData ? `${weightData.weight}kg` : 'Not Set'}
                 change={weightData?.change}
                 changeUnit="kg"
                 date={weightData ? new Date(weightData.date).toLocaleDateString('ja-JP') : undefined}
-                hint="クリックで体重を入力"
+                hint="Click to input weight"
                 isLoading={weightLoading}
               />
             </TouchableOpacity>
             <TouchableOpacity style={styles.metricCardWrapper} onPress={handleBenchPressCardPress}>
               <MetricCard
-                title={selectedExerciseRecord?.name || "種目を選択"}
-                value={selectedExerciseRecord ? `${selectedExerciseRecord.current}kg` : '未設定'}
+                title={selectedExerciseRecord?.name || "Select Exercise"}
+                value={selectedExerciseRecord ? `${selectedExerciseRecord.current}kg` : 'Not Set'}
                 change={selectedExerciseRecord?.change}
                 changeUnit="kg"
                 date={selectedExerciseRecord?.date ? new Date(selectedExerciseRecord.date).toLocaleDateString('ja-JP') : undefined}
-                hint="クリックで表示を変更"
+                hint="Click to change display"
                 isLoading={exerciseLoading}
               />
             </TouchableOpacity>
           </View>
           
           <View style={styles.nutritionBars}>
-            <ThemedText style={styles.sectionTitle}>栄養管理</ThemedText>
+            <ThemedText style={styles.sectionTitle}>Nutrition Management</ThemedText>
             {userProfile && (
               <View style={styles.goalTypeContainer}>
                 <ThemedText style={styles.goalTypeText}>
-                  目標タイプ: {userProfile.goal_type}
+                  Goal Type: {userProfile.goal_type === 'Weight Loss' ? 'Weight Loss' : 
+                              userProfile.goal_type === 'Muscle Gain' ? 'Muscle Gain' : 
+                              'Maintenance'}
                 </ThemedText>
                 <ThemedText style={styles.calculationText}>
-                  現在の体重: {userProfile.weight}kg
+                  Current Weight: {userProfile.weight}kg
                 </ThemedText>
                 <ThemedText style={styles.calculationText}>
-                  {userProfile.goal_type === '減量' ? '減量モード - 基礎代謝×0.8倍' :
-                   userProfile.goal_type === '筋肥大' ? '筋肥大モード - 基礎代謝×1.2倍' :
-                   '維持モード - 基礎代謝を維持'}
+                  {userProfile.goal_type === 'Weight Loss' ? 'Weight Loss Mode - BMR × 0.8' :
+                   userProfile.goal_type === 'Muscle Gain' ? 'Muscle Gain Mode - BMR × 1.2' :
+                   'Maintenance Mode - Maintain BMR'}
                 </ThemedText>
               </View>
             )}
             <View style={styles.barContainer}>
               <View style={styles.nutritionHeader}>
-                <ThemedText>タンパク質</ThemedText>
+                <ThemedText>Calories</ThemedText>
                 <ThemedText style={styles.nutritionTarget}>
-                  {nutritionLoading ? '読み込み中...' : `${Math.round(totalNutrients.protein)}g / ${userProfile?.protein_target || 150}g`}
-                </ThemedText>
-              </View>
-              <ProgressBar progress={nutritionLoading ? 0 : Math.min(totalNutrients.protein / (userProfile?.protein_target || 150), 1)} />
-            </View>
-            <View style={styles.barContainer}>
-              <View style={styles.nutritionHeader}>
-                <ThemedText>カロリー</ThemedText>
-                <ThemedText style={styles.nutritionTarget}>
-                  {nutritionLoading ? '読み込み中...' : `${Math.round(totalNutrients.calories)}kcal / ${userProfile?.calorie_target || 2500}kcal`}
+                  {nutritionLoading ? 'Loading...' : `${Math.round(totalNutrients.calories)}kcal / ${userProfile?.calorie_target || 2500}kcal`}
                 </ThemedText>
               </View>
               <ProgressBar progress={nutritionLoading ? 0 : Math.min(totalNutrients.calories / (userProfile?.calorie_target || 2500), 1)} />
+            </View>
+            <View style={styles.barContainer}>
+              <View style={styles.nutritionHeader}>
+                <ThemedText>Protein</ThemedText>
+                <ThemedText style={styles.nutritionTarget}>
+                  {nutritionLoading ? 'Loading...' : `${Math.round(totalNutrients.protein)}g / ${userProfile?.protein_target || 150}g`}
+                </ThemedText>
+              </View>
+              <ProgressBar progress={nutritionLoading ? 0 : Math.min(totalNutrients.protein / (userProfile?.protein_target || 150), 1)} />
             </View>
           </View>
         </View>

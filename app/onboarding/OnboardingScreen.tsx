@@ -20,9 +20,9 @@ export function OnboardingScreen({ step }: { step: number }) {
   const validateNumber = (value: string, min: number, max: number, field: string) => {
     if (value === '') return '';
     const num = Number(value);
-    if (isNaN(num)) return `数字を入力してください`;
-    if (num < min) return `${min}以上を入力してください`;
-    if (num > max) return `${max}以下を入力してください`;
+    if (isNaN(num)) return `Please enter a number`;
+    if (num < min) return `Please enter a value greater than ${min}`;
+    if (num > max) return `Please enter a value less than ${max}`;
     return '';
   };
 
@@ -37,13 +37,13 @@ export function OnboardingScreen({ step }: { step: number }) {
     let error = '';
     switch (field) {
       case 'height':
-        error = validateNumber(value, 100, 250, '身長');
+        error = validateNumber(value, 100, 250, 'Height');
         break;
       case 'weight':
-        error = validateNumber(value, 30, 200, '体重');
+        error = validateNumber(value, 30, 200, 'Weight');
         break;
       case 'age':
-        error = validateNumber(value, 13, 100, '年齢');
+        error = validateNumber(value, 13, 100, 'Age');
         break;
     }
     
@@ -54,15 +54,15 @@ export function OnboardingScreen({ step }: { step: number }) {
   };
 
   const handleUpdateProfile = async () => {
-    // 全てのフィールドが入力されているか確認
+    // Check if all fields are filled
     if (!height || !weight || !age) {
-      alert('全ての項目を入力してください');
+      alert('Please fill in all fields');
       return;
     }
 
-    // エラーがないか確認
+    // Check for errors
     if (errors.height || errors.weight || errors.age) {
-      alert('入力内容を確認してください');
+      alert('Please check your input');
       return;
     }
 
@@ -91,7 +91,7 @@ export function OnboardingScreen({ step }: { step: number }) {
       if (!response.ok) {
         const errorData = await response.text();
         console.error('Error response:', errorData);
-        throw new Error(`プロフィールの更新に失敗しました: ${errorData}`);
+        throw new Error(`Failed to update profile: ${errorData}`);
       }
 
       const data = await response.json();
@@ -104,46 +104,46 @@ export function OnboardingScreen({ step }: { step: number }) {
         message: error.message,
         stack: error.stack
       });
-      alert(error.message || 'プロフィールの更新に失敗しました');
+      alert(error.message || 'Failed to update profile');
     }
   };
 
   const screens = [
     {
-      title: 'ようこそ',
-      subtitle: 'あなたに最適なトレーニングプランを作成します',
-      button: '始める',
+      title: 'Welcome',
+      subtitle: 'Let\'s create your personalized training plan',
+      button: 'Get Started',
       onNext: () => router.push('/onboarding/1'),
     },
     {
-      title: '基本情報',
+      title: 'Basic Information',
       inputs: [
         { 
-          placeholder: '身長 (cm)', 
+          placeholder: 'Height (cm)', 
           value: height, 
           onChangeText: (value: string) => handleInputChange(value, setHeight, 'height'),
           error: errors.height
         },
         { 
-          placeholder: '体重 (kg)', 
+          placeholder: 'Weight (kg)', 
           value: weight, 
           onChangeText: (value: string) => handleInputChange(value, setWeight, 'weight'),
           error: errors.weight
         },
         { 
-          placeholder: '年齢', 
+          placeholder: 'Age', 
           value: age, 
           onChangeText: (value: string) => handleInputChange(value, setAge, 'age'),
           error: errors.age
         },
       ],
-      button: '次へ',
+      button: 'Next',
       onNext: handleUpdateProfile,
     },
     {
-      title: '目標を選択',
-      goals: ['筋肥大', '減量', '維持'],
-      button: '次へ',
+      title: 'Select Your Goal',
+      goals: ['Muscle Gain', 'Weight Loss', 'Maintenance'],
+      button: 'Next',
       onNext: async () => {
         try {
           const response = await fetch(`${API_URL}/api/user/profile`, {
@@ -160,7 +160,7 @@ export function OnboardingScreen({ step }: { step: number }) {
           if (!response.ok) {
             const errorData = await response.text();
             console.error('Error response:', errorData);
-            throw new Error(`目標の保存に失敗しました: ${errorData}`);
+            throw new Error(`Failed to save goal: ${errorData}`);
           }
 
           router.replace('/(app)/(tabs)');
@@ -170,7 +170,7 @@ export function OnboardingScreen({ step }: { step: number }) {
             message: error.message,
             stack: error.stack
           });
-          alert(error.message || '目標の保存に失敗しました');
+          alert(error.message || 'Failed to save goal');
         }
       },
     },

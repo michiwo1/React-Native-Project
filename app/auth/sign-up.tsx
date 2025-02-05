@@ -19,45 +19,45 @@ export default function SignUpScreen() {
     // メールアドレスの形式チェック（より厳密な正規表現）
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!email) {
-      setErrorMessage('メールアドレスを入力してください');
+      setErrorMessage('Please enter your email address');
       return false;
     }
     if (!emailRegex.test(email)) {
-      setErrorMessage('有効なメールアドレスを入力してください');
+      setErrorMessage('Please enter a valid email address');
       return false;
     }
 
     // 表示名のチェック
     if (!displayName) {
-      setErrorMessage('表示名を入力してください');
+      setErrorMessage('Please enter your display name');
       return false;
     }
     if (displayName.length < 2) {
-      setErrorMessage('表示名は2文字以上で入力してください');
+      setErrorMessage('Display name must be at least 2 characters');
       return false;
     }
     if (displayName.length > 20) {
-      setErrorMessage('表示名は20文字以下で入力してください');
+      setErrorMessage('Display name must be 20 characters or less');
       return false;
     }
 
     // パスワードのチェック
     if (!password) {
-      setErrorMessage('パスワードを入力してください');
+      setErrorMessage('Please enter your password');
       return false;
     }
     if (password.length < 8) {
-      setErrorMessage('パスワードは8文字以上で入力してください');
+      setErrorMessage('Password must be at least 8 characters');
       return false;
     }
     if (!/(?=.*[A-Za-z])(?=.*\d)/.test(password)) {
-      setErrorMessage('パスワードは英字と数字を含める必要があります');
+      setErrorMessage('Password must contain both letters and numbers');
       return false;
     }
 
     // パスワード確認のチェック
     if (password !== confirmPassword) {
-      setErrorMessage('パスワードが一致しません');
+      setErrorMessage('Passwords do not match');
       return false;
     }
 
@@ -93,16 +93,16 @@ export default function SignUpScreen() {
 
           if (!response.ok) {
             if (data.message === 'Email already exists') {
-              setErrorMessage('このメールアドレスは既に登録されています');
+              setErrorMessage('This email address is already registered');
               return;
             }
-            setErrorMessage(data.message || 'サインアップに失敗しました');
+            setErrorMessage(data.message || 'Failed to sign up');
             return;
           }
 
           // データの存在確認を追加
           if (!data?.data?.token || !data?.data?.user) {
-            setErrorMessage('サーバーからの応答が不正です');
+            setErrorMessage('Invalid server response');
             return;
           }
 
@@ -116,22 +116,22 @@ export default function SignUpScreen() {
           router.push("/onboarding/1");
         } catch (parseError) {
           console.error('Parse error:', parseError);
-          setErrorMessage('サーバーとの通信に失敗しました。しばらく時間をおいて再度お試しください。');
+          setErrorMessage('Communication with server failed. Please try again later.');
           return;
         }
       } catch (error) {
         console.error('Error reading response:', error);
-        setErrorMessage('サーバーとの通信に失敗しました。ネットワーク接続を確認してください。');
+        setErrorMessage('Failed to communicate with server. Please check your network connection.');
       }
     } catch (error) {
       console.error('Signup error:', error);
-      setErrorMessage('サーバーとの通信に失敗しました。ネットワーク接続を確認してください。');
+      setErrorMessage('Failed to communicate with server. Please check your network connection.');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>アカウント作成</Text>
+      <Text style={styles.title}>Create Account</Text>
       
       {errorMessage ? (
         <Text style={styles.errorMessage}>{errorMessage}</Text>
@@ -139,7 +139,7 @@ export default function SignUpScreen() {
       
       <TextInput
         style={styles.input}
-        placeholder="メールアドレス"
+        placeholder="Email Address"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -148,14 +148,14 @@ export default function SignUpScreen() {
 
       <TextInput
         style={styles.input}
-        placeholder="表示名"
+        placeholder="Display Name"
         value={displayName}
         onChangeText={setDisplayName}
       />
       
       <TextInput
         style={styles.input}
-        placeholder="パスワード"
+        placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -163,20 +163,20 @@ export default function SignUpScreen() {
 
       <TextInput
         style={styles.input}
-        placeholder="パスワード（確認）"
+        placeholder="Confirm Password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
       />
 
       <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-        <Text style={styles.buttonText}>登録</Text>
+        <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
 
       <View style={styles.linkContainer}>
-        <Text>すでにアカウントをお持ちの方は </Text>
+        <Text>Already have an account? </Text>
         <Link href="/auth/sign-in" style={styles.link}>
-          ログイン
+          Sign In
         </Link>
       </View>
     </View>

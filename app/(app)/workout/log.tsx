@@ -387,14 +387,14 @@ export default function WorkoutLogScreen() {
       });
 
       if (!response.ok) {
-        throw new Error('AIアドバイスの取得に失敗しました');
+        throw new Error('Failed to get AI advice');
       }
 
       const data = await response.json();
       setAiResponse(data.response);
     } catch (error) {
       console.error('Error getting AI advice:', error);
-      Alert.alert('エラー', 'AIアドバイスの取得に失敗しました');
+      Alert.alert('Error', 'Failed to get AI advice');
     } finally {
       setIsLoading(false);
     }
@@ -520,7 +520,7 @@ export default function WorkoutLogScreen() {
                 activeOpacity={0.7}
               >
                 <View style={styles.aiAdviceTitleContainer}>
-                  <ThemedText style={styles.aiAdviceTitle}>AIアドバイス</ThemedText>
+                  <ThemedText style={styles.aiAdviceTitle}>AI Advice</ThemedText>
                   <ThemedText style={styles.aiAdviceArrow}>
                     {isAiAdviceExpanded ? '▼' : '▶'}
                   </ThemedText>
@@ -541,7 +541,7 @@ export default function WorkoutLogScreen() {
                   <View style={styles.aiInputContainer}>
                     <TextInput
                       style={styles.aiInput}
-                      placeholder="質問を入力してください"
+                      placeholder="Enter your question"
                       value={aiQuestion}
                       onChangeText={setAiQuestion}
                       multiline
@@ -556,7 +556,7 @@ export default function WorkoutLogScreen() {
                       disabled={isLoading || !aiQuestion.trim()}
                     >
                       <ThemedText style={styles.aiSendButtonText}>
-                        {isLoading ? '送信中...' : '送信'}
+                        {isLoading ? 'Sending...' : 'Send'}
                       </ThemedText>
                     </TouchableOpacity>
                   </View>
@@ -573,7 +573,7 @@ export default function WorkoutLogScreen() {
 
                   {!aiResponse && (
                     <ThemedText style={styles.aiHintText}>
-                      トレーニングについて、AIに質問してください。
+                      Ask AI about your training.
                     </ThemedText>
                   )}
                 </View>
@@ -680,14 +680,14 @@ export default function WorkoutLogScreen() {
                 }
               }}
             >
-              <ThemedText style={styles.addExerciseText}>+ エクササイズを追加</ThemedText>
+              <ThemedText style={styles.addExerciseText}>+ Add Exercise</ThemedText>
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.aiAdviceButton}
               onPress={() => setIsAiAdviceVisible(true)}
             >
-              <ThemedText style={styles.aiAdviceText}>AIアドバイス</ThemedText>
+              <ThemedText style={styles.aiAdviceText}>AI Advice</ThemedText>
             </TouchableOpacity>
           </View>
         </View>

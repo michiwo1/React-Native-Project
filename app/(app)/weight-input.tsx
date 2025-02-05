@@ -32,7 +32,7 @@ export default function WeightInputScreen() {
       });
 
       if (!response.ok) {
-        throw new Error('体重履歴の取得に失敗しました');
+        throw new Error('Failed to fetch weight history');
       }
 
       const data = await response.json();
@@ -52,7 +52,7 @@ export default function WeightInputScreen() {
     try {
       const weightValue = parseFloat(weight);
       if (isNaN(weightValue)) {
-        alert('有効な体重を入力してください');
+        alert('Please enter a valid weight');
         return;
       }
 
@@ -66,7 +66,7 @@ export default function WeightInputScreen() {
       });
 
       if (!response.ok) {
-        throw new Error('体重の記録に失敗しました');
+        throw new Error('Failed to save weight');
       }
 
       await fetchWeightHistory(); // 保存後に履歴を更新
@@ -74,7 +74,7 @@ export default function WeightInputScreen() {
       router.replace('/(app)/(tabs)'); // ホーム画面に戻る
     } catch (error) {
       console.error('Error saving weight:', error);
-      alert('体重の記録中にエラーが発生しました');
+      alert('An error occurred while saving weight');
     }
   };
 
@@ -82,7 +82,7 @@ export default function WeightInputScreen() {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        alert('カメラの使用許可が必要です');
+        alert('Camera permission is required');
         return;
       }
 
@@ -93,11 +93,11 @@ export default function WeightInputScreen() {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        alert('OCR機能は現在利用できません');
+        alert('OCR feature is currently unavailable');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('写真の撮影中にエラーが発生しました');
+      alert('An error occurred while taking the photo');
     }
   };
 
@@ -194,7 +194,7 @@ export default function WeightInputScreen() {
             style={styles.backIcon}
           />
         </TouchableOpacity>
-        <ThemedText style={styles.header}>体重を入力</ThemedText>
+        <ThemedText style={styles.header}>Enter Weight</ThemedText>
       </View>
 
       <TextInput
@@ -202,15 +202,15 @@ export default function WeightInputScreen() {
         value={weight}
         onChangeText={setWeight}
         keyboardType="decimal-pad"
-        placeholder="体重を入力 (kg)"
+        placeholder="Enter weight (kg)"
         placeholderTextColor={colors.text}
       />
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <ThemedText style={styles.saveButtonText}>保存</ThemedText>
+        <ThemedText style={styles.saveButtonText}>Save</ThemedText>
       </TouchableOpacity>
 
       <View style={styles.historyContainer}>
-        <ThemedText style={styles.historyHeader}>履歴</ThemedText>
+        <ThemedText style={styles.historyHeader}>History</ThemedText>
         {weightHistory.map((item) => (
           <View key={item.id} style={styles.historyItem}>
             <ThemedText style={styles.historyDate}>{formatDate(item.measured_at)}</ThemedText>

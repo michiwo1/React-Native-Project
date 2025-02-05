@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { API_URL } from '@/constants/api';
 import ModalSelector from 'react-native-modal-selector';
 
-// 種目データの型定義
+// Exercise data type definition
 type Exercise = {
   id: string;
   name: string;
@@ -63,7 +63,7 @@ export default function LibraryScreen() {
       
       if (data.length === 0) {
         setWeightData({
-          labels: ['データなし'],
+          labels: ['No data'],
           datasets: [{
             data: [0],
             color: () => '#2563EB',
@@ -73,7 +73,7 @@ export default function LibraryScreen() {
         return;
       }
       
-      // グラフ用にデータを変換
+      // Convert data for graph
       const formattedData = {
         labels: data.map(d => {
           const date = new Date(d.date);
@@ -89,9 +89,9 @@ export default function LibraryScreen() {
       setWeightData(formattedData);
     } catch (error) {
       console.error('Error fetching weight history:', error);
-      // エラー時のフォールバックデータ
+      // Fallback data for error case
       setWeightData({
-        labels: ['エラー'],
+        labels: ['Error'],
         datasets: [{
           data: [0],
           color: () => '#2563EB',
@@ -313,11 +313,11 @@ export default function LibraryScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <ThemedText style={styles.title}>統計</ThemedText>
+      <ThemedText style={styles.title}>Statistics</ThemedText>
       
       <View style={styles.chartContainer}>
-        <ThemedText style={styles.chartTitle}>体重の推移</ThemedText>
-        <ThemedText style={styles.chartSubtitle}>過去6ヶ月</ThemedText>
+        <ThemedText style={styles.chartTitle}>Weight Progress</ThemedText>
+        <ThemedText style={styles.chartSubtitle}>Last 6 months</ThemedText>
         {loading ? (
           <ActivityIndicator size="large" color="#2563EB" style={styles.loader} />
         ) : (
@@ -339,11 +339,11 @@ export default function LibraryScreen() {
       </View>
 
       <View style={styles.exerciseSection}>
-        <ThemedText style={styles.sectionTitle}>種目別の最大重量の推移</ThemedText>
+        <ThemedText style={styles.sectionTitle}>Maximum Weight Progress by Exercise</ThemedText>
         <View style={styles.selectorContainer}>
           <ModalSelector
             data={[
-              { key: '', label: '種目を選択' },
+              { key: '', label: 'Select Exercise' },
               ...exercises.slice(0, 100).map(exercise => ({
                 key: exercise.id,
                 label: exercise.name
@@ -360,14 +360,14 @@ export default function LibraryScreen() {
             optionTextStyle={styles.optionText}
             selectedItemTextStyle={styles.selectedOptionText}
             cancelTextStyle={styles.cancelText}
-            cancelText="キャンセル"
+            cancelText="Cancel"
             overlayStyle={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
             touchableActiveOpacity={0.7}
             listType="FLATLIST"
             keyExtractor={(item) => item.key}
             ListHeaderComponent={
               <View style={styles.modalHeader}>
-                <ThemedText style={styles.modalTitle}>種目を選択</ThemedText>
+                <ThemedText style={styles.modalTitle}>Select Exercise</ThemedText>
               </View>
             }
           >
@@ -376,7 +376,7 @@ export default function LibraryScreen() {
                 styles.selectorButtonText,
                 selectedExercise && { color: '#1F2937', fontWeight: '600' }
               ]}>
-                {selectedExercise ? selectedExercise.name : 'エクササイズを選択'}
+                {selectedExercise ? selectedExercise.name : 'Select Exercise'}
               </ThemedText>
               <ThemedText style={styles.selectorIcon}>▼</ThemedText>
             </View>
@@ -386,9 +386,9 @@ export default function LibraryScreen() {
         {selectedExercise && (
           <View style={styles.exerciseChartContainer}>
             <ThemedText style={[styles.chartTitle, { color: '#2563EB' }]}>
-              {selectedExercise.name}の推移
+              {selectedExercise.name} Progress
             </ThemedText>
-            <ThemedText style={styles.chartSubtitle}>過去6ヶ月</ThemedText>
+            <ThemedText style={styles.chartSubtitle}>Last 6 months</ThemedText>
             <LineChart
               data={getExerciseData(selectedExercise)}
               width={Dimensions.get('window').width - 32}

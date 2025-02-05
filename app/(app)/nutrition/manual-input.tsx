@@ -29,31 +29,31 @@ export default function ManualInputScreen() {
   );
 
   const mealTypes = [
-    { label: '朝食', value: '朝食' },
-    { label: '昼食', value: '昼食' },
-    { label: '夕食', value: '夕食' },
-    { label: '間食', value: '間食' },
+    { label: 'Breakfast', value: 'Breakfast' },
+    { label: 'Lunch', value: 'Lunch' },
+    { label: 'Dinner', value: 'Dinner' },
+    { label: 'Snack', value: 'Snack' },
   ];
 
   const foodCategories = [
-    { label: '主食', value: '主食' },
-    { label: 'タンパク源', value: 'タンパク源' },
-    { label: '野菜', value: '野菜' },
-    { label: '果物', value: '果物' },
-    { label: '乳製品', value: '乳製品' },
-    { label: '調味料・油', value: '調味料・油' },
-    { label: '飲み物', value: '飲み物' },
-    { label: 'お菓子・デザート', value: 'お菓子・デザート' },
+    { label: 'Staple Food', value: 'Staple Food' },
+    { label: 'Protein Source', value: 'Protein Source' },
+    { label: 'Vegetables', value: 'Vegetables' },
+    { label: 'Fruits', value: 'Fruits' },
+    { label: 'Dairy Products', value: 'Dairy Products' },
+    { label: 'Seasonings & Oils', value: 'Seasonings & Oils' },
+    { label: 'Beverages', value: 'Beverages' },
+    { label: 'Snacks & Desserts', value: 'Snacks & Desserts' },
   ];
 
   const handleSubmit = async () => {
     if (!mealType) {
-      alert('食事の種類を選択してください');
+      alert('Please select a meal type');
       return;
     }
 
     if (!foodCategory) {
-      alert('食品カテゴリーを選択してください');
+      alert('Please select a food category');
       return;
     }
 
@@ -71,14 +71,14 @@ export default function ManualInputScreen() {
       );
 
       if (isNaN(date.getTime())) {
-        alert('正しい日付形式で入力してください（例：2024-01-25 14:30）');
+        alert('Please enter a valid date format (e.g., 2024-01-25 14:30)');
         return;
       }
 
       const requestData = {
         meal_type: mealType,
         food_category: foodCategory,
-        food_name: foodName || '手動入力',
+        food_name: foodName || 'Manual Input',
         eaten_at: date.toISOString(),
         nutrients: {
           calories: parseFloat(calories) || 0,
@@ -88,8 +88,6 @@ export default function ManualInputScreen() {
         },
         note,
       };
-
-      console.log('Sending request data:', requestData);
 
       const response = await fetch(`${API_URL}/api/meal/manual`, {
         method: 'POST',
@@ -109,7 +107,7 @@ export default function ManualInputScreen() {
       router.back();
     } catch (error) {
       console.error('Error saving meal:', error);
-      alert('保存に失敗しました。もう一度お試しください。');
+      alert('Failed to save meal. Please try again.');
     }
   };
 
@@ -120,13 +118,13 @@ export default function ManualInputScreen() {
       if (sourceType === 'camera') {
         permissionResult = await ImagePicker.requestCameraPermissionsAsync();
         if (!permissionResult.granted) {
-          alert('カメラへのアクセス許可が必要です');
+          alert('Camera permission is required');
           return;
         }
       } else {
         permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!permissionResult.granted) {
-          alert('写真へのアクセス許可が必要です');
+          alert('Photo library permission is required');
           return;
         }
       }
@@ -155,14 +153,8 @@ export default function ManualInputScreen() {
           type: 'image/jpeg',
           name: filename,
         } as any);
-
-
-        // リクエストの詳細をログ出力
-        console.log('Request URL:', `${API_URL}/api/meal/analyze-image`);
-        console.log('Token:', token);
         
         try {
-          console.log('Sending request...');
           const response = await fetch(`${API_URL}/api/ai/meal-analyze-image`, {
             method: 'POST',
             headers: {
@@ -172,11 +164,7 @@ export default function ManualInputScreen() {
             body: formData,
           });
 
-          console.log('Response status:', response.status);
-          console.log('Response headers:', response.headers);
-
           const responseText = await response.text();
-          console.log('Raw response:', responseText);
 
           if (!response.ok) {
             console.error('Error response:', responseText);
@@ -185,7 +173,6 @@ export default function ManualInputScreen() {
 
 
           const data = JSON.parse(responseText);
-          console.log('Parsed response data:', data);
           
           setFoodName(data.foodName || '');
           setCalories(data.nutrients?.calories?.toString() || '');
@@ -194,30 +181,30 @@ export default function ManualInputScreen() {
           setFat(data.nutrients?.fat?.toString() || '');
         } catch (error) {
           console.error('Error analyzing image:', error);
-          alert('画像の解析に失敗しました。もう一度お試しください。');
+          alert('Failed to analyze image. Please try again.');
         }
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      alert('画像の解析に失敗しました。もう一度お試しください。');
+      alert('Failed to analyze image. Please try again.');
     }
   };
 
   const showImageSourceOptions = () => {
     Alert.alert(
-      '画像を選択',
-      '画像の取得方法を選択してください',
+      'Select Image',
+      'Choose image source',
       [
         {
-          text: 'カメラで撮影',
+          text: 'Take Photo',
           onPress: () => handleImagePicker('camera'),
         },
         {
-          text: '写真から選択',
+          text: 'Choose from Library',
           onPress: () => handleImagePicker('library'),
         },
         {
-          text: 'キャンセル',
+          text: 'Cancel',
           style: 'cancel',
         },
       ],
@@ -231,17 +218,17 @@ export default function ManualInputScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>栄養成分を入力</Text>
+        <Text style={styles.headerTitle}>Enter Nutrition Info</Text>
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.card}>
           <TouchableOpacity style={styles.imagePickerButton} onPress={showImageSourceOptions}>
             <Ionicons name="camera" size={24} color="#fff" />
-            <Text style={styles.imagePickerButtonText}>写真で自動入力</Text>
+            <Text style={styles.imagePickerButtonText}>Auto-fill with Photo</Text>
           </TouchableOpacity>
 
-          <Text style={styles.sectionTitle}>食事の種類</Text>
+          <Text style={styles.sectionTitle}>Meal Type</Text>
           <View style={styles.mealTypeContainer}>
             {mealTypes.map((type) => (
               <TouchableOpacity
@@ -262,7 +249,7 @@ export default function ManualInputScreen() {
             ))}
           </View>
 
-          <Text style={styles.sectionTitle}>食品カテゴリー</Text>
+          <Text style={styles.sectionTitle}>Food Category</Text>
           <View style={styles.foodCategoryContainer}>
             {foodCategories.map((category) => (
               <TouchableOpacity
@@ -283,15 +270,15 @@ export default function ManualInputScreen() {
             ))}
           </View>
 
-          <Text style={styles.sectionTitle}>食品名</Text>
+          <Text style={styles.sectionTitle}>Food Name</Text>
           <TextInput
             style={styles.input}
             value={foodName}
             onChangeText={setFoodName}
-            placeholder="食品名を入力"
+            placeholder="Enter food name"
           />
 
-          <Text style={styles.sectionTitle}>日時</Text>
+          <Text style={styles.sectionTitle}>Date & Time</Text>
           <TextInput
             style={styles.input}
             value={dateString}
@@ -300,10 +287,10 @@ export default function ManualInputScreen() {
             editable={false}
           />
 
-          <Text style={styles.sectionTitle}>栄養成分</Text>
+          <Text style={styles.sectionTitle}>Nutrition Facts</Text>
           <View style={styles.nutrientInputContainer}>
             <View style={styles.nutrientInput}>
-              <Text style={styles.label}>カロリー</Text>
+              <Text style={styles.label}>Calories</Text>
               <TextInput
                 style={styles.input}
                 value={calories}
@@ -315,7 +302,7 @@ export default function ManualInputScreen() {
             </View>
 
             <View style={styles.nutrientInput}>
-              <Text style={styles.label}>タンパク質</Text>
+              <Text style={styles.label}>Protein</Text>
               <TextInput
                 style={styles.input}
                 value={protein}
@@ -327,7 +314,7 @@ export default function ManualInputScreen() {
             </View>
 
             <View style={styles.nutrientInput}>
-              <Text style={styles.label}>炭水化物</Text>
+              <Text style={styles.label}>Carbs</Text>
               <TextInput
                 style={styles.input}
                 value={carbs}
@@ -339,7 +326,7 @@ export default function ManualInputScreen() {
             </View>
 
             <View style={styles.nutrientInput}>
-              <Text style={styles.label}>脂質</Text>
+              <Text style={styles.label}>Fat</Text>
               <TextInput
                 style={styles.input}
                 value={fat}
@@ -351,12 +338,12 @@ export default function ManualInputScreen() {
             </View>
           </View>
 
-          <Text style={styles.sectionTitle}>メモ</Text>
+          <Text style={styles.sectionTitle}>Notes</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
             value={note}
             onChangeText={setNote}
-            placeholder="メモを入力"
+            placeholder="Enter notes"
             multiline
             numberOfLines={4}
           />
@@ -369,7 +356,7 @@ export default function ManualInputScreen() {
             onPress={handleSubmit}
             disabled={!mealType}
           >
-            <Text style={styles.submitButtonText}>保存する</Text>
+            <Text style={styles.submitButtonText}>Save</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
