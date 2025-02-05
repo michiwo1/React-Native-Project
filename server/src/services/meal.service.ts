@@ -3,6 +3,19 @@ import { CreateMealDto, CreateMealItemDto, CreateManualMealDto } from '../dtos/m
 
 const prisma = new PrismaClient();
 
+// Update meal type definition
+const VALID_MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+const VALID_FOOD_CATEGORIES = [
+  'Staple Foods',
+  'Protein Sources',
+  'Vegetables',
+  'Fruits',
+  'Dairy Products',
+  'Seasonings & Oils',
+  'Beverages',
+  'Snacks & Desserts'
+];
+
 export class MealService {
   async createMeal(userId: string, createMealDto: CreateMealDto) {
     const meal = await prisma.meal.create({
@@ -104,42 +117,46 @@ export class MealService {
 
   async createManualMeal(userId: string, createManualMealDto: CreateManualMealDto) {
     try {
-      console.log('Received meal type:', createManualMealDto.meal_type);
-      console.log('Received food category:', createManualMealDto.food_category);
+      // Validate meal type
+      if (!VALID_MEAL_TYPES.includes(createManualMealDto.meal_type)) {
+        throw new Error(`Invalid meal type: ${createManualMealDto.meal_type}`);
+      }
 
-      // 食事タイプのIDを取得
+      // Validate food category
+      if (!VALID_FOOD_CATEGORIES.includes(createManualMealDto.food_category)) {
+        throw new Error(`Invalid food category: ${createManualMealDto.food_category}`);
+      }
+
+      // Get meal type ID
       const mealType = await prisma.mealType.findFirst({
         where: {
           name: createManualMealDto.meal_type,
         },
       });
-      console.log('Found meal type:', mealType);
 
       if (!mealType) {
-        throw new Error(`Invalid meal type: ${createManualMealDto.meal_type}`);
+        throw new Error(`Meal type not found in database: ${createManualMealDto.meal_type}`);
       }
 
-      // 食品カテゴリーのIDを取得
+      // Get food category ID
       const foodCategory = await prisma.foodCategory.findFirst({
         where: {
           name: createManualMealDto.food_category,
         },
       });
-      console.log('Found food category:', foodCategory);
 
       if (!foodCategory) {
-        throw new Error(`Invalid food category: ${createManualMealDto.food_category}`);
+        throw new Error(`Food category not found in database: ${createManualMealDto.food_category}`);
       }
 
-      // 栄養素タイプのIDを取得
+      // Get nutrient type IDs
       const nutrientTypes = await prisma.nutrientType.findMany({
         where: {
           name: {
-            in: ['カロリー', 'タンパク質', '炭水化物', '脂質']
+            in: ['Calories', 'Protein', 'Carbohydrates', 'Fat']
           }
         }
       });
-      console.log('Found nutrient types:', nutrientTypes);
 
       const getNutrientTypeId = (name: string) => {
         const nutrientType = nutrientTypes.find(nt => nt.name === name);
@@ -149,16 +166,16 @@ export class MealService {
         return nutrientType.id;
       };
 
-      // 日付の検証
+      // Validate date
       const eatenAt = new Date(createManualMealDto.eaten_at);
       if (isNaN(eatenAt.getTime())) {
         throw new Error('Invalid date format');
       }
 
-      // 手動入力用の食品アイテムを作成
+      // Create food item for manual entry
       const manualFoodItem = await prisma.foodItem.create({
         data: {
-          name: createManualMealDto.food_name || '手動入力',
+          name: createManualMealDto.food_name || 'Manual Entry',
           base_quantity: 1,
           base_unit: 'serving',
           category_id: foodCategory.id,
@@ -166,26 +183,25 @@ export class MealService {
             create: [
               {
                 amount_per_unit: createManualMealDto.nutrients.calories,
-                nutrient_type_id: getNutrientTypeId('カロリー'),
+                nutrient_type_id: getNutrientTypeId('Calories'),
               },
               {
                 amount_per_unit: createManualMealDto.nutrients.protein,
-                nutrient_type_id: getNutrientTypeId('タンパク質'),
+                nutrient_type_id: getNutrientTypeId('Protein'),
               },
               {
                 amount_per_unit: createManualMealDto.nutrients.carbs,
-                nutrient_type_id: getNutrientTypeId('炭水化物'),
+                nutrient_type_id: getNutrientTypeId('Carbohydrates'),
               },
               {
                 amount_per_unit: createManualMealDto.nutrients.fat,
-                nutrient_type_id: getNutrientTypeId('脂質'),
+                nutrient_type_id: getNutrientTypeId('Fat'),
               },
             ],
           },
         },
       });
 
-      // 食事を作成
       const meal = await prisma.meal.create({
         data: {
           user_id: userId,
@@ -222,7 +238,6 @@ export class MealService {
 
       return meal;
     } catch (error) {
-      console.error('Error in createManualMeal:', error);
       throw error;
     }
   }

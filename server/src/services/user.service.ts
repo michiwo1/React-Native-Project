@@ -115,7 +115,7 @@ export class UserService {
       let goalTypeId: string | undefined;
       
       if (profileData.goal_type) {
-        // まず、goal_typesテーブルから該当する目標タイプを検索
+        // First, search for the corresponding goal type from the goal_types table
         const goalType = await this.prisma.goalType.findFirst({
           where: {
             name: profileData.goal_type
@@ -152,7 +152,7 @@ export class UserService {
   }
 
   public async getLatestWeight(userId: string) {
-    // 最新の2件の体重測定を取得
+    // Get the latest 2 weight measurements
     const measurements = await this.prisma.measurement.findMany({
       where: {
         user_id: userId,
@@ -170,7 +170,7 @@ export class UserService {
     });
 
     if (measurements.length === 0) {
-      // 測定データがない場合はユーザープロファイルから体重を取得
+      // If no measurement data exists, get weight from user profile
       const userProfile = await this.prisma.userProfile.findUnique({
         where: {
           user_id: userId
@@ -191,7 +191,7 @@ export class UserService {
     let change: number | null = null;
 
     if (measurements.length === 1) {
-      // 測定が1件の場合、ユーザープロファイルの体重と比較
+      // If there is only one measurement, compare with user profile weight
       const userProfile = await this.prisma.userProfile.findUnique({
         where: { user_id: userId },
       });
@@ -200,7 +200,7 @@ export class UserService {
         change = Number((measurements[0].value - userProfile.weight).toFixed(1));
       }
     } else {
-      // 測定が2件以上の場合、最新の2件を比較
+      // If there are 2 or more measurements, compare the latest 2
       change = Number((measurements[0].value - measurements[1].value).toFixed(1));
     }
 
@@ -258,9 +258,9 @@ export class UserService {
         throw new Error('User profile not found');
       }
 
-      // 目標タイプに基づいて栄養目標を計算
+      // Calculate nutrition targets based on goal type
       const goalType = userProfile.goal_type?.name || 'maintain';
-      const weight = latestWeight?.value || userProfile.weight || 70; // 最新の測定値、プロフィールの体重、デフォルト値の順で使用
+      const weight = latestWeight?.value || userProfile.weight || 70; // Use latest measurement, profile weight, or default value in order
 
       const response: UserProfileResponse = {
         id: user.id,
@@ -290,46 +290,46 @@ export class UserService {
   }
 
   private calculateCalorieTarget(weight: number, goalType: string): number {
-    const baseCalories = weight * 30; // 基礎代謝を体重×30で概算
+    const baseCalories = weight * 30; // Estimate BMR as weight × 30
     switch (goalType) {
       case 'bulk':
-        return Math.round(baseCalories * 1.2); // 筋肥大時は20%増
+        return Math.round(baseCalories * 1.2); // Increase by 20% for muscle gain
       case 'cut':
-        return Math.round(baseCalories * 0.8); // 減量時は20%減
+        return Math.round(baseCalories * 0.8); // Decrease by 20% for weight loss
       default:
-        return Math.round(baseCalories); // 維持
+        return Math.round(baseCalories); // Maintain
     }
   }
 
   private calculateProteinTarget(weight: number, goalType: string): number {
     switch (goalType) {
       case 'bulk':
-        return Math.round(weight * 2.2); // 筋肥大時は体重×2.2g
+        return Math.round(weight * 2.2); // 2.2g per kg bodyweight for muscle gain
       case 'cut':
-        return Math.round(weight * 2.4); // 減量時は体重×2.4g
+        return Math.round(weight * 2.4); // 2.4g per kg bodyweight for weight loss
       default:
-        return Math.round(weight * 2.0); // 維持時は体重×2.0g
+        return Math.round(weight * 2.0); // 2.0g per kg bodyweight for maintenance
     }
   }
 
   private calculateCarbTarget(weight: number, goalType: string): number {
     switch (goalType) {
       case 'bulk':
-        return Math.round(weight * 6); // 筋肥大時は体重×6g
+        return Math.round(weight * 6); // 6g per kg bodyweight for muscle gain
       case 'cut':
-        return Math.round(weight * 3); // 減量時は体重×3g
+        return Math.round(weight * 3); // 3g per kg bodyweight for weight loss
       default:
-        return Math.round(weight * 4); // 維持時は体重×4g
+        return Math.round(weight * 4); // 4g per kg bodyweight for maintenance
     }
   }
 
   private calculateFatTarget(weight: number, goalType: string): number {
     const baseCalories = this.calculateCalorieTarget(weight, goalType);
-    return Math.round((baseCalories * 0.25) / 9); // 総カロリーの25%を脂質から摂取（1g = 9kcal）
+    return Math.round((baseCalories * 0.25) / 9); // 25% of total calories from fat (1g = 9kcal)
   }
 
   public async getSelectedExerciseRecord(userId: string): Promise<ExerciseRecordResponse | null> {
-    // 最後に選択された種目を取得
+    // Get the last selected exercise
     const selectedExercise = await this.prisma.exercise.findFirst({
       where: {
         is_last_selected: true
@@ -340,7 +340,7 @@ export class UserService {
       return null;
     }
 
-    // 該当種目の最新2件のパーソナルレコードを取得
+    // Get the latest 2 personal records for the selected exercise
     const records = await this.prisma.exercisePersonalRecord.findMany({
       where: {
         user_id: userId,

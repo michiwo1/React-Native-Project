@@ -13,10 +13,10 @@ export default function SignUpScreen() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const validateInputs = () => {
-    // エラーメッセージをリセット
+    // Reset error message
     setErrorMessage('');
 
-    // メールアドレスの形式チェック（より厳密な正規表現）
+    // Email format validation (strict regex)
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!email) {
       setErrorMessage('Please enter your email address');
@@ -27,7 +27,7 @@ export default function SignUpScreen() {
       return false;
     }
 
-    // 表示名のチェック
+    // Display name validation
     if (!displayName) {
       setErrorMessage('Please enter your display name');
       return false;
@@ -41,7 +41,7 @@ export default function SignUpScreen() {
       return false;
     }
 
-    // パスワードのチェック
+    // Password validation
     if (!password) {
       setErrorMessage('Please enter your password');
       return false;
@@ -55,7 +55,7 @@ export default function SignUpScreen() {
       return false;
     }
 
-    // パスワード確認のチェック
+    // Password confirmation validation
     if (password !== confirmPassword) {
       setErrorMessage('Passwords do not match');
       return false;
@@ -65,7 +65,7 @@ export default function SignUpScreen() {
   };
 
   const handleSignUp = async () => {
-    // 入力値のバリデーション
+    // Input validation
     if (!validateInputs()) {
       return;
     }
@@ -85,10 +85,10 @@ export default function SignUpScreen() {
 
       let data;
       try {
-        const textResponse = await response.text(); // レスポンスをテキストとして取得
+        const textResponse = await response.text(); // Get response as text
         
         try {
-          data = JSON.parse(textResponse); // JSONとしてパース
+          data = JSON.parse(textResponse); // Parse as JSON
           console.log("Parsed data:", data);
 
           if (!response.ok) {
@@ -100,19 +100,19 @@ export default function SignUpScreen() {
             return;
           }
 
-          // データの存在確認を追加
+          // Validate data existence
           if (!data?.data?.token || !data?.data?.user) {
             setErrorMessage('Invalid server response');
             return;
           }
 
-          // セッショントークンを保存
+          // Save session token
           await AsyncStorage.setItem('userToken', data.data.token);
 
-          // ユーザー情報全体を文字列として保存
+          // Save user information as a string
           await AsyncStorage.setItem('userData', JSON.stringify(data.data.user));
 
-          // サインアップ成功後の処理
+          // Post-signup processing
           router.push("/onboarding/1");
         } catch (parseError) {
           console.error('Parse error:', parseError);

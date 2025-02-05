@@ -317,11 +317,10 @@ describe('MealService', () => {
     let mockCreatedMeal: MealWithRelations;
 
     beforeEach(() => {
-      // テストデータの初期化
       createManualMealDto = {
-        meal_type: '朝食',
-        food_category: '主食',
-        food_name: '手動入力',
+        meal_type: 'Breakfast',
+        food_category: 'Staple Food',
+        food_name: 'Manual Input',
         eaten_at: '2024-01-29T12:00:00Z',
         note: 'Test manual meal',
         nutrients: {
@@ -334,24 +333,24 @@ describe('MealService', () => {
 
       mockMealType = {
         id: 'meal-type-1',
-        name: '朝食',
+        name: 'Breakfast',
         created_at: new Date(),
         updated_at: new Date()
       };
 
       mockFoodCategory = {
         id: 'category-1',
-        name: '主食',
+        name: 'Staple Food',
         display_order: 1,
         created_at: new Date(),
         updated_at: new Date()
       };
 
       mockNutrientTypes = [
-        { id: 'nt-1', name: 'カロリー', unit: 'kcal', created_at: new Date(), updated_at: new Date() },
-        { id: 'nt-2', name: 'タンパク質', unit: 'g', created_at: new Date(), updated_at: new Date() },
-        { id: 'nt-3', name: '炭水化物', unit: 'g', created_at: new Date(), updated_at: new Date() },
-        { id: 'nt-4', name: '脂質', unit: 'g', created_at: new Date(), updated_at: new Date() }
+        { id: 'nt-1', name: 'Calories', unit: 'kcal', created_at: new Date(), updated_at: new Date() },
+        { id: 'nt-2', name: 'Protein', unit: 'g', created_at: new Date(), updated_at: new Date() },
+        { id: 'nt-3', name: 'Carbs', unit: 'g', created_at: new Date(), updated_at: new Date() },
+        { id: 'nt-4', name: 'Fat', unit: 'g', created_at: new Date(), updated_at: new Date() }
       ];
 
       mockCreatedFoodItem = {
@@ -400,7 +399,7 @@ describe('MealService', () => {
       jest.clearAllMocks();
     });
 
-    it('正常系: 手動入力の食事を作成できること', async () => {
+    it('should create a manual meal entry successfully', async () => {
       // モックの設定
       prisma.mealType.findFirst.mockResolvedValue(mockMealType);
       prisma.foodCategory.findFirst.mockResolvedValue(mockFoodCategory);
@@ -431,7 +430,7 @@ describe('MealService', () => {
                 expect.objectContaining({
                   amount_per_unit: expect.any(Number),
                   nutrient_type: expect.objectContaining({
-                    name: expect.stringMatching(/^(カロリー|タンパク質|炭水化物|脂質)$/)
+                    name: expect.stringMatching(/^(Calories|Protein|Carbs|Fat)$/)
                   })
                 })
               ])
@@ -452,7 +451,7 @@ describe('MealService', () => {
         where: { name: createManualMealDto.food_category }
       });
       expect(prisma.nutrientType.findMany).toHaveBeenCalledWith({
-        where: { name: { in: ['カロリー', 'タンパク質', '炭水化物', '脂質'] } }
+        where: { name: { in: ['Calories', 'Protein', 'Carbs', 'Fat'] } }
       });
 
       // 食品アイテムの作成パラメータを検証
@@ -497,50 +496,50 @@ describe('MealService', () => {
       );
     });
 
-    it('異常系: 無効な食事タイプの場合はエラーを投げること', async () => {
-      // 無効な食事タイプのDTOを作成
+    it('should throw error when meal type is invalid', async () => {
+      // Create DTO with invalid meal type
       const invalidDto = {
         ...createManualMealDto,
-        meal_type: '無効な食事タイプ'
+        meal_type: 'Invalid Meal Type'
       };
 
-      // meal_typeが見つからない場合のモック
+      // Mock meal type not found
       prisma.mealType.findFirst.mockResolvedValue(null);
 
-      // エラーが投げられることを確認
+      // Verify error is thrown
       await expect(mealService.createManualMeal(userId, invalidDto))
         .rejects
-        .toThrow('Invalid meal type: 無効な食事タイプ');
+        .toThrow('Invalid meal type: Invalid Meal Type');
 
-      // findFirstが正しく呼ばれたことを確認
+      // Verify findFirst was called correctly
       expect(prisma.mealType.findFirst).toHaveBeenCalledWith({
         where: { name: invalidDto.meal_type }
       });
 
-      // 他のPrismaメソッドが呼ばれていないことを確認
+      // Verify other Prisma methods were not called
       expect(prisma.foodCategory.findFirst).not.toHaveBeenCalled();
       expect(prisma.nutrientType.findMany).not.toHaveBeenCalled();
       expect(prisma.foodItem.create).not.toHaveBeenCalled();
       expect(prisma.meal.create).not.toHaveBeenCalled();
     });
 
-    it('異常系: 無効な食品カテゴリーの場合はエラーを投げること', async () => {
-      // 無効な食品カテゴリーのDTOを作成
+    it('should throw error when food category is invalid', async () => {
+      // Create DTO with invalid food category
       const invalidDto = {
         ...createManualMealDto,
-        food_category: '無効なカテゴリー'
+        food_category: 'Invalid Category'
       };
 
-      // meal_typeは成功するが、food_categoryが失敗するケース
+      // Mock meal type success but food category failure
       prisma.mealType.findFirst.mockResolvedValue(mockMealType);
       prisma.foodCategory.findFirst.mockResolvedValue(null);
 
-      // エラーが投げられることを確認
+      // Verify error is thrown
       await expect(mealService.createManualMeal(userId, invalidDto))
         .rejects
-        .toThrow('Invalid food category: 無効なカテゴリー');
+        .toThrow('Invalid food category: Invalid Category');
 
-      // 各メソッドが正しく呼ばれたことを確認
+      // Verify methods were called correctly
       expect(prisma.mealType.findFirst).toHaveBeenCalledWith({
         where: { name: invalidDto.meal_type }
       });
@@ -548,7 +547,7 @@ describe('MealService', () => {
         where: { name: invalidDto.food_category }
       });
 
-      // 他のPrismaメソッドが呼ばれていないことを確認
+      // Verify other Prisma methods were not called
       expect(prisma.nutrientType.findMany).not.toHaveBeenCalled();
       expect(prisma.foodItem.create).not.toHaveBeenCalled();
       expect(prisma.meal.create).not.toHaveBeenCalled();

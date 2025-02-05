@@ -8,13 +8,13 @@ export const validateSignUp = (req: Request, res: Response, next: NextFunction) 
     return next(new AppError('Email and password are required', 400));
   }
 
-  // メールアドレスの形式チェック
+  // Email format validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return next(new AppError('Invalid email format', 400));
   }
 
-  // パスワードの長さチェック
+  // Password length validation
   if (password.length < 8) {
     return next(new AppError('Password must be at least 8 characters long', 400));
   }

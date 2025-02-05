@@ -53,13 +53,13 @@ export class ExerciseController {
       const { name, category_id } = req.body;
       
       if (!name || !category_id) {
-        return res.status(400).json({ message: '種目名とカテゴリーIDは必須です' });
+        return res.status(400).json({ message: 'Exercise name and category ID are required' });
       }
 
       const exercise = await exerciseService.createExercise({ name, category_id });
       res.status(201).json(exercise);
     } catch (error) {
-      res.status(500).json({ message: '種目の作成に失敗しました', error });
+      res.status(500).json({ message: 'Failed to create exercise', error });
     }
   }
 
@@ -68,13 +68,13 @@ export class ExerciseController {
       const { exerciseId } = req.params;
       
       if (!exerciseId) {
-        return res.status(400).json({ message: '種目IDは必須です' });
+        return res.status(400).json({ message: 'Exercise ID is required' });
       }
 
       const exercise = await exerciseService.setLastSelectedExercise(exerciseId);
       res.json(exercise);
     } catch (error) {
-      res.status(500).json({ message: '種目の選択状態の更新に失敗しました', error });
+      res.status(500).json({ message: 'Failed to update exercise selection status', error });
     }
   }
 
@@ -82,11 +82,11 @@ export class ExerciseController {
     try {
       const exercise = await exerciseService.getLastSelectedExercise();
       if (!exercise) {
-        return res.status(404).json({ message: '選択された種目が見つかりません' });
+        return res.status(404).json({ message: 'Selected exercise not found' });
       }
       res.json(exercise);
     } catch (error) {
-      res.status(500).json({ message: '最後に選択された種目の取得に失敗しました', error });
+      res.status(500).json({ message: 'Failed to get last selected exercise', error });
     }
   }
 } 

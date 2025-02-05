@@ -19,23 +19,20 @@ export class AIController {
 
   public getNutritionAdvice = async (req: Request, res: Response): Promise<Response> => {
     try {
-      console.log('Received nutrition advice request');
       
       const userId = req.user?.userId;
       if (!userId) {
         console.error('Unauthorized request: No userId found');
-        return res.status(401).json({ message: '認証が必要です' });
+        return res.status(401).json({ message: 'Authentication required' });
       }
 
       const { query } = req.body;
       if (!query || typeof query !== 'string') {
         console.error('Invalid request: Missing or invalid query', { query });
-        return res.status(400).json({ message: '質問が必要です' });
+        return res.status(400).json({ message: 'Query is required' });
       }
 
-      console.log('Processing request for userId:', userId);
-
-      // ユーザープロフィールを取得
+      // Get user profile
       const userProfile = await this.userService.getUserProfile(userId);
       
       const advice = await this.aiService.generateNutritionAdvice(query, {
@@ -50,54 +47,45 @@ export class AIController {
         fatTarget: userProfile.fat_target
       });
       
-      console.log('Successfully generated advice');
       return res.status(200).json({ advice });
     } catch (error) {
-      console.error('Detailed error in getNutritionAdvice:', {
-        error,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
-      });
 
       if (error instanceof Error) {
         return res.status(500).json({ 
-          message: 'サーバーエラーが発生しました',
+          message: 'Server error occurred',
           error: error.message,
           stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
       }
-      return res.status(500).json({ message: 'サーバーエラーが発生しました' });
+      return res.status(500).json({ message: 'Server error occurred' });
     }
   };
 
   public getWorkoutAdvice = async (req: Request, res: Response): Promise<Response> => {
     try {
-      console.log('Received workout advice request');
       
       const userId = req.user?.userId;
       if (!userId) {
         console.error('Unauthorized request: No userId found');
-        return res.status(401).json({ message: '認証が必要です' });
+        return res.status(401).json({ message: 'Authentication required' });
       }
 
       const { question, workoutSessionId } = req.body;
       if (!question || typeof question !== 'string') {
         console.error('Invalid request: Missing or invalid question', { question });
-        return res.status(400).json({ message: '質問が必要です' });
+        return res.status(400).json({ message: 'Question is required' });
       }
 
-      console.log('Processing workout advice request for userId:', userId);
-
-      // ユーザープロフィールを取得
+      // Get user profile
       const userProfile = await this.userService.getUserProfile(userId);
 
-      // 進行中のワークアウトセッションを取得
+      // Get ongoing workout session
       const ongoingSession = await this.workoutService.getOngoingWorkoutSession(userId);
       
-      // エクササイズのパーソナルレコードを取得
+      // Get exercise personal records
       const exercisesWithRecords = await this.exerciseService.getExercisesWithRecords(userId);
 
-      // 現在のセッションのエクササイズに関連するパーソナルレコードをマッピング
+      // Map personal records related to current session exercises
       const currentExercises = ongoingSession?.exercises.map(exercise => {
         const exerciseWithRecord = exercisesWithRecords.find(e => e.id === exercise.exercise_id);
         return {
@@ -113,62 +101,49 @@ export class AIController {
         currentExercises
       });
       
-      console.log('Successfully generated workout advice');
       return res.status(200).json({ response });
     } catch (error) {
-      console.error('Detailed error in getWorkoutAdvice:', {
-        error,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
-      });
 
       if (error instanceof Error) {
         return res.status(500).json({ 
-          message: 'サーバーエラーが発生しました',
+          message: 'Server error occurred',
           error: error.message,
           stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
       }
-      return res.status(500).json({ message: 'サーバーエラーが発生しました' });
+      return res.status(500).json({ message: 'Server error occurred' });
     }
   };
 
   analyzeMealImage = async (req: Request, res: Response) => {
-    console.log('1----------');
-    console.log('analyzeMealImage called');
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        return res.status(401).json({ message: '認証が必要です' });
+        return res.status(401).json({ message: 'Authentication required' });
       }
 
       if (!req.file) {
-        return res.status(400).json({ message: '画像ファイルが提供されていません' });
+        return res.status(400).json({ message: 'No image file provided' });
       }
 
       const imageBuffer = req.file.buffer;
       const result = await this.aiService.analyzeMealImage(imageBuffer);
 
       if (!result) {
-        return res.status(400).json({ message: '画像の解析に失敗しました' });
+        return res.status(400).json({ message: 'Failed to analyze image' });
       }
 
       return res.status(200).json(result);
     } catch (error) {
-      console.error('画像解析中のエラー:', {
-        error,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
-      });
 
       if (error instanceof Error) {
         return res.status(500).json({ 
-          message: '画像の解析中にエラーが発生しました',
+          message: 'Error occurred while analyzing image',
           error: error.message,
           stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
       }
-      return res.status(500).json({ message: 'サーバーエラーが発生しました' });
+      return res.status(500).json({ message: 'Server error occurred' });
     }
   };
 } 

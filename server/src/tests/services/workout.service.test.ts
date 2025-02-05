@@ -374,7 +374,7 @@ describe('WorkoutService', () => {
 
       await expect(workoutService.finishWorkoutSession(workoutSessionId, userId))
         .rejects
-        .toThrow('ワークアウトセッションが見つかりません');
+        .toThrow('Workout session not found');
     });
   });
 }); 

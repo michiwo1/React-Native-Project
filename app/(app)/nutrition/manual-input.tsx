@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Alert 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { API_URL } from '@/constants/api';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,6 +28,11 @@ export default function ManualInputScreen() {
     }).replace(/\//g, '-')
   );
 
+  // Reset food category state on component mount
+  useEffect(() => {
+    setFoodCategory('');
+  }, []);
+
   const mealTypes = [
     { label: 'Breakfast', value: 'Breakfast' },
     { label: 'Lunch', value: 'Lunch' },
@@ -36,8 +41,8 @@ export default function ManualInputScreen() {
   ];
 
   const foodCategories = [
-    { label: 'Staple Food', value: 'Staple Food' },
-    { label: 'Protein Source', value: 'Protein Source' },
+    { label: 'Staple Foods', value: 'Staple Foods' },
+    { label: 'Protein Sources', value: 'Protein Sources' },
     { label: 'Vegetables', value: 'Vegetables' },
     { label: 'Fruits', value: 'Fruits' },
     { label: 'Dairy Products', value: 'Dairy Products' },
@@ -89,6 +94,14 @@ export default function ManualInputScreen() {
         note,
       };
 
+      console.log('フロントエンド - リクエストデータ:', {
+        meal_type: requestData.meal_type,
+        food_category: requestData.food_category,
+        food_name: requestData.food_name,
+        eaten_at: requestData.eaten_at,
+        nutrients: requestData.nutrients
+      });
+
       const response = await fetch(`${API_URL}/api/meal/manual`, {
         method: 'POST',
         headers: {
@@ -100,14 +113,14 @@ export default function ManualInputScreen() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Server error:', errorData);
-        throw new Error('Failed to save meal');
+        console.error('フロントエンド - サーバーエラー詳細:', errorData);
+        throw new Error(errorData.message || 'Failed to save meal');
       }
 
       router.back();
     } catch (error) {
-      console.error('Error saving meal:', error);
-      alert('Failed to save meal. Please try again.');
+      console.error('フロントエンド - エラー詳細:', error);
+      alert(error instanceof Error ? error.message : 'Failed to save meal. Please try again.');
     }
   };
 
@@ -212,6 +225,27 @@ export default function ManualInputScreen() {
     );
   };
 
+  const foodCategoryButton = (category) => (
+    <TouchableOpacity
+      key={category.value}
+      style={[
+        styles.foodCategoryButton,
+        foodCategory === category.value && styles.foodCategoryButtonSelected
+      ]}
+      onPress={() => {
+        console.log('選択された食品カテゴリー:', category.value);
+        setFoodCategory(category.value);
+      }}
+    >
+      <Text style={[
+        styles.foodCategoryButtonText,
+        foodCategory === category.value && styles.foodCategoryButtonTextSelected
+      ]}>
+        {category.label}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -251,23 +285,7 @@ export default function ManualInputScreen() {
 
           <Text style={styles.sectionTitle}>Food Category</Text>
           <View style={styles.foodCategoryContainer}>
-            {foodCategories.map((category) => (
-              <TouchableOpacity
-                key={category.value}
-                style={[
-                  styles.foodCategoryButton,
-                  foodCategory === category.value && styles.foodCategoryButtonSelected
-                ]}
-                onPress={() => setFoodCategory(category.value)}
-              >
-                <Text style={[
-                  styles.foodCategoryButtonText,
-                  foodCategory === category.value && styles.foodCategoryButtonTextSelected
-                ]}>
-                  {category.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {foodCategories.map(foodCategoryButton)}
           </View>
 
           <Text style={styles.sectionTitle}>Food Name</Text>

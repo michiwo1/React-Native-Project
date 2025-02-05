@@ -63,7 +63,7 @@ export default function RootLayout() {
           name="weight-input" 
           options={{ 
             headerShown: true,
-            title: '体重入力'
+            title: 'Weight Input'
           }} 
         />
       </Stack>

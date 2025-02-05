@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
 import { AppError } from '../utils/appError';
 
-// Express Requestの型を拡張
 declare global {
   namespace Express {
     interface Request {

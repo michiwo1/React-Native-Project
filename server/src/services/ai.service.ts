@@ -44,33 +44,33 @@ export class AIService {
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
       const prompt = `
-あなたは栄養アドバイザーです。以下のユーザープロフィールと質問に基づいて、具体的な食事プランとアドバイスを提供してください。
+You are a nutrition advisor. Please provide specific meal plans and advice based on the following user profile and question.
 
-ユーザープロフィール:
-- 年齢: ${userProfile?.age || '未設定'}歳
-- 性別: ${userProfile?.gender || '未設定'}
-- 身長: ${userProfile?.height || '未設定'}cm
-- 体重: ${userProfile?.weight || '未設定'}kg
-- 活動レベル: ${userProfile?.activityLevel || '未設定'}
-- 目標: ${userProfile?.goal || '未設定'}
-- 食事制限: ${userProfile?.restrictions?.join(', ') || '特になし'}
-- 目標カロリー: ${userProfile?.calorieTarget || '未設定'}kcal
-- 目標タンパク質: ${userProfile?.proteinTarget || '未設定'}g
-- 目標炭水化物: ${userProfile?.carbTarget || '未設定'}g
-- 目標脂質: ${userProfile?.fatTarget || '未設定'}g
+User Profile:
+- Age: ${userProfile?.age || 'Not set'} years
+- Gender: ${userProfile?.gender || 'Not set'}
+- Height: ${userProfile?.height || 'Not set'}cm
+- Weight: ${userProfile?.weight || 'Not set'}kg
+- Activity Level: ${userProfile?.activityLevel || 'Not set'}
+- Goal: ${userProfile?.goal || 'Not set'}
+- Dietary Restrictions: ${userProfile?.restrictions?.join(', ') || 'None'}
+- Target Calories: ${userProfile?.calorieTarget || 'Not set'}kcal
+- Target Protein: ${userProfile?.proteinTarget || 'Not set'}g
+- Target Carbs: ${userProfile?.carbTarget || 'Not set'}g
+- Target Fat: ${userProfile?.fatTarget || 'Not set'}g
 
-回答は以下の形式で日本語で提供してください：
+Please provide your response in the following format:
 
-1. あなたの現在の1日の推定必要カロリー
-2. 目標達成のための推奨カロリー
-3. 推奨される1日の食事プラン（朝食、昼食、夕食、間食）
-   - 各食事の具体的なメニュー例
-   - 各食事のおおよそのカロリーと主要な栄養素
-4. 特に注意すべき栄養素とその理由
-5. あなたの目標達成のための実践的なアドバイス
-6. 食事記録の重要性と継続的なモニタリングについて
+1. Your estimated daily caloric needs
+2. Recommended calories for your goal
+3. Recommended daily meal plan (breakfast, lunch, dinner, snacks)
+   - Specific menu examples for each meal
+   - Approximate calories and key nutrients for each meal
+4. Key nutrients to focus on and why
+5. Practical advice for achieving your goal
+6. Importance of meal tracking and continuous monitoring
 
-ユーザーの質問: ${query}`;
+User Question: ${query}`;
 
       console.log('Sending prompt to Gemini API');
       const result = await model.generateContent(prompt);
@@ -78,7 +78,7 @@ export class AIService {
 
       if (!result || !result.response) {
         console.error('Empty response from Gemini API');
-        throw new Error('AIからの応答が空でした');
+        throw new Error('Empty response from AI');
       }
 
       const response = await result.response;
@@ -86,7 +86,7 @@ export class AIService {
 
       if (!text) {
         console.error('Empty text in Gemini API response');
-        throw new Error('AIからの応答テキストが空でした');
+        throw new Error('Empty response text from AI');
       }
 
       console.log('Successfully generated advice with length:', text.length);
@@ -99,9 +99,9 @@ export class AIService {
       });
       
       if (error instanceof Error) {
-        throw new Error(`AIアドバイスの生成中にエラーが発生しました: ${error.message}`);
+        throw new Error(`Error occurred while generating AI advice: ${error.message}`);
       }
-      throw new Error('AIアドバイスの生成中に予期せぬエラーが発生しました');
+      throw new Error('Unexpected error occurred while generating AI advice');
     }
   }
 
@@ -115,53 +115,53 @@ export class AIService {
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
       const prompt = `
-あなたは経験豊富なストレングスコーチです。ユーザーの前回の記録（PR）を基に、プログレッシブオーバーロードの原則に従って最適なトレーニング負荷を提案してください。
+You are an experienced strength coach. Please suggest optimal training loads based on the user's previous records (PR), following the principle of progressive overload.
 
-ユーザープロフィール:
-- 目標: ${userProfile?.goal || '未設定'}
-${userProfile.workoutSessionId ? '- 現在トレーニング中' : '- トレーニング前'}
+User Profile:
+- Goal: ${userProfile?.goal || 'Not set'}
+${userProfile.workoutSessionId ? '- Currently training' : '- Before training'}
 
 ${userProfile.currentExercises && userProfile.currentExercises.length > 0 ? `
-現在のエクササイズ状況:
+Current Exercise Status:
 ${userProfile.currentExercises.map(exercise => `
 ■ ${exercise.name}
-  - 本日の予定セット: ${exercise.sets.map(set => `${set.weight}kg × ${set.reps}回`).join(', ')}
-  - 前回のPR: ${exercise.personalRecord ? `${exercise.personalRecord.weight}kg × ${exercise.personalRecord.reps}回` : 'なし'}
+  - Today's planned sets: ${exercise.sets.map(set => `${set.weight}kg × ${set.reps} reps`).join(', ')}
+  - Previous PR: ${exercise.personalRecord ? `${exercise.personalRecord.weight}kg × ${exercise.personalRecord.reps} reps` : 'None'}
   
-  【負荷提案】
-  1. 前回のPRからの適切な重量増加量
-  2. 推奨セット数とレップ数の詳細
-  3. プログレッシブオーバーロードの具体的な進め方
+  [Load Suggestions]
+  1. Appropriate weight increase from previous PR
+  2. Detailed recommended sets and reps
+  3. Specific approach to progressive overload
 `).join('\n')}
 ` : ''}
 
-回答は以下の形式で日本語で提供してください：
+Please provide your response in the following format:
 
-1. 各エクササイズの具体的なセット構成の提案
-   - ウォームアップセットの重量とレップ数
-   - ワーキングセットの重量とレップ数
-   - 前回のPRと比較した負荷の根拠説明
+1. Specific set composition suggestions for each exercise
+   - Warm-up sets weight and reps
+   - Working sets weight and reps
+   - Explanation of load based on previous PR
 
-2. フォームと実施テクニック
-   - 重量増加に伴う特に注意すべきフォームのポイント
-   - 負荷強度に応じたテンポとコントロールの指示
+2. Form and execution technique
+   - Key form points to watch as weight increases
+   - Tempo and control instructions based on load intensity
 
-3. 安全性とリスク管理
-   - ウォームアップの重要性
-   - フォームの崩れを防ぐためのチェックポイント
-   - 疲労管理と回復の考慮事項
+3. Safety and risk management
+   - Importance of warm-up
+   - Form checkpoints
+   - Fatigue management considerations
 
-4. プログレッション戦略
-   - 短期的な重量増加の目標設定
-   - 長期的なプログレッションプラン
-   - デロード（負荷軽減期間）の提案
+4. Progression strategy
+   - Short-term weight increase goals
+   - Long-term progression plan
+   - Deload period suggestions
 
-5. 次回のトレーニングに向けた具体的な準備
-   - 回復に必要な期間
-   - 次回の目標重量の設定
-   - モチベーション維持のためのアドバイス
+5. Specific preparation for next training
+   - Required recovery period
+   - Next target weight setting
+   - Advice for maintaining motivation
 
-ユーザーの質問: ${question}`;
+User Question: ${question}`;
 
       console.log('1----------');
       console.log(prompt);
@@ -172,7 +172,7 @@ ${userProfile.currentExercises.map(exercise => `
 
       if (!result || !result.response) {
         console.error('Empty response from Gemini API');
-        throw new Error('AIからの応答が空でした');
+        throw new Error('Empty response from AI');
       }
 
       const response = await result.response;
@@ -180,7 +180,7 @@ ${userProfile.currentExercises.map(exercise => `
 
       if (!text) {
         console.error('Empty text in Gemini API response');
-        throw new Error('AIからの応答テキストが空でした');
+        throw new Error('Empty response text from AI');
       }
 
       console.log('Successfully generated advice with length:', text.length);
@@ -193,54 +193,54 @@ ${userProfile.currentExercises.map(exercise => `
       });
       
       if (error instanceof Error) {
-        throw new Error(`AIアドバイスの生成中にエラーが発生しました: ${error.message}`);
+        throw new Error(`Error occurred while generating AI advice: ${error.message}`);
       }
-      throw new Error('AIアドバイスの生成中に予期せぬエラーが発生しました');
+      throw new Error('Unexpected error occurred while generating AI advice');
     }
   }
 
   async analyzeMealImage(imageBuffer: Buffer) {
     try {
       if (!imageBuffer || imageBuffer.length === 0) {
-        throw new Error('画像データが空です');
+        throw new Error('Image data is empty');
       }
 
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
-      // MIMEタイプの判定
+      // MIME type detection
       const imageSignature = imageBuffer.toString('hex', 0, 4);
-      let mimeType = 'image/jpeg'; // デフォルト
+      let mimeType = 'image/jpeg'; // default
       
       if (imageSignature.startsWith('89504e47')) {
         mimeType = 'image/png';
       } else if (imageSignature.startsWith('ffd8')) {
         mimeType = 'image/jpeg';
       } else {
-        throw new Error('サポートされていない画像形式です。JPEGまたはPNG形式の画像を使用してください。');
+        throw new Error('Unsupported image format. Please use JPEG or PNG format.');
       }
 
       const prompt = `
-この食事の写真を分析して、以下の情報を日本語で提供してください：
-1. 食品名
-2. おおよその栄養成分（以下の形式で）：
-   - カロリー（kcal）
-   - タンパク質（g）
-   - 炭水化物（g）
-   - 脂質（g）
+Please analyze this meal photo and provide the following information:
+1. Food name
+2. Approximate nutritional content in the following format:
+   - Calories (kcal)
+   - Protein (g)
+   - Carbohydrates (g)
+   - Fat (g)
 
-以下のJSON形式で返答してください：
+Please respond in the following JSON format:
 {
-  "foodName": "食品名",
+  "foodName": "Food name",
   "nutrients": {
-    "calories": 数値,
-    "protein": 数値,
-    "carbs": 数値,
-    "fat": 数値
+    "calories": number,
+    "protein": number,
+    "carbs": number,
+    "fat": number
   }
 }
 `;
 
-      console.log('画像解析を開始します...');
+      console.log('Starting image analysis...');
       
       const imageParts = [{
         inlineData: {
@@ -251,45 +251,45 @@ ${userProfile.currentExercises.map(exercise => `
 
       const result = await model.generateContent([prompt, ...imageParts]);
       if (!result || !result.response) {
-        throw new Error('AIからの応答が空でした');
+        throw new Error('Empty response from AI');
       }
 
       const response = await result.response;
       const text = response.text();
       
       if (!text) {
-        throw new Error('AIからの応答テキストが空でした');
+        throw new Error('Empty response text from AI');
       }
 
-      console.log('AI応答テキスト:', text);
+      console.log('AI response text:', text);
       
       try {
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-          throw new Error('JSON形式のデータが見つかりませんでした');
+          throw new Error('JSON data not found');
         }
         
         const jsonData = JSON.parse(jsonMatch[0]);
         if (!jsonData.foodName || !jsonData.nutrients) {
-          throw new Error('必要なデータフィールドが不足しています');
+          throw new Error('Required data fields are missing');
         }
         
         return jsonData;
       } catch (error) {
-        console.error('AI応答の解析エラー:', error);
-        throw new Error('画像解析結果の処理中にエラーが発生しました');
+        console.error('Error parsing AI response:', error);
+        throw new Error('Error occurred while processing image analysis results');
       }
     } catch (error) {
-      console.error('画像解析中のエラー:', {
+      console.error('Error during image analysis:', {
         error,
         message: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined
       });
       
       if (error instanceof Error) {
-        throw new Error(`画像解析中にエラーが発生しました: ${error.message}`);
+        throw new Error(`Error occurred during image analysis: ${error.message}`);
       }
-      throw new Error('画像解析中に予期せぬエラーが発生しました');
+      throw new Error('Unexpected error occurred during image analysis');
     }
   }
 } 

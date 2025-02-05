@@ -75,9 +75,9 @@ export class ExerciseService {
   }
 
   async setLastSelectedExercise(exerciseId: string) {
-    // トランザクションを使用して、すべての更新を一度に行う
+    // Use transaction to perform all updates at once
     return prisma.$transaction(async (tx) => {
-      // 現在選択されている種目のis_last_selectedをfalseに設定
+      // Set is_last_selected to false for currently selected exercise
       await tx.exercise.updateMany({
         where: {
           is_last_selected: true,
@@ -87,17 +87,17 @@ export class ExerciseService {
         },
       });
 
-      // 指定された種目のis_last_selectedをtrueに設定
+      // Set is_last_selected to true for the specified exercise
       return tx.exercise.update({
-      where: {
-        id: exerciseId,
-      },
-      data: {
-        is_last_selected: true,
-      },
-      include: {
-        category: true,
-      },
+        where: {
+          id: exerciseId,
+        },
+        data: {
+          is_last_selected: true,
+        },
+        include: {
+          category: true,
+        },
       });
     });
   }

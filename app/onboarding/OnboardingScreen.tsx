@@ -27,7 +27,7 @@ export function OnboardingScreen({ step }: { step: number }) {
   };
 
   const handleInputChange = (value: string, setter: (value: string) => void, field: string) => {
-    // 数字とバックスペースのみを許可
+    // Allow only numbers and backspace
     if (value !== '' && !/^\d+$/.test(value)) {
       return;
     }

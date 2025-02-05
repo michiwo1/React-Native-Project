@@ -6,7 +6,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { API_URL } from '@/constants/api';
 import { useAuth } from '@/hooks/useAuth';
 
-// 型定義
+// Type definitions
 type Exercise = {
   id: string;
   name: string;
@@ -79,7 +79,7 @@ const ExercisesScreen = () => {
       setExercises(exercisesRes);
       setCategories(categoriesRes);
 
-      // is_last_selectedがtrueの種目を自動選択
+      // Auto-select exercise with is_last_selected=true
       const lastSelectedExercise = exercisesRes.find((exercise: Exercise) => exercise.is_last_selected);
       if (lastSelectedExercise) {
         setSelectedExerciseId(lastSelectedExercise.id);
@@ -120,7 +120,7 @@ const ExercisesScreen = () => {
         throw new Error('Failed to add exercise');
       }
 
-      // 新しい種目を追加した後、リストを更新
+      // Update list after adding new exercise
       await fetchData();
       setIsModalVisible(false);
       setNewExerciseName('');
@@ -146,7 +146,7 @@ const ExercisesScreen = () => {
         throw new Error('Failed to update exercise selection status');
       }
 
-      // 選択された種目のis_last_selectedを更新
+      // Update is_last_selected for the selected exercise
       setExercises(prevExercises => 
         prevExercises.map(exercise => ({
           ...exercise,
@@ -155,7 +155,7 @@ const ExercisesScreen = () => {
       );
     } catch (err) {
       console.error('Error selecting exercise:', err);
-      // エラーが発生しても、UIの選択状態は維持します
+      // UI selection state is maintained even if an error occurs
     }
   };
 

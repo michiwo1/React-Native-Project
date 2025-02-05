@@ -6,14 +6,14 @@ export default function AuthLayout() {
       <Stack.Screen
         name="sign-in"
         options={{
-          title: 'ログイン',
+          title: 'Sign In',
           headerShown: false,
         }}
       />
       <Stack.Screen
         name="sign-up"
         options={{
-          title: '新規登録',
+          title: 'Sign Up',
           headerShown: false,
         }}
       />

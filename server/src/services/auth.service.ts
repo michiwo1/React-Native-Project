@@ -11,8 +11,8 @@ export class AuthService {
   }
 
   public async logout(userId: string): Promise<{ success: boolean }> {
-    // セッション情報をクリアする処理を実装
-    // 今回はJWTを使用しているため、クライアント側でトークンを削除する
+    // Implement session clearing process
+    // Since we're using JWT, token deletion is handled on the client side
     return { success: true };
   }
 

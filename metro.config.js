@@ -5,7 +5,7 @@ const config = getDefaultConfig(__dirname);
 config.resolver.sourceExts = ['jsx', 'js', 'ts', 'tsx', 'json'];
 config.resolver.assetExts = ['png', 'svg', 'ttf'];
 
-// Node.jsモジュールの除外設定
+// Exclude Node.js modules
 config.resolver.blockList = [/^console$/];
 
 module.exports = config; 

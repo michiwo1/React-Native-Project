@@ -8,20 +8,20 @@ const mealController = new MealController();
 // Protected routes
 router.use(authenticate);
 
-// 食事記録の作成
+// Create meal record
 router.post('/', mealController.createMeal.bind(mealController));
 router.post('/manual', mealController.createManualMeal.bind(mealController));
 
-// 食事記録の取得
+// Get meal records
 router.get('/', mealController.getMeals.bind(mealController));
 
-// 食品カテゴリーの取得
+// Get food categories
 router.get('/categories', mealController.getFoodCategories.bind(mealController));
 
-// 食品の取得
+// Get food items
 router.get('/food-items', mealController.getFoodItems.bind(mealController));
 
-// 食事タイプの取得
+// Get meal types
 router.get('/types', mealController.getMealTypes.bind(mealController));
 
 export default router; 

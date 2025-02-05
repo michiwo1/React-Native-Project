@@ -152,7 +152,7 @@ export class WorkoutService {
   }
 
   async saveExerciseSet(workoutSessionExerciseId: string, setData: ExerciseSetData) {
-    // まず、このエクササイズセットが既に存在するか確認
+    // First, check if this exercise set already exists
     const existingSet = await this.prisma.exerciseSet.findFirst({
       where: {
         workout_session_exercise_id: workoutSessionExerciseId,
@@ -161,7 +161,7 @@ export class WorkoutService {
     });
 
     if (existingSet) {
-      // 既存のセットを更新
+      // Update the existing set
       return await this.prisma.exerciseSet.update({
         where: { id: existingSet.id },
         data: {
@@ -171,7 +171,7 @@ export class WorkoutService {
         },
       });
     } else {
-      // 新しいセットを作成
+      // Create a new set
       return await this.prisma.exerciseSet.create({
         data: {
           workout_session_exercise_id: workoutSessionExerciseId,
@@ -187,7 +187,7 @@ export class WorkoutService {
   async finishWorkoutSession(workoutSessionId: string, userId: string) {
     try {
       return await this.prisma.$transaction(async (tx) => {
-        // ワークアウトセッションの取得（エクササイズとセットを含む）
+        // Get workout session (including exercises and sets)
         const workoutSession = await tx.workoutSession.findFirst({
           where: {
             id: workoutSessionId,
@@ -199,7 +199,7 @@ export class WorkoutService {
                 exercise: true,
                 sets: {
                   where: {
-                    is_completed: true // 完了済みのセットのみを対象とする
+                    is_completed: true // Only target completed sets
                   }
                 }
               }
@@ -208,36 +208,36 @@ export class WorkoutService {
         });
 
         if (!workoutSession) {
-          throw new Error('ワークアウトセッションが見つかりません');
+          throw new Error('Workout session not found');
         }
 
-        // 各エクササイズのパーソナルレコードをチェック
+        // Check each exercise's personal record
         for (const workoutExercise of workoutSession.exercises) {
           if (workoutExercise.sets.length === 0) continue;
 
-          // 各セットの理論的な1RMをブルジッキー公式で計算
+          // Calculate theoretical 1RM for each set using the Brzycki formula
           const oneRMs = workoutExercise.sets.map(set => {
-            // 精度を確保するため、1-10レップの範囲のみを考慮
+            // Consider only 1-10 reps range for accuracy
             if (set.reps < 1 || set.reps > 10) return 0;
-            // ブルジッキー公式：1RM = 重量 × (36 / (37 - レップ数))
+            // Brzycki formula: 1RM = weight × (36 / (37 - reps))
             return set.weight * (36 / (37 - set.reps));
           });
 
-          // このワークアウトでの最高1RMを取得
+          // Get the highest 1RM from this workout
           const maxOneRM = Math.max(...oneRMs);
-          if (maxOneRM === 0) continue; // 有効なセットがない場合はスキップ
+          if (maxOneRM === 0) continue; // Skip if no valid sets
 
-          // 最高1RMを達成したセットを全て取得
+          // Get all sets that achieved the highest 1RM
           const bestSets = workoutExercise.sets.filter((set, index) => 
             oneRMs[index] === maxOneRM
           );
 
-          // 最高1RMのセットの中から、最も少ないレップ数で達成したものを選択
+          // Select the set with the least reps to achieve the highest 1RM
           const bestSet = bestSets.reduce((a, b) => 
             a.reps < b.reps ? a : b
           );
 
-          // この種目の現在のPRを取得
+          // Get the current PR for this exercise
           const currentPR = await tx.exercisePersonalRecord.findFirst({
             where: {
               user_id: userId,
@@ -248,12 +248,12 @@ export class WorkoutService {
             }
           });
 
-          // 現在のPRの1RMを計算（存在する場合）
+          // Calculate current PR 1RM (if exists)
           const currentOneRM = currentPR 
             ? currentPR.weight * (36 / (37 - currentPR.reps))
             : 0;
 
-          // 現在のセットの1RMが高い場合、PRを更新
+          // Update PR if current set's 1RM is higher
           if (!currentPR || maxOneRM > currentOneRM) {
             await tx.exercisePersonalRecord.create({
               data: {
@@ -267,7 +267,7 @@ export class WorkoutService {
           }
         }
 
-        // セッションを終了状態に更新
+        // Update session to ended state
         return await tx.workoutSession.update({
           where: {
             id: workoutSessionId,
@@ -287,8 +287,8 @@ export class WorkoutService {
         });
       });
     } catch (error) {
-      console.error('ワークアウトセッションの終了中にエラーが発生しました:', error);
-      throw new Error('ワークアウトセッションが見つかりません');
+      console.error('Error while finishing workout session:', error);
+      throw new Error('Workout session not found');
     }
   }
 

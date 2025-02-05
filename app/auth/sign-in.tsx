@@ -33,7 +33,7 @@ export default function SignInScreen() {
 
   const handleSignIn = async () => {
     if (!email || !password) {
-      Alert.alert('エラー', 'メールアドレスとパスワードを入力してください');
+      Alert.alert('Error', 'Please enter your email and password');
       return;
     }
 
@@ -53,10 +53,10 @@ export default function SignInScreen() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'ログインに失敗しました');
+        throw new Error(data.message || 'Failed to sign in');
       }
 
-      // セッション情報を保存
+      // Save session information
       await saveUserSession({
         token: data.data.token,
         user: data.data.user,
@@ -65,7 +65,7 @@ export default function SignInScreen() {
       router.replace('/(app)/(tabs)');
     } catch (error) {
       console.error('Login error:', error);
-      Alert.alert('エラー', error instanceof Error ? error.message : 'ログインに失敗しました');
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to sign in');
     } finally {
       setLoading(false);
     }
@@ -73,11 +73,11 @@ export default function SignInScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>ログイン</Text>
+      <Text style={styles.title}>Sign In</Text>
       
       <TextInput
         style={styles.input}
-        placeholder="メールアドレス"
+        placeholder="Email"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -86,7 +86,7 @@ export default function SignInScreen() {
       
       <TextInput
         style={styles.input}
-        placeholder="パスワード"
+        placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -97,13 +97,13 @@ export default function SignInScreen() {
         onPress={handleSignIn}
         disabled={loading}
       >
-        <Text style={styles.buttonText}>{loading ? 'ログイン中...' : 'ログイン'}</Text>
+        <Text style={styles.buttonText}>{loading ? 'Signing in...' : 'Sign In'}</Text>
       </TouchableOpacity>
 
       <View style={styles.linkContainer}>
-        <Text>アカウントをお持ちでない方は </Text>
+        <Text>Don't have an account? </Text>
         <Link href="/auth/sign-up" style={styles.link}>
-          新規登録
+          Sign Up
         </Link>
       </View>
     </View>
