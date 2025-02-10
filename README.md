@@ -1,50 +1,116 @@
-# Welcome to your Expo app 👋
+# Fitness Tracking App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Overview
 
-## Get started
+A comprehensive fitness application that integrates workout logging and nutrition management. The app supports efficient training by visualizing workout progress and providing personalized AI-powered advice.
 
-1. Install dependencies
+## Tech Stack
 
-   ```bash
-   npm install
-   ```
+### Frontend (Expo/React Native)
 
-2. Start the app
+- **Expo**: App build and deployment management
+- **Redux Toolkit**: Global state management
+- **React Native Paper**: UI component library
+- **react-native-charts-wrapper**: Training progress visualization 
+- **react-native-notifications**: Push notification functionality
 
-   ```bash
-    npx expo start
-   ```
+### Backend (Express.js/Vercel)
 
-In the output, you'll find options to open the app in a
+- **Express.js**: API server
+- **Prisma**: PostgreSQL database ORM
+- **JWT**: Authentication
+- **Google Gemini**: AI features (Training plan generation)
+- **Jest**: Unit testing
+- **PostgreSQL**: Database
+- **Vercel**: Backend deployment
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Key Features
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Workout Management
+- Personalized training plan creation
+- Workout logging
+- Progress visualization with charts
+- Personal record tracking
+- Interval timer
 
-## Get a fresh project
+### Nutrition Management
+- Meal logging
+- Nutrition balance analysis  
+- Calorie & macro nutrient goal setting
+- Automatic nutrition calculation from meal photos (AI)
 
-When you're ready, run:
+### AI Features
+- Training advice generation
+- Form analysis
+- Nutrition advice generation
+- Food image analysis: Automatically calculates nutritional content from food photos
+  - Calorie estimation
+  - Macro nutrients calculation (protein, carbs, fat)
 
+## Testing
+
+### Unit Tests (Jest)
 ```bash
-npm run reset-project
+cd server
+npm test
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Implemented test cases for major service classes:
+- AuthService
+- UserService  
+- WorkoutService
+- ExerciseService
+- MealService
+- PlanService
 
-## Learn more
+## Setup
 
-To learn more about developing your project with Expo, look at the following resources:
+### Prerequisites
+- Node.js v18 or higher
+- PostgreSQL
+- Expo CLI
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Frontend
+```bash
+# Clone project
+git clone [repository-url]
 
-## Join the community
+# Install dependencies  
+npm install
 
-Join our community of developers creating universal apps.
+# Start development server
+npx expo start
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Backend
+```bash
+cd server
+
+# Install dependencies
+npm install
+
+# Setup environment variables
+cp .env.example .env
+# Edit .env file with required variables
+
+# Run database migrations
+npx prisma migrate dev
+
+# Seed initial data
+npx prisma db seed
+
+# Start development server
+npm run dev
+```
+
+### Environment Variables
+```
+DATABASE_URL=postgresql://[user]:[password]@[host]:[port]/[database]
+JWT_SECRET=your-secret-key
+GEMINI_API_KEY=your-gemini-api-key
+```
+
+## License
+
+MIT
+```
