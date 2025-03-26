@@ -5,6 +5,8 @@
 A comprehensive fitness application that integrates workout logging and nutrition management. The app supports efficient training by visualizing workout progress and providing personalized AI-powered advice.
 
 ## Tech Stack
+![ChatGPT Image 2025年3月26日 10_12_20](https://github.com/user-attachments/assets/266450af-873f-4abf-ae38-0fee6eed02a1)
+
 
 ### Frontend (Expo/React Native)
 
